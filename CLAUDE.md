@@ -85,6 +85,7 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Inicializado repositorio git (`main` con el SRS como commit inicial).
 - Creado `CLAUDE.md` con contexto del proyecto (resumen del SRS v2.0), arquitectura, requisitos, hoja de ruta, convenciones, bitácora y pendientes.
 - Agregado `.gitignore` base.
+- Intento de crear repositorio remoto: no realizado por falta de `gh` y credenciales; queda en Pendientes con los pasos.
 
 ---
 
@@ -96,6 +97,8 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - [ ] Proveedor LLM: Gemini Flash vs. GPT-4o-mini (u otro).
 - [ ] Estructura del repositorio (monorepo frontend + backend o repos separados).
 - [ ] Repositorio remoto (GitHub u otro) y política de ramas/merge.
+  - Bloqueo (2026-10-01): GitHub CLI (`gh`) no instalado y sin credenciales de GitHub en git. Pasos: `winget install --id GitHub.cli` → `gh auth login` → `gh repo create ClimApp --private --source . --remote origin` → push de `main` y `docs/claude-md-contexto`.
+  - Luego vincular el repo al proyecto de claude.ai "ClimApp" (https://claude.ai/project/01a0f79e-6e15-723a-a00e-5c252c791837) desde *Agregar contenido → GitHub* (requiere resincronizar tras cada push).
 
 ### Investigación
 - [ ] Revisar qué datos publica la Armada de Chile (Servimet/Directemar): formatos, frecuencia, si hay API o requiere scraping, términos de uso.
