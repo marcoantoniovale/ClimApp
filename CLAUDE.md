@@ -188,6 +188,11 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Activado: el usuario guardó el token en el Vault; `ops.disparar_ingesta()` → GitHub respondió 204 y la corrida `workflow_dispatch` en `main` terminó bien.
 - Verificar en Supabase: `select * from cron.job_run_details order by start_time desc limit 5;` y `select status_code, content from net._http_response order by created desc limit 5;` (204 = OK).
 
+### 2026-10-01 — rama `docs/rutaclimapp`
+- Propuesta de **RutaClimApp** (pronóstico en ruta cada 15 min para viajeros y transportistas) en [docs/rutaclimapp-propuesta.md](docs/rutaclimapp-propuesta.md): requisito RF06, flujo, arquitectura, contrato de API, etapas (R1 MVP ~2,5–3 semanas), riesgos y decisiones.
+- Verificado: Open-Meteo entrega `minutely_15` en Chile (interpolado de modelos horarios) con visibilidad, y horario con isoterma 0 °C y nieve (prueba en Los Libertadores). openrouteservice gratuito: 2.000 rutas/día, 40/min, perfil camión (`driving-hgv`).
+- Recomendación: ruteo con openrouteservice; clima desde un **corredor precalculado** (~350 puntos en rutas principales, ~1.700 llamadas/día), sin llamadas a Open-Meteo por consulta de usuario (RNF04).
+
 ---
 
 ## 8. Pendientes
@@ -208,6 +213,8 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 
 - [x] **Disparador de la ingesta** activo (2026-10-01): token guardado por el usuario en el Vault; prueba manual → GitHub 204 y corrida `workflow_dispatch` exitosa. Corre a las HH:05 UTC.
 - [ ] **Renovar el token fine-grained `climapp-supabase-cron`** antes de su vencimiento (fecha elegida por el usuario al crearlo); luego `select vault.update_secret(...)` o borrar y volver a crear `github_actions_token`.
+
+- [ ] **RutaClimApp** (decidir, ver [§8 de la propuesta](docs/rutaclimapp-propuesta.md)): aprobación y prioridad frente a la Fase 2; cuenta y API key de openrouteservice; perfil camión en MVP; mapa en R1 o R2; horizonte.
 
 ### Investigación
 - [x] Datos de la Armada: observaciones por API JSON; avisos imagen/PDF. Ver [docs/spikes-semana1.md](docs/spikes-semana1.md).
