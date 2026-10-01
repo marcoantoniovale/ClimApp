@@ -185,6 +185,7 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 
 ### 2026-10-01 — rama `feature/disparador-supabase`
 - Usuario eligió la opción A y la autorizó. [0006_disparador.sql](ClimAppWeb/db/migrations/0006_disparador.sql): `pg_cron` + `pg_net`; función `ops.disparar_ingesta()` (esquema `ops`, no expuesto por la API REST; `anon` sin permisos) que lee el token del Vault y llama a `POST /repos/marcoantoniovale/ClimApp/actions/workflows/ingesta.yml/dispatches` (`ref=main`, `comando=auto`). Tarea `climapp-ingesta`, `5 * * * *`. Sin token, solo registra una advertencia.
+- Activado: el usuario guardó el token en el Vault; `ops.disparar_ingesta()` → GitHub respondió 204 y la corrida `workflow_dispatch` en `main` terminó bien.
 - Verificar en Supabase: `select * from cron.job_run_details order by start_time desc limit 5;` y `select status_code, content from net._http_response order by created desc limit 5;` (204 = OK).
 
 ---
@@ -205,7 +206,8 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [x] Política de ramas: trabajo en ramas desde `main` y fusión por pull request. (Aprobado 2026-10-01)
 - [ ] Vincular el repo al proyecto de claude.ai "ClimApp" (https://claude.ai/project/01a0f79e-6e15-723a-a00e-5c252c791837) desde *Agregar contenido → GitHub* (usuario; resincronizar tras cada push).
 
-- [ ] **Disparador de la ingesta**: opción A elegida y aplicada (migración 0006, tarea `climapp-ingesta` a las HH:05). Falta que el usuario guarde el token fine-grained en el Vault (`github_actions_token`) y verificar la primera ejecución (`net._http_response` con estado 204 y corrida `workflow_dispatch` en Actions). Renovar el token antes de que expire.
+- [x] **Disparador de la ingesta** activo (2026-10-01): token guardado por el usuario en el Vault; prueba manual → GitHub 204 y corrida `workflow_dispatch` exitosa. Corre a las HH:05 UTC.
+- [ ] **Renovar el token fine-grained `climapp-supabase-cron`** antes de su vencimiento (fecha elegida por el usuario al crearlo); luego `select vault.update_secret(...)` o borrar y volver a crear `github_actions_token`.
 
 ### Investigación
 - [x] Datos de la Armada: observaciones por API JSON; avisos imagen/PDF. Ver [docs/spikes-semana1.md](docs/spikes-semana1.md).
