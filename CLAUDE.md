@@ -70,6 +70,7 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Control de versiones con git. El trabajo se hace en **ramas**, no directamente en `main`.
 - Herramientas locales: Python 3.12 en `%LOCALAPPDATA%\Programs\Python\Python312\` (venv en `ClimAppWeb/etl/.venv`), Node.js 24 LTS en `C:\Program Files\nodejs\`. Pueden no estar en el PATH de la terminal: usar rutas completas.
 - Ejecutar Python con `PYTHONIOENCODING=utf-8` (la consola de Windows rompe las tildes).
+- VS Code (`.vscode/settings.json`, local, no versionado): inyecta `ClimAppWeb/.env` en las terminales (`python.terminal.useEnvFile`, `python.envFile`), usa el venv del ETL como intérprete y habilita pytest. Los scripts igual leen `ClimAppWeb/.env` por su cuenta.
 - Al terminar cada sesión o cambio relevante:
   1. Agregar una entrada en **Bitácora de cambios** (fecha, rama, qué se hizo).
   2. Actualizar **Pendientes** (marcar lo completado, agregar lo nuevo).
