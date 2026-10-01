@@ -183,6 +183,10 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Prueba real: primera pasada descargó los 3 modelos (incluida ICON 18Z); segunda pasada: "sin corridas nuevas". Pruebas ETL 44/44.
 - **Disparador confiable (no aplicado)**: se propuso que Supabase (`pg_cron` + `pg_net`) dispare el flujo de GitHub cada hora con un token fine-grained guardado en el Vault. El sistema de permisos bloqueó crear esa automatización; queda como decisión del usuario.
 
+### 2026-10-01 — rama `feature/disparador-supabase`
+- Usuario eligió la opción A y la autorizó. [0006_disparador.sql](ClimAppWeb/db/migrations/0006_disparador.sql): `pg_cron` + `pg_net`; función `ops.disparar_ingesta()` (esquema `ops`, no expuesto por la API REST; `anon` sin permisos) que lee el token del Vault y llama a `POST /repos/marcoantoniovale/ClimApp/actions/workflows/ingesta.yml/dispatches` (`ref=main`, `comando=auto`). Tarea `climapp-ingesta`, `5 * * * *`. Sin token, solo registra una advertencia.
+- Verificar en Supabase: `select * from cron.job_run_details order by start_time desc limit 5;` y `select status_code, content from net._http_response order by created desc limit 5;` (204 = OK).
+
 ---
 
 ## 8. Pendientes
@@ -201,7 +205,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [x] Política de ramas: trabajo en ramas desde `main` y fusión por pull request. (Aprobado 2026-10-01)
 - [ ] Vincular el repo al proyecto de claude.ai "ClimApp" (https://claude.ai/project/01a0f79e-6e15-723a-a00e-5c252c791837) desde *Agregar contenido → GitHub* (usuario; resincronizar tras cada push).
 
-- [ ] **Disparador de la ingesta** (decidir): el cron de GitHub no está corriendo. Opciones: (a) Supabase `pg_cron` + `pg_net` llamando a la API de GitHub con un token fine-grained (solo este repo, Actions: read/write) en el Vault — requiere autorizar esa acción; (b) servicio externo gratuito (p. ej. cron-job.org) configurado por el usuario con el mismo token; (c) seguir solo con el cron de GitHub.
+- [ ] **Disparador de la ingesta**: opción A elegida y aplicada (migración 0006, tarea `climapp-ingesta` a las HH:05). Falta que el usuario guarde el token fine-grained en el Vault (`github_actions_token`) y verificar la primera ejecución (`net._http_response` con estado 204 y corrida `workflow_dispatch` en Actions). Renovar el token antes de que expire.
 
 ### Investigación
 - [x] Datos de la Armada: observaciones por API JSON; avisos imagen/PDF. Ver [docs/spikes-semana1.md](docs/spikes-semana1.md).
