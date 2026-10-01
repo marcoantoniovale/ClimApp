@@ -78,7 +78,8 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 ## 6. Estado actual
 
 - Stack **aprobado** (2026-10-01): ETL en Python, API como Route Handlers de Next.js en Vercel leyendo Redis, cron en GitHub Actions, monorepo en `ClimAppWeb/`.
-- Fase 1, semana 1 casi completa: spikes ([docs/spikes-semana1.md](docs/spikes-semana1.md)), catálogo geográfico, esquema de BD v1 y semilla SQL. Falta crear Supabase y el repositorio remoto.
+- Fase 1, semana 1 casi completa: spikes ([docs/spikes-semana1.md](docs/spikes-semana1.md)), catálogo geográfico, esquema de BD v1 y semilla SQL. Falta crear Supabase.
+- Repositorio: https://github.com/marcoantoniovale/ClimApp (privado). `gh` instalado en `C:\Program Files\GitHub CLI\`.
 - Diseño de la Fase 1: [docs/fase1-mapeo-requisitos.md](docs/fase1-mapeo-requisitos.md).
 - Referencia visual del frontend: [Template/](Template/) (aportada por el usuario) con ajustes en [docs/frontend-template-analisis.md](docs/frontend-template-analisis.md). Paleta: fondo `#0F172A`, turquesa `#0EA5E9`, naranja `#F97316`.
 
@@ -117,6 +118,7 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - [0002_rls.sql](ClimAppWeb/db/migrations/0002_rls.sql): RLS activado sin políticas en todas las tablas, para que la API REST pública de Supabase no exponga datos.
 - Dependencia `psycopg[binary]` agregada al ETL.
 - Conexión: usar el **Session pooler** de Supabase (IPv4); la conexión directa es solo IPv6.
+- Instalado GitHub CLI 2.102.0; sesión `marcoantoniovale` (permisos `repo`, `workflow`). Creado el repositorio privado [marcoantoniovale/ClimApp](https://github.com/marcoantoniovale/ClimApp) y subidas todas las ramas. Revisado el historial antes de subir: sin secretos.
 
 ---
 
@@ -131,9 +133,9 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Retención del archivo histórico de pronósticos (propuesta: 12 meses, 3-horario).
 - [ ] Pronóstico provisional de la Fase 1 = promedio simple de GFS/ECMWF/ICON.
 - [ ] ¿Incluir la vista de dispersión entre modelos (RF05.3) en la Fase 1?
-- [ ] Repositorio remoto (GitHub u otro) y política de ramas/merge.
-  - Bloqueo (2026-10-01): GitHub CLI (`gh`) no instalado y sin credenciales de GitHub en git. Pasos: `winget install --id GitHub.cli` → `gh auth login` → `gh repo create ClimApp --private --source . --remote origin` → `git push -u origin --all`.
-  - Luego vincular el repo al proyecto de claude.ai "ClimApp" (https://claude.ai/project/01a0f79e-6e15-723a-a00e-5c252c791837) desde *Agregar contenido → GitHub* (requiere resincronizar tras cada push).
+- [x] Repositorio remoto: https://github.com/marcoantoniovale/ClimApp (privado). (2026-10-01)
+- [ ] Política de ramas/merge. Hoy las ramas están encadenadas (cada una sale de la anterior) y `main` solo tiene el SRS. Propuesta: fusionar a `main` con pull requests.
+- [ ] Vincular el repo al proyecto de claude.ai "ClimApp" (https://claude.ai/project/01a0f79e-6e15-723a-a00e-5c252c791837) desde *Agregar contenido → GitHub* (usuario; resincronizar tras cada push).
 
 ### Investigación
 - [x] Datos de la Armada: observaciones por API JSON; avisos imagen/PDF. Ver [docs/spikes-semana1.md](docs/spikes-semana1.md).
@@ -145,7 +147,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Open-Meteo: revisar comunas costeras cuyo punto de grilla cae en el mar.
 
 ### Fase 1 (MVP) — detalle y plan semanal en [docs/fase1-mapeo-requisitos.md §5](docs/fase1-mapeo-requisitos.md)
-- [ ] Semana 1: spikes ✅, estructura del monorepo ✅, catálogo geográfico ✅, esquema de BD v1 ✅. **Falta:** crear proyecto Supabase (usuario) → poner `DATABASE_URL` en `ClimAppWeb/.env` → `python scripts/migrate.py --seed`; repositorio remoto.
+- [ ] Semana 1: spikes ✅, estructura del monorepo ✅, catálogo geográfico ✅, esquema de BD v1 ✅. **Falta:** crear proyecto Supabase (usuario) → poner `DATABASE_URL` en `ClimAppWeb/.env` → `python scripts/migrate.py --seed`. Repositorio remoto ✅.
 - [ ] Catálogo, pendientes: marcar comunas costeras (`es_costera`); catálogo de puertos/sectores costeros y mapeo de zonas de avisos → comunas (semana 3); exportar JSON para el buscador (semana 4).
 - [ ] Semana 2: conector Open-Meteo, unidades canónicas con pruebas, tablas `forecast_current` / `forecast_archive`, cron, `ingestion_runs`. Considerar adelantar el conector de observaciones Armada (API JSON). Incluir `weather_code`, `apparent_temperature` y `uv_index` (requeridos por la plantilla de frontend).
 - [ ] Semana 3: conector Armada (avisos + observaciones si no se adelantó), precálculo a Redis, endpoints de API.
