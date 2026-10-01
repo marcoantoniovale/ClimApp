@@ -11,6 +11,7 @@ export default function CurrentWeather({
   hoy,
   observacion,
   actualizado,
+  corridas,
 }: {
   nombre: string;
   region: string;
@@ -18,6 +19,7 @@ export default function CurrentWeather({
   hoy: Dia | undefined;
   observacion: Observacion | null;
   actualizado: string | null;
+  corridas?: Record<string, string>;
 }) {
   const estado = cielo(ahora?.estado_cielo);
   return (
@@ -57,6 +59,15 @@ export default function CurrentWeather({
       {actualizado && (
         <p className="mt-4 text-xs text-slate-400">
           Pronóstico provisional · actualizado {fechaHora(actualizado)}
+          {corridas && Object.keys(corridas).length > 0 && (
+            <span className="block">
+              Corridas de los modelos:{" "}
+              {Object.entries(corridas)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([m, iso]) => `${m.toUpperCase()} ${fechaHora(iso)}`)
+                .join(" · ")}
+            </span>
+          )}
         </p>
       )}
     </section>

@@ -82,6 +82,8 @@ export type Pronostico = {
   actualizado: string | null;
   provisional: boolean;
   modelos: string[];
+  /** Inicio de la corrida de cada modelo (hora de Chile, ISO). Puede faltar en datos antiguos. */
+  corridas?: Record<string, string>;
   unidades: Record<string, string>;
   horas: Hora[];
   dias: Dia[];

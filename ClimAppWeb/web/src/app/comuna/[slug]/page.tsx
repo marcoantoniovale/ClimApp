@@ -57,6 +57,7 @@ export default async function ComunaPage({ params }: PageProps<"/comuna/[slug]">
         hoy={hoy}
         observacion={p.observacion}
         actualizado={p.actualizado}
+        corridas={p.corridas}
       />
       <WarningList avisos={p.avisos} />
       <HourlyForecast horas={horas} />

@@ -150,7 +150,7 @@ def marine_summary(marine, now: datetime) -> dict | None:
 
 
 def build(location: dict, rows, marine, observation: dict | None, fetched_at: datetime | None,
-          now: datetime | None = None) -> dict:
+          now: datetime | None = None, corridas: dict[str, str] | None = None) -> dict:
     """Arma el JSON de una ubicación. rows: (modelo, valid_time, valores) de forecast_current."""
     now = now or datetime.now(timezone.utc)
     current_hour = now.replace(minute=0, second=0, microsecond=0)
@@ -165,6 +165,7 @@ def build(location: dict, rows, marine, observation: dict | None, fetched_at: da
         "actualizado": _iso_local(fetched_at) if fetched_at else None,
         "provisional": True,          # promedio simple de modelos hasta el ensemble de la Fase 2
         "modelos": models,
+        "corridas": {m: corridas[m] for m in models if corridas and m in corridas},  # inicio de cada corrida
         "unidades": {"temperatura": "°C", "precipitacion": "mm", "viento": "km/h", "presion": "hPa",
                      "humedad": "%", "oleaje": "m"},
         "horas": [{

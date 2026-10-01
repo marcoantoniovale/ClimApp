@@ -175,6 +175,14 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Web: [geo.ts](ClimAppWeb/web/src/lib/geo.ts) (distancia, punto en polígono con huecos, `comunaEnPosicion`). Pruebas con `node --test` (`npm test`, 9/9) usando el catálogo y los polígonos del repo; `tests/` excluido del `tsconfig`.
 - **Firma en el pie**: "Creador: Grupo MSinS" con logo pequeño (24 px). A pedido del usuario se modernizó el logo: [msins-mark.svg](ClimAppWeb/web/public/brand/msins-mark.svg) es una versión compacta (solo los lentes, sin texto, que a ese tamaño era ilegible y dependía de fuentes no disponibles). El original sigue en `Template/MSinS.svg`.
 
+### 2026-10-01 — rama `feature/actualizacion-por-corrida`
+- Diagnóstico (usuario veía datos de más de 1 h): **el cron de GitHub Actions no ejecutó ninguna corrida programada** desde que llegó a `main` (20:32 UTC); solo hubo corridas por push o manuales. Además, la corrida ICON 18Z ya estaba disponible y no se había descargado.
+- **Actualización por corrida**: `open_meteo.latest_runs()` lee `https://api.open-meteo.com/data/<modelo>/static/meta.json` (inicio y disponibilidad de la última corrida). `auto` revisa cada hora y descarga **solo los modelos con corrida nueva** (o con más de 9 h sin renovar); respaldo por tiempo (6 h) si los metadatos fallan. Tabla `model_runs` (migración 0005). Oleaje como máximo cada 3 h.
+- Cuota: ~380 llamadas por modelo (antes ~1.150 por los tres juntos); con ~12 corridas al día ≈ 4.600 llamadas/día.
+- La web muestra la hora de corrida de cada modelo; "actualizado" = descarga más reciente.
+- Prueba real: primera pasada descargó los 3 modelos (incluida ICON 18Z); segunda pasada: "sin corridas nuevas". Pruebas ETL 44/44.
+- **Disparador confiable (no aplicado)**: se propuso que Supabase (`pg_cron` + `pg_net`) dispare el flujo de GitHub cada hora con un token fine-grained guardado en el Vault. El sistema de permisos bloqueó crear esa automatización; queda como decisión del usuario.
+
 ---
 
 ## 8. Pendientes
@@ -192,6 +200,8 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [x] Repositorio remoto: https://github.com/marcoantoniovale/ClimApp (privado). (2026-10-01)
 - [x] Política de ramas: trabajo en ramas desde `main` y fusión por pull request. (Aprobado 2026-10-01)
 - [ ] Vincular el repo al proyecto de claude.ai "ClimApp" (https://claude.ai/project/01a0f79e-6e15-723a-a00e-5c252c791837) desde *Agregar contenido → GitHub* (usuario; resincronizar tras cada push).
+
+- [ ] **Disparador de la ingesta** (decidir): el cron de GitHub no está corriendo. Opciones: (a) Supabase `pg_cron` + `pg_net` llamando a la API de GitHub con un token fine-grained (solo este repo, Actions: read/write) en el Vault — requiere autorizar esa acción; (b) servicio externo gratuito (p. ej. cron-job.org) configurado por el usuario con el mismo token; (c) seguir solo con el cron de GitHub.
 
 ### Investigación
 - [x] Datos de la Armada: observaciones por API JSON; avisos imagen/PDF. Ver [docs/spikes-semana1.md](docs/spikes-semana1.md).

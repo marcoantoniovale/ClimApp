@@ -1,7 +1,9 @@
 # Ingesta horaria de ClimApp (código en ClimAppWeb/etl).
-# El modo "auto" decide qué corresponde según la última corrida exitosa registrada en
-# ingestion_runs: pronóstico cada 6 h, archivo cada 12 h, mantención cada 24 h. Así tolera
-# los retrasos habituales del cron de GitHub.
+# El modo "auto" decide qué corresponde: descarga un modelo (GFS/ECMWF/ICON) solo cuando Open-Meteo
+# publicó una corrida nueva (tabla model_runs), avisos cada hora, archivo cada 12 h, mantención
+# cada 24 h. Si se ejecuta dos veces seguidas, la segunda no descarga nada.
+#
+# Ojo: el cron de GitHub se retrasa o salta corridas (2026-10-01: ninguna en las primeras 2 h).
 #
 # Las observaciones de la Armada NO se recolectan aquí: su API bloquea las IP de GitHub Actions
 # (Azure) y de AWS (verificado el 2026-10-01). Se recolectan desde un equipo en Chile.
