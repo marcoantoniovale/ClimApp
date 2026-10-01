@@ -28,7 +28,7 @@ python -m venv .venv
 ```powershell
 .venv\Scripts\python -m climapp_etl auto           # lo que corresponda (es lo que corre el cron)
 .venv\Scripts\python -m climapp_etl observaciones  # Armada → observations (cada hora)
-.venv\Scripts\python -m climapp_etl pronostico     # Open-Meteo, 346 comunas → forecast_current (cada 6 h, ~2 min)
+.venv\Scripts\python -m climapp_etl pronostico     # Open-Meteo, 346 comunas → forecast_current (auto: por modelo al salir una corrida nueva)
 .venv\Scripts\python -m climapp_etl archivo        # Open-Meteo en estaciones → forecast_archive (cada 12 h)
 .venv\Scripts\python -m climapp_etl avisos         # avisos Armada → marine_warnings + Redis (cada hora)
 .venv\Scripts\python -m climapp_etl precalculo     # JSON por comuna → location_snapshots + Redis (tras cada pronóstico)

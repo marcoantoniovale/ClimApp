@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import functools
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
@@ -20,8 +21,13 @@ ARCHIVE_HORIZON = timedelta(hours=72)
 ARCHIVE_STEP_HOURS = 3
 
 # Frecuencias objetivo; el modo "auto" las aplica según la última corrida exitosa,
-# así tolera retrasos del cron de GitHub Actions.
+# así tolera retrasos del disparador.
+# El pronóstico se descarga por modelo cuando Open-Meteo publica una corrida nueva (se revisa cada
+# hora). FORECAST_EVERY es el respaldo si los metadatos no responden; MODEL_MAX_AGE fuerza una
+# descarga si un modelo no se renueva por mucho tiempo.
 FORECAST_EVERY = timedelta(hours=6)
+MODEL_MAX_AGE = timedelta(hours=9)
+MARINE_EVERY = timedelta(hours=3)
 ARCHIVE_EVERY = timedelta(hours=12)
 MAINTENANCE_EVERY = timedelta(hours=24)
 MARGIN = timedelta(minutes=30)
@@ -41,35 +47,77 @@ OBS_COLUMNS = ["temperatura", "punto_rocio", "humedad", "presion", "viento_vel",
                "viento_rafaga", "precipitacion_1h"]
 
 
-def forecast(conn: psycopg.Connection) -> None:
-    """Pronóstico vigente de todas las comunas → forecast_current (reemplaza el anterior)."""
+def forecast(conn: psycopg.Connection, models: list[str] | None = None,
+             runs: dict[str, open_meteo.Run] | None = None) -> None:
+    """Pronóstico de todas las comunas → forecast_current. Reemplaza solo los modelos pedidos
+    (por defecto, todos) y registra su corrida en model_runs."""
+    models = models or list(open_meteo.MODELS)
     with track_run(conn, "open_meteo") as run:
+        if runs is None:
+            try:
+                runs = open_meteo.latest_runs()
+            except Exception as exc:  # sin metadatos igual se descarga; solo no se registra la corrida
+                run.warn(f"Metadatos de corridas: {exc}")
+                runs = {}
         points = [open_meteo.Point(*r) for r in conn.execute(
             "select id, lat, lon from locations where tipo = 'comuna' order by id")]
         fetched_at = datetime.now(timezone.utc)
-        responses = open_meteo.fetch(points, open_meteo.VARIABLES, FORECAST_DAYS, past_days=1)
+        responses = open_meteo.fetch(points, open_meteo.VARIABLES, FORECAST_DAYS, past_days=1, models=models)
 
         records = [
             (point.key, model, valid_time, fetched_at, *values.values())
             for point, data in responses
             for model, valid_time, values in open_meteo.rows(data, open_meteo.VARIABLES)
         ]
-        missing = {m for m in open_meteo.MODELS} - {r[1] for r in records}
-        if missing:
-            run.warn(f"Sin datos de: {', '.join(sorted(missing))}")
+        received = {r[1] for r in records}
+        if set(models) - received:
+            run.warn(f"Sin datos de: {', '.join(sorted(set(models) - received))}")
 
         location_ids = [p.key for p, _ in responses]
         with conn.transaction():
-            conn.execute("delete from forecast_current where location_id = any(%s)", (location_ids,))
+            conn.execute("delete from forecast_current where location_id = any(%s) and modelo = any(%s)",
+                         (location_ids, sorted(received)))
             _copy(conn, "forecast_current", CURRENT_COLUMNS, records)
+            for model in sorted(received):
+                if model in runs:
+                    conn.execute("""
+                        insert into model_runs (modelo, run_init, available_at, fetched_at) values (%s, %s, %s, %s)
+                        on conflict (modelo) do update set run_init = excluded.run_init,
+                            available_at = excluded.available_at, fetched_at = excluded.fetched_at""",
+                        (model, runs[model].init, runs[model].available, fetched_at))
         run.filas = len(records)
-        log.info("forecast_current: %d filas, %d ubicaciones", len(records), len(location_ids))
+        run.detalle.append("modelos: " + ", ".join(
+            f"{m} {runs[m].init:%d %H}Z" if m in runs else m for m in sorted(received)))
+        log.info("forecast_current: %d filas, modelos %s", len(records), ", ".join(sorted(received)))
 
-        try:  # el oleaje es complementario: si falla, el pronóstico igual queda
-            run.filas += _marine(conn, fetched_at)
-        except Exception as exc:
-            run.warn(f"Oleaje: {exc}")
-            log.exception("oleaje falló")
+        last_marine = conn.execute("select max(fetched_at) from forecast_marine").fetchone()[0]
+        if last_marine is None or fetched_at - last_marine >= MARINE_EVERY - MARGIN:
+            try:  # el oleaje es complementario: si falla, el pronóstico igual queda
+                run.filas += _marine(conn, fetched_at)
+            except Exception as exc:
+                run.warn(f"Oleaje: {exc}")
+                log.exception("oleaje falló")
+
+
+def due_models(conn: psycopg.Connection, now: datetime) -> tuple[list[str], dict[str, open_meteo.Run]]:
+    """Modelos con una corrida más nueva que la descargada (o demasiado antiguos). Si los metadatos
+    no responden, vuelve al criterio de tiempo (FORECAST_EVERY) para todos los modelos."""
+    state = {r[0]: (r[1], r[2]) for r in conn.execute("select modelo, run_init, fetched_at from model_runs")}
+    try:
+        runs = open_meteo.latest_runs()
+    except Exception:
+        log.exception("metadatos de corridas no disponibles; se usa el criterio de tiempo")
+        last = last_success(conn, "open_meteo")
+        return (list(open_meteo.MODELS) if not last or now - last >= FORECAST_EVERY - MARGIN else []), {}
+    return pending_models(state, runs, now), runs
+
+
+def pending_models(state: dict[str, tuple[datetime, datetime]], runs: dict[str, open_meteo.Run],
+                   now: datetime) -> list[str]:
+    """state: modelo → (run_init descargada, fetched_at). Pendiente si no hay registro, si hay una
+    corrida más nueva o si la descarga es más antigua que MODEL_MAX_AGE."""
+    return [m for m in open_meteo.MODELS
+            if m not in state or runs[m].init > state[m][0] or now - state[m][1] >= MODEL_MAX_AGE]
 
 
 def _marine(conn: psycopg.Connection, fetched_at: datetime) -> int:
@@ -204,7 +252,7 @@ def snapshots(conn: psycopg.Connection) -> None:
         for r in conn.execute(f"""select location_id, modelo, valid_time, fetched_at, {', '.join(cols)}
                                   from forecast_current where valid_time >= now() - interval '30 hours'"""):
             rows[r[0]].append((r[1], r[2], dict(zip(cols, r[4:]))))
-            fetched[r[0]] = r[3]
+            fetched[r[0]] = max(r[3], fetched.get(r[0], r[3]))   # los modelos se descargan en momentos distintos
         marine = defaultdict(list)
         mcols = list(open_meteo.MARINE_VARIABLES.values())
         for r in conn.execute(f"""select location_id, valid_time, {', '.join(mcols)} from forecast_marine
@@ -221,13 +269,16 @@ def snapshots(conn: psycopg.Connection) -> None:
             where o.observed_at > now() - interval '3 hours'
             order by s.location_id, o.observed_at desc""")}
 
+        corridas = {r[0]: snapshot._iso_local(r[1]) for r in conn.execute("select modelo, run_init from model_runs")}
+
         payloads = {}
         for loc in locations:
             if not rows.get(loc["id"]):
                 run.warn(f"Sin pronóstico: {loc['slug']}")
                 continue
             payloads[loc["id"]] = snapshot.build(loc, rows[loc["id"]], marine.get(loc["id"]),
-                                                 observations.get(loc["id"]), fetched.get(loc["id"]), now)
+                                                 observations.get(loc["id"]), fetched.get(loc["id"]), now,
+                                                 corridas=corridas)
 
         with conn.transaction():
             with conn.cursor() as cur:
@@ -278,13 +329,14 @@ def maintenance(conn: psycopg.Connection) -> None:
 
 def auto(conn: psycopg.Connection, with_observations: bool = True) -> None:
     """Lo que corresponda según la última corrida exitosa: observaciones siempre,
-    pronóstico cada 6 h, archivo cada 12 h y mantención cada 24 h. Pensado para un cron horario.
+    pronóstico por modelo al publicarse una corrida nueva, archivo cada 12 h, avisos cada hora,
+    precálculo tras cada pronóstico y mantención cada 24 h. Pensado para un disparo horario.
 
     with_observations=False: la API de observaciones de la Armada bloquea las redes de nube
     (GitHub Actions/Azure, AWS); ahí las observaciones se recolectan desde un equipo en Chile."""
     now = datetime.now(timezone.utc)
     failures = []
-    jobs = [("open_meteo", forecast, FORECAST_EVERY),
+    jobs = [("open_meteo", forecast, "por_corrida"),
             ("open_meteo_archivo", archive, ARCHIVE_EVERY),
             ("armada_avisos", warnings, None),
             ("snapshots", snapshots, "tras_pronostico"),
@@ -293,7 +345,14 @@ def auto(conn: psycopg.Connection, with_observations: bool = True) -> None:
         jobs.insert(0, ("armada_obs", observations, None))
     for name, job, every in jobs:
         last = last_success(conn, name)
-        if every == "tras_pronostico":   # solo si hay un pronóstico más nuevo que el último precálculo
+        if every == "por_corrida":
+            models, runs = due_models(conn, now)
+            if not models:
+                log.info("%s: sin corridas nuevas", name)
+                continue
+            log.info("%s: corridas nuevas de %s", name, ", ".join(models))
+            job = functools.partial(forecast, models=models, runs=runs or None)
+        elif every == "tras_pronostico":   # solo si hay un pronóstico más nuevo que el último precálculo
             forecast_at = last_success(conn, "open_meteo")
             if last and forecast_at and last > forecast_at:
                 log.info("%s: no corresponde (sin pronóstico nuevo)", name)

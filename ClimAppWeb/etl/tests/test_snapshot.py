@@ -74,3 +74,16 @@ def test_oleaje_solo_en_costeras():
     assert p["marino"]["dias"][0]["altura_max"] == 1.5
     interior = dict(LOCATION, es_costera=False)
     assert snapshot.build(interior, make_rows(), marine, None, NOW, now=NOW)["marino"] is None
+
+
+def test_modelos_pendientes():
+    from climapp_etl.jobs import pending_models
+    from climapp_etl.open_meteo import Run
+
+    h = lambda hour: datetime(2026, 10, 1, hour, tzinfo=timezone.utc)
+    runs = {"gfs": Run(h(12), h(17)), "ecmwf": Run(h(12), h(20)), "icon": Run(h(18), h(21))}
+    state = {"gfs": (h(12), h(20)), "ecmwf": (h(12), h(20)), "icon": (h(12), h(20))}
+    assert pending_models(state, runs, now=h(22)) == ["icon"]                 # solo ICON trae corrida nueva
+    assert pending_models({k: v for k, v in state.items() if k != "gfs"}, runs, now=h(22)) == ["gfs", "icon"]
+    viejo = {m: (h(12), h(5)) for m in runs}
+    assert set(pending_models(viejo, runs, now=h(22))) == {"gfs", "ecmwf", "icon"}   # > 9 h sin renovar

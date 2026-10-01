@@ -78,3 +78,30 @@ def test_presupuesto_por_minuto_espera():
     budget.acquire(300)
     budget.acquire(300)          # supera 500 en la misma ventana → espera ~60 s
     assert len(sleeps) == 1 and 59 < sleeps[0] < 62
+
+
+def test_ultima_corrida_por_modelo():
+    from datetime import datetime, timezone
+
+    ts = lambda h: datetime(2026, 10, 1, h, tzinfo=timezone.utc).timestamp()
+    meta = {
+        "ncep_gfs013": {"last_run_initialisation_time": ts(12), "last_run_availability_time": ts(17)},
+        "ncep_gfs025": {"last_run_initialisation_time": ts(6), "last_run_availability_time": ts(19)},
+        "ecmwf_ifs025": {"last_run_initialisation_time": ts(12), "last_run_availability_time": ts(20)},
+        "dwd_icon": {"last_run_initialisation_time": ts(18), "last_run_availability_time": ts(21)},
+    }
+    runs = open_meteo.latest_runs(get_json=lambda url, **kw: meta[url.split("/data/")[1].split("/")[0]])
+    assert runs["gfs"].init.hour == 12          # la más nueva entre GFS 0.13° y 0.25°
+    assert runs["icon"].init.hour == 18 and runs["icon"].available.hour == 21
+
+
+def test_fetch_solo_los_modelos_pedidos():
+    params = {}
+
+    def fake(url, p):
+        params.update(p)
+        return [{"hourly": {"time": []}}]
+
+    open_meteo.fetch([Point(1, -33, -71)], open_meteo.VARIABLES, 7, models=["icon"],
+                     budget=MinuteBudget(per_minute=10_000), get_json=fake)
+    assert params["models"] == "icon_seamless"

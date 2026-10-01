@@ -50,6 +50,11 @@ ARCHIVE_VARIABLES = {
     if v in ("temperatura", "humedad", "precipitacion", "viento_vel", "viento_dir", "viento_rafaga", "presion")
 }
 
+# Metadatos de corridas: https://api.open-meteo.com/data/<modelo>/static/meta.json
+# gfs_seamless combina GFS 0.13° y 0.25°; se toma la corrida más nueva de ambos.
+META_URL = "https://api.open-meteo.com/data/{}/static/meta.json"
+META_SOURCES = {"gfs": ("ncep_gfs013", "ncep_gfs025"), "ecmwf": ("ecmwf_ifs025",), "icon": ("dwd_icon",)}
+
 BATCH_SIZE = 50            # ubicaciones por petición
 CALLS_PER_MINUTE = 500     # límite propio, bajo el de Open-Meteo (600/min)
 
@@ -85,20 +90,44 @@ class MinuteBudget:
             self.sleep(60 - (now - self.spent[0][0]) + 0.5)
 
 
+@dataclass(frozen=True)
+class Run:
+    init: datetime          # hora de inicio de la corrida
+    available: datetime     # cuándo quedó disponible en Open-Meteo
+
+
+def latest_runs(get_json=http.get_json) -> dict[str, Run]:
+    """Última corrida disponible de cada modelo según los metadatos de Open-Meteo."""
+    runs = {}
+    for model, sources in META_SOURCES.items():
+        candidates = []
+        for source in sources:
+            meta = get_json(META_URL.format(source), attempts=2, timeout=20)
+            candidates.append(Run(
+                init=datetime.fromtimestamp(meta["last_run_initialisation_time"], timezone.utc),
+                available=datetime.fromtimestamp(meta["last_run_availability_time"], timezone.utc),
+            ))
+        runs[model] = max(candidates, key=lambda r: (r.init, r.available))
+    return runs
+
+
 def fetch(points: list[Point], variables: dict[str, str], days: int, past_days: int = 0,
-          budget: MinuteBudget | None = None, get_json=http.get_json) -> list[tuple[Point, dict]]:
+          budget: MinuteBudget | None = None, get_json=http.get_json,
+          models: list[str] | None = None) -> list[tuple[Point, dict]]:
     """Descarga el pronóstico horario de todos los puntos, en lotes. Devuelve (punto, respuesta).
-    past_days agrega días anteriores (para que el resumen de "hoy" en hora de Chile esté completo)."""
+    past_days agrega días anteriores (para que el resumen de "hoy" en hora de Chile esté completo).
+    models: subconjunto de MODELS a pedir (por defecto, todos)."""
     budget = budget or MinuteBudget()
+    models = models or list(MODELS)
     results = []
     for start in range(0, len(points), BATCH_SIZE):
         batch = points[start:start + BATCH_SIZE]
-        budget.acquire(call_weight(len(batch), len(variables), len(MODELS), days + past_days))
+        budget.acquire(call_weight(len(batch), len(variables), len(models), days + past_days))
         data = get_json(FORECAST_URL, {
             "latitude": ",".join(f"{p.lat:.4f}" for p in batch),
             "longitude": ",".join(f"{p.lon:.4f}" for p in batch),
             "hourly": ",".join(variables),
-            "models": ",".join(MODELS.values()),
+            "models": ",".join(MODELS[m] for m in models),
             "forecast_days": days,
             "past_days": past_days,
             "wind_speed_unit": "ms",
