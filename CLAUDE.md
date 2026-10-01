@@ -151,6 +151,7 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - **Web** (`ClimAppWeb/web`): Next.js 16.3.8 + Tailwind v4 creado con create-next-app. API de solo lectura sobre Redis con `Cache-Control: s-maxage` (ver [web/README.md](ClimAppWeb/web/README.md)). Compila y pasa lint. Next.js 16 incluye `AGENTS.md`: leer `node_modules/next/dist/docs/` antes de escribir código.
 - Pruebas ETL: 41/41. Base: 66 MB.
 - Upstash conectado (credenciales del usuario): 349 claves publicadas (346 comunas + avisos, índice, meta; JSON de ~16 KB). Secretos `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` en GitHub; corrida de `avisos` desde Actions publicó en Redis.
+- `ClimAppWeb/web/vercel.json`: funciones en la región `gru1` (São Paulo), junto a Upstash y Supabase.
 - API probada en local (`next start`): todos los endpoints OK, 404 para slugs inexistentes o inválidos; 200 peticiones a comunas al azar sin CDN: p50 72 ms, **p95 140 ms**, máx. 228 ms.
 
 ---
@@ -193,4 +194,5 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [x] Semana 3 (código): avisos Armada, precálculo (`location_snapshots`), publicación en Redis, API (`/api/forecast/:slug`, `/api/warnings[/:slug]`, `/api/locations`, `/api/health`). (2026-10-01)
 - [x] Semana 3 (cierre): Upstash conectado, secretos en GitHub, API probada (p95 140 ms < 300 ms). (2026-10-01)
 - [ ] Antes de publicar en Vercel (semana 4): usar el **token de solo lectura** de Upstash en la web (hoy `web/.env.local` usa el token completo, provisorio).
+- [ ] Vercel: cuenta creada por el usuario (2026-10-01). Importar el repo con *Root Directory* `ClimAppWeb/web` y variables `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_READONLY_TOKEN`; verificar la API en producción.
 - [ ] Semana 4: buscador, panel 7 días, avisos marítimos, despliegue en Vercel, alertas de fallas de ingesta. Incluir atribución CC BY 4.0 a Open-Meteo. Implementar sobre la plantilla `Template/` con los 13 ajustes de [docs/frontend-template-analisis.md](docs/frontend-template-analisis.md) (Server Components, Tailwind v4, íconos PWA desde SVG con `sharp`, sin `radar/` hasta Fase 3).
