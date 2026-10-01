@@ -6,7 +6,7 @@ Código fuente de ClimApp. Contexto, decisiones y bitácora en [../CLAUDE.md](..
 |---|---|---|
 | [etl/](etl/) | Conectores (Open-Meteo, Armada), normalización, precálculo; scripts de catálogo | Python 3.12 |
 | [db/](db/) | Migraciones SQL del esquema | PostgreSQL (Supabase) |
-| [web/](web/) | Frontend y API (Route Handlers) | Next.js + Tailwind (semana 4) |
+| [web/](web/) | API (Route Handlers) y frontend (semana 4) — ver [web/README.md](web/README.md) | Next.js 16 + Tailwind v4 |
 
 ## Requisitos locales
 
@@ -30,24 +30,30 @@ python -m venv .venv
 .venv\Scripts\python -m climapp_etl observaciones  # Armada → observations (cada hora)
 .venv\Scripts\python -m climapp_etl pronostico     # Open-Meteo, 346 comunas → forecast_current (cada 6 h, ~2 min)
 .venv\Scripts\python -m climapp_etl archivo        # Open-Meteo en estaciones → forecast_archive (cada 12 h)
+.venv\Scripts\python -m climapp_etl avisos         # avisos Armada → marine_warnings + Redis (cada hora)
+.venv\Scripts\python -m climapp_etl precalculo     # JSON por comuna → location_snapshots + Redis (tras cada pronóstico)
 .venv\Scripts\python -m climapp_etl mantencion     # retención de datos (cada 24 h)
 .venv\Scripts\python scripts\migrate.py [--seed]   # migraciones de db/migrations
 ```
 
-Programación: [.github/workflows/ingesta.yml](../.github/workflows/ingesta.yml) ejecuta `auto` cada hora en GitHub Actions (secreto `DATABASE_URL`). Cada corrida queda en la tabla `ingestion_runs`.
+Programación: [.github/workflows/ingesta.yml](../.github/workflows/ingesta.yml) ejecuta `auto --sin-observaciones` cada hora en GitHub Actions (secretos `DATABASE_URL`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`). Las observaciones de la Armada no se recolectan desde la nube (su API bloquea esas IP). Cada corrida queda en la tabla `ingestion_runs`.
 
 | Módulo (`etl/src/climapp_etl/`) | Responsabilidad |
 |---|---|
 | `open_meteo.py` | Peticiones por lotes de 50 ubicaciones, control de cuota (500 llamadas/min), filas por modelo y hora |
 | `armada.py` | Observaciones de capitanías y EMA: hora de Chile → UTC, nudos → m/s |
 | `units.py` | Conversiones y rangos plausibles |
-| `jobs.py` | Trabajos de ingesta, retención y modo `auto` |
+| `avisos.py` | Avisos vigentes de la portada de la Armada y su asignación a comunas costeras (nomenclátor `LANDMARKS`) |
+| `snapshot.py` | JSON por ubicación: promedio de modelos, rango, resumen diario en hora de Chile, oleaje |
+| `redis.py` | Publicación en Upstash Redis (API REST) |
+| `jobs.py` | Trabajos de ingesta, avisos, precálculo, retención y modo `auto` |
 | `db.py` | Conexión y registro de corridas |
 
 ### Catálogo geográfico (`etl/data/catalog/`)
 
 - `comunas.csv` — 346 comunas (lista oficial SUBDERE) con nombre, alias, región y coordenadas de la cabecera comunal.
 - `estaciones_armada.csv` — estaciones de la Armada (red EMA y capitanías de puerto) con su comuna más cercana.
+- `comunas_costa.csv` — comunas costeras (106) y distancia a la costa; lo genera `scripts/build_coast.py` (requiere `pip install -e ".[catalogo]"`) con los polígonos de chilemapas y la costa de Natural Earth (dominio público).
 
 Fuentes y licencias:
 - Códigos territoriales SUBDERE vía [chilemapas](https://github.com/pachadotdev/chilemapas) (Apache-2.0).

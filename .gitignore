@@ -27,3 +27,6 @@ Thumbs.db
 # Python
 *.egg-info/
 .pytest_cache/
+
+# Descargas grandes del catálogo (se regeneran)
+ClimAppWeb/etl/data/cache/

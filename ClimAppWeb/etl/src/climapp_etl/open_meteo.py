@@ -15,6 +15,15 @@ from . import http
 from .units import plausible
 
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
+MARINE_URL = "https://marine-api.open-meteo.com/v1/marine"
+
+# API marina (un solo modelo): variable → columna de forecast_marine.
+MARINE_VARIABLES = {
+    "wave_height": "oleaje_altura",
+    "wave_period": "oleaje_periodo",
+    "wave_direction": "oleaje_dir",
+    "swell_wave_height": "marejada_altura",
+}
 
 # Código interno → nombre del modelo en Open-Meteo.
 MODELS = {"gfs": "gfs_seamless", "ecmwf": "ecmwf_ifs025", "icon": "icon_seamless"}
@@ -76,20 +85,22 @@ class MinuteBudget:
             self.sleep(60 - (now - self.spent[0][0]) + 0.5)
 
 
-def fetch(points: list[Point], variables: dict[str, str], days: int,
+def fetch(points: list[Point], variables: dict[str, str], days: int, past_days: int = 0,
           budget: MinuteBudget | None = None, get_json=http.get_json) -> list[tuple[Point, dict]]:
-    """Descarga el pronóstico horario de todos los puntos, en lotes. Devuelve (punto, respuesta)."""
+    """Descarga el pronóstico horario de todos los puntos, en lotes. Devuelve (punto, respuesta).
+    past_days agrega días anteriores (para que el resumen de "hoy" en hora de Chile esté completo)."""
     budget = budget or MinuteBudget()
     results = []
     for start in range(0, len(points), BATCH_SIZE):
         batch = points[start:start + BATCH_SIZE]
-        budget.acquire(call_weight(len(batch), len(variables), len(MODELS), days))
+        budget.acquire(call_weight(len(batch), len(variables), len(MODELS), days + past_days))
         data = get_json(FORECAST_URL, {
             "latitude": ",".join(f"{p.lat:.4f}" for p in batch),
             "longitude": ",".join(f"{p.lon:.4f}" for p in batch),
             "hourly": ",".join(variables),
             "models": ",".join(MODELS.values()),
             "forecast_days": days,
+            "past_days": past_days,
             "wind_speed_unit": "ms",
             "timezone": "GMT",
         })
@@ -99,6 +110,39 @@ def fetch(points: list[Point], variables: dict[str, str], days: int,
             raise RuntimeError(f"Open-Meteo devolvió {len(data)} ubicaciones para un lote de {len(batch)}")
         results.extend(zip(batch, data))
     return results
+
+
+def fetch_marine(points: list[Point], days: int, budget: MinuteBudget | None = None,
+                 get_json=http.get_json) -> list[tuple[Point, dict]]:
+    """Oleaje horario en la celda de mar más cercana a cada punto."""
+    budget = budget or MinuteBudget()
+    results = []
+    for start in range(0, len(points), BATCH_SIZE):
+        batch = points[start:start + BATCH_SIZE]
+        budget.acquire(call_weight(len(batch), len(MARINE_VARIABLES), 1, days))
+        data = get_json(MARINE_URL, {
+            "latitude": ",".join(f"{p.lat:.4f}" for p in batch),
+            "longitude": ",".join(f"{p.lon:.4f}" for p in batch),
+            "hourly": ",".join(MARINE_VARIABLES),
+            "forecast_days": days,
+            "cell_selection": "sea",
+            "timezone": "GMT",
+        })
+        if isinstance(data, dict):
+            data = [data]
+        if len(data) != len(batch):
+            raise RuntimeError(f"Open-Meteo marino devolvió {len(data)} ubicaciones para {len(batch)}")
+        results.extend(zip(batch, data))
+    return results
+
+
+def marine_rows(response: dict) -> Iterator[tuple[datetime, dict]]:
+    """(hora_valida_utc, {columna: valor}) de una respuesta marina; omite horas vacías."""
+    hourly = response["hourly"]
+    for i, t in enumerate(hourly["time"]):
+        values = {col: hourly.get(var, [None] * (i + 1))[i] for var, col in MARINE_VARIABLES.items()}
+        if any(v is not None for v in values.values()):
+            yield datetime.fromisoformat(t).replace(tzinfo=timezone.utc), values
 
 
 def rows(response: dict, variables: dict[str, str]) -> Iterator[tuple[str, datetime, dict]]:
