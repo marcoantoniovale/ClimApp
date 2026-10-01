@@ -1,26 +1,50 @@
 @import "tailwindcss";
 
+/* Paleta de ClimApp (Template/, docs/frontend-template-analisis.md).
+   Interfaz oscura. Colores de marca para acentos y logo; para las marcas de los
+   gráficos se usan los tonos -600, validados contra la superficie de las tarjetas
+   (banda de luminosidad, daltonismo y contraste ≥ 3:1). */
+@theme {
+  --color-climapp-bg: #0f172a;      /* slate-900: fondo */
+  --color-climapp-card: #1e293b;    /* slate-800: tarjetas */
+  --color-climapp-line: #334155;    /* slate-700: bordes, ejes */
+  --color-climapp-teal: #0ea5e9;    /* acento turquesa (marca) */
+  --color-climapp-sun: #f97316;     /* acento naranja (marca) */
+  --color-climapp-temp: #ea580c;    /* serie de temperatura */
+  --color-climapp-rain: #0284c7;    /* serie de lluvia / oleaje */
+  --color-climapp-warn: #fbbf24;    /* avisos (estado, siempre con ícono y texto) */
+
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--color-climapp-bg);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-climapp-bg);
+  color: #f8fafc;
+}
+
+/* Scroll horizontal sin barra visible (pronóstico por horas). */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
