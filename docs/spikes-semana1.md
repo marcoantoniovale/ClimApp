@@ -48,9 +48,11 @@ El mapa de estaciones `https://serviciosonline.directemar.cl/meteomapa/` es una 
 
 Problemas de calidad que el conector debe manejar:
 - **Lecturas antiguas**: 8 de 43 capitanías no estaban al día (la más antigua de 2025-09-29) y 3 traen `"fecha": "Fecha inválida"`. → Descartar observaciones repetidas o con fecha inválida; marcar estaciones inactivas.
-- **Unidades no declaradas** en capitanías (`unidadViento: null`). En las EMA el parámetro 6 indica la unidad (1 = nudos; las 5 venían en nudos). → Confirmar la unidad del viento de capitanías comparando con Open-Meteo antes de convertir.
+- **Unidades no declaradas** en capitanías (`unidadViento: null`). En las EMA el parámetro 6 indica la unidad (1 = nudos; las 5 venían en nudos). → **Resuelto (2026-10-01):** comparando 32 capitanías con el viento de Open-Meteo en m/s, la mediana de la razón es 1,87 (≈ 1,94 de nudos/m/s). Se tratan como **nudos**.
 - **Coordenadas corruptas**: la EMA "Paso Timbales" publica longitud `-7029193.0`. → Validar rangos; corregido en el catálogo.
-- **Hora**: las EMA traen `time` (UTC) y `timeLocal`; las capitanías solo `fecha` (aparentemente hora local). → Confirmar zona horaria.
+- **Hora** — **resuelto (2026-10-01)** comparando con la hora real: las capitanías traen `fecha` en hora de Chile. En las EMA, `timeLocal` es la hora de Chile y `time` está **mal convertido** en la fuente (2 h por delante de UTC), por lo que se ignora.
+- **Frecuencia**: algunas capitanías transmiten cada 15–30 s; el cron horario guarda una lectura por hora.
+- **Índice UV** (Open-Meteo): solo lo entrega GFS; ECMWF e ICON lo dejan nulo.
 - Es una API interna de la web, sin documentación ni compromiso de estabilidad. → Validar estructura en cada lectura y alertar si cambia.
 
 ### Avisos (marejadas, mal tiempo, temporal)

@@ -3,7 +3,10 @@ name = "climapp-etl"
 version = "0.1.0"
 description = "Ingesta y procesamiento de datos meteorológicos de ClimApp"
 requires-python = ">=3.12"
-dependencies = ["psycopg[binary]>=3.2"]
+dependencies = [
+    "psycopg[binary]>=3.2",
+    "tzdata",  # zonas horarias en Windows (America/Santiago)
+]
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]

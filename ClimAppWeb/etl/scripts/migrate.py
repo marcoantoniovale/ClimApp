@@ -15,16 +15,13 @@ Uso:
 from __future__ import annotations
 
 import argparse
-import os
-import sys
-from pathlib import Path
 
 import psycopg
 
-WEB_ROOT = Path(__file__).resolve().parents[2]  # ClimAppWeb/
+from climapp_etl.db import WEB_ROOT, database_url
+
 MIGRATIONS = WEB_ROOT / "db" / "migrations"
 SEEDS = WEB_ROOT / "db" / "seeds"
-ENV_FILE = WEB_ROOT / ".env"
 
 BOOTSTRAP = """
 create table if not exists schema_migrations (
@@ -33,18 +30,6 @@ create table if not exists schema_migrations (
 );
 alter table schema_migrations enable row level security;
 """
-
-
-def database_url() -> str:
-    url = os.environ.get("DATABASE_URL")
-    if not url and ENV_FILE.exists():
-        for line in ENV_FILE.read_text(encoding="utf-8").splitlines():
-            key, sep, value = line.partition("=")
-            if sep and key.strip() == "DATABASE_URL":
-                url = value.strip().strip('"').strip("'")
-    if not url:
-        sys.exit(f"Falta DATABASE_URL (variable de entorno o {ENV_FILE}).")
-    return url
 
 
 def main() -> None:
