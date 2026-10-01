@@ -193,6 +193,11 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Verificado: Open-Meteo entrega `minutely_15` en Chile (interpolado de modelos horarios) con visibilidad, y horario con isoterma 0 °C y nieve (prueba en Los Libertadores). openrouteservice gratuito: 2.000 rutas/día, 40/min, perfil camión (`driving-hgv`).
 - Recomendación: ruteo con openrouteservice; clima desde un **corredor precalculado** (~350 puntos en rutas principales, ~1.700 llamadas/día), sin llamadas a Open-Meteo por consulta de usuario (RNF04).
 
+### 2026-10-01 — rama `docs/precision`
+- Reclamo del usuario: Quintero 20 °C en ClimApp vs 16,1 °C en la estación DMC 320056. Evaluación en [docs/precision-evaluacion.md](docs/precision-evaluacion.md).
+- Causa principal: Open-Meteo usa por defecto una celda de **tierra** (~15 km tierra adentro en Quintero). Con `cell_selection=nearest` el error del promedio baja de 2,4 a 1,7 °C allí. En 13 estaciones DMC: costa 1,19 → 1,08 °C, interior sin cambio (~0,95 °C). ECMWF IFS 0,25° es el peor en la costa (+3 °C).
+- Fuentes DMC encontradas: visor de estaciones automáticas (datos públicos; JSON con registro), `condicionactual.js` (METAR de ~30 aeropuertos) y `pronostico.js` (**pronóstico oficial de 103 localidades, 5 días**, mín/máx y texto por período).
+
 ---
 
 ## 8. Pendientes
@@ -215,6 +220,8 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] **Renovar el token fine-grained `climapp-supabase-cron`** antes de su vencimiento (fecha elegida por el usuario al crearlo); luego `select vault.update_secret(...)` o borrar y volver a crear `github_actions_token`.
 
 - [ ] **RutaClimApp** — **en pausa por decisión del usuario (2026-10-01)**; retomar desde la propuesta (ver [§8 de la propuesta](docs/rutaclimapp-propuesta.md)): aprobación y prioridad frente a la Fase 2; cuenta y API key de openrouteservice; perfil camión en MVP; mapa en R1 o R2; horizonte.
+
+- [ ] **Precisión** (decidir, ver [plan](docs/precision-evaluacion.md#5-plan-propuesto)): P1 celda `nearest` en comunas costeras; P2 observaciones DMC y "ahora" medido; P3 corrección de sesgo y pesos por modelo (Fase 2); P4 pronóstico oficial DMC como referencia. Verificar términos de uso de la DMC y acceso desde la nube.
 
 ### Investigación
 - [x] Datos de la Armada: observaciones por API JSON; avisos imagen/PDF. Ver [docs/spikes-semana1.md](docs/spikes-semana1.md).
