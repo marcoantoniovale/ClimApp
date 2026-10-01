@@ -32,19 +32,21 @@ def read_csv(name: str) -> list[dict]:
 def main() -> None:
     comunas = read_csv("comunas.csv")
     estaciones = read_csv("estaciones_armada.csv")
+    costeras = {r["cut"] for r in read_csv("comunas_costa.csv") if r["es_costera"] == "True"}
 
     lines = [
         "-- Generado por etl/scripts/export_seed.py a partir de etl/data/catalog. No editar a mano.",
         "-- Idempotente: se puede volver a aplicar con etl/scripts/migrate.py --seed.",
         "",
-        "insert into locations (tipo, cut, slug, nombre, alias, region_id, region, lat, lon) values",
+        "insert into locations (tipo, cut, slug, nombre, alias, region_id, region, lat, lon, es_costera) values",
     ]
     lines.append(",\n".join(
         f"  ('comuna', {sql_str(c['cut'])}, {sql_str(slugify(c['nombre']))}, {sql_str(c['nombre'])}, "
-        f"{sql_str(c['alias'])}, {sql_str(c['region_id'])}, {sql_str(c['region'])}, {c['lat']}, {c['lon']})"
+        f"{sql_str(c['alias'])}, {sql_str(c['region_id'])}, {sql_str(c['region'])}, {c['lat']}, {c['lon']}, "
+        f"{'true' if c['cut'] in costeras else 'false'})"
         for c in comunas
     ) + "\non conflict (cut) do update set nombre = excluded.nombre, alias = excluded.alias,"
-        " lat = excluded.lat, lon = excluded.lon;")
+        " lat = excluded.lat, lon = excluded.lon, es_costera = excluded.es_costera;")
 
     lines += ["", "insert into stations (id, red, nombre, lat, lon, location_id) values"]
     lines.append(",\n".join(
@@ -58,7 +60,7 @@ def main() -> None:
     SEEDS.mkdir(parents=True, exist_ok=True)
     out = SEEDS / "0001_catalogo.sql"
     out.write_text("\n".join(lines), encoding="utf-8")
-    print(f"{out.relative_to(ROOT.parent)}: {len(comunas)} comunas, {len(estaciones)} estaciones")
+    print(f"{out.relative_to(ROOT.parent)}: {len(comunas)} comunas ({len(costeras)} costeras), {len(estaciones)} estaciones")
 
 
 if __name__ == "__main__":

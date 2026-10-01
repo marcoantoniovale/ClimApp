@@ -18,7 +18,7 @@ on:
       comando:
         description: "Comando del ETL"
         type: choice
-        options: [auto, observaciones, pronostico, archivo, mantencion]
+        options: [auto, observaciones, pronostico, archivo, avisos, precalculo, mantencion]
         default: auto
   push:
     paths: [".github/workflows/ingesta.yml"]   # prueba al modificar este archivo
@@ -49,4 +49,6 @@ jobs:
       - name: Ejecutar
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
         run: python -m climapp_etl ${{ inputs.comando || 'auto' }} ${{ (inputs.comando || 'auto') == 'auto' && '--sin-observaciones' || '' }}

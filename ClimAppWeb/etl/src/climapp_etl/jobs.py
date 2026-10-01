@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import logging
+from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
 import psycopg
 from psycopg.types.json import Jsonb
 
-from . import armada, open_meteo
+from . import armada, avisos, open_meteo, redis, snapshot
 from .db import last_success, track_run
 
 log = logging.getLogger("climapp_etl")
@@ -35,6 +36,7 @@ RETENTION = {
 
 CURRENT_COLUMNS = ["location_id", "modelo", "valid_time", "fetched_at", *open_meteo.VARIABLES.values()]
 ARCHIVE_COLUMNS = ["station_id", "modelo", "issued_at", "valid_time", *open_meteo.ARCHIVE_VARIABLES.values()]
+MARINE_COLUMNS = ["location_id", "valid_time", "fetched_at", *open_meteo.MARINE_VARIABLES.values()]
 OBS_COLUMNS = ["temperatura", "punto_rocio", "humedad", "presion", "viento_vel", "viento_dir",
                "viento_rafaga", "precipitacion_1h"]
 
@@ -45,7 +47,7 @@ def forecast(conn: psycopg.Connection) -> None:
         points = [open_meteo.Point(*r) for r in conn.execute(
             "select id, lat, lon from locations where tipo = 'comuna' order by id")]
         fetched_at = datetime.now(timezone.utc)
-        responses = open_meteo.fetch(points, open_meteo.VARIABLES, FORECAST_DAYS)
+        responses = open_meteo.fetch(points, open_meteo.VARIABLES, FORECAST_DAYS, past_days=1)
 
         records = [
             (point.key, model, valid_time, fetched_at, *values.values())
@@ -62,6 +64,25 @@ def forecast(conn: psycopg.Connection) -> None:
             _copy(conn, "forecast_current", CURRENT_COLUMNS, records)
         run.filas = len(records)
         log.info("forecast_current: %d filas, %d ubicaciones", len(records), len(location_ids))
+
+        try:  # el oleaje es complementario: si falla, el pronóstico igual queda
+            run.filas += _marine(conn, fetched_at)
+        except Exception as exc:
+            run.warn(f"Oleaje: {exc}")
+            log.exception("oleaje falló")
+
+
+def _marine(conn: psycopg.Connection, fetched_at: datetime) -> int:
+    points = [open_meteo.Point(*r) for r in conn.execute(
+        "select id, lat, lon from locations where es_costera order by id")]
+    responses = open_meteo.fetch_marine(points, FORECAST_DAYS)
+    records = [(p.key, t, fetched_at, *values.values())
+               for p, data in responses for t, values in open_meteo.marine_rows(data)]
+    with conn.transaction():
+        conn.execute("delete from forecast_marine where location_id = any(%s)", ([p.key for p in points],))
+        _copy(conn, "forecast_marine", MARINE_COLUMNS, records)
+    log.info("forecast_marine: %d filas, %d comunas costeras", len(records), len(points))
+    return len(records)
 
 
 def archive(conn: psycopg.Connection) -> None:
@@ -121,6 +142,113 @@ def observations(conn: psycopg.Connection) -> None:
                  len(rows), len(fresh), run.filas, len(stale))
 
 
+def warnings(conn: psycopg.Connection) -> None:
+    """Avisos vigentes de la Armada → marine_warnings (+ comunas). Cierra los que ya no aparecen."""
+    with track_run(conn, "armada_avisos") as run:
+        coastal = [avisos.Comuna(*r) for r in conn.execute(
+            "select id, nombre, region_id, lat, lon from locations where es_costera")]
+        known = {r[0] for r in conn.execute("select id from marine_warnings")}
+        vigentes = avisos.fetch_vigentes(coastal, known)
+
+        with conn.transaction():
+            for w in vigentes:
+                conn.execute("""
+                    insert into marine_warnings (id, tipo, titulo, zona, emitido_at, url_fuente, url_documento)
+                    values (%s, %s, %s, %s, %s, %s, %s)
+                    on conflict (id) do update set vigente_hasta = null, fetched_at = now(),
+                        url_documento = coalesce(excluded.url_documento, marine_warnings.url_documento)""",
+                    (w.id, w.tipo, w.titulo, w.zona, w.emitido_at, w.url_fuente, w.url_documento))
+                conn.execute("delete from marine_warning_locations where warning_id = %s", (w.id,))
+                with conn.cursor() as cur:
+                    cur.executemany("insert into marine_warning_locations values (%s, %s)",
+                                    [(w.id, loc) for loc in w.location_ids])
+            closed = conn.execute(
+                "update marine_warnings set vigente_hasta = now() where vigente_hasta is null and id <> all(%s)",
+                ([w.id for w in vigentes],)).rowcount
+
+        unresolved = sorted({p for w in vigentes for p in w.sin_resolver})
+        if unresolved:
+            run.warn(f"Zonas sin resolver (ampliar LANDMARKS en avisos.py): {'; '.join(unresolved)}")
+        run.filas = len(vigentes)
+        published = redis.publish({"avisos": _warnings_payload(conn)})
+        log.info("avisos: %d vigentes, %d cerrados, %d zonas sin resolver, redis=%d",
+                 len(vigentes), closed, len(unresolved), published)
+
+
+def _warnings_payload(conn: psycopg.Connection) -> dict:
+    rows = conn.execute("""
+        select w.id, w.tipo, w.titulo, w.zona, w.emitido_at, w.url_fuente, w.url_documento,
+               coalesce(array_agg(l.slug order by l.slug) filter (where l.slug is not null), '{}')
+        from marine_warnings w
+        left join marine_warning_locations wl on wl.warning_id = w.id
+        left join locations l on l.id = wl.location_id
+        where w.vigente_hasta is null
+        group by w.id order by w.emitido_at desc""").fetchall()
+    return {
+        "generado": snapshot._iso_local(datetime.now(timezone.utc)),
+        "avisos": [{"id": r[0], "tipo": r[1], "titulo": r[2], "zona": r[3],
+                    "emitido": snapshot._iso_local(r[4]), "url": r[5], "documento": r[6], "ubicaciones": r[7]}
+                   for r in rows],
+    }
+
+
+def snapshots(conn: psycopg.Connection) -> None:
+    """JSON por ubicación → location_snapshots y Redis (claves loc:<slug>, indice y meta)."""
+    with track_run(conn, "snapshots") as run:
+        now = datetime.now(timezone.utc)
+        cols = list(open_meteo.VARIABLES.values())
+        locations = [dict(zip(("id", "slug", "nombre", "alias", "region", "tipo", "lat", "lon", "es_costera"), r))
+                     for r in conn.execute("""select id, slug, nombre, alias, region, tipo, lat, lon, es_costera
+                                              from locations order by id""")]
+        rows, fetched = defaultdict(list), {}
+        for r in conn.execute(f"""select location_id, modelo, valid_time, fetched_at, {', '.join(cols)}
+                                  from forecast_current where valid_time >= now() - interval '30 hours'"""):
+            rows[r[0]].append((r[1], r[2], dict(zip(cols, r[4:]))))
+            fetched[r[0]] = r[3]
+        marine = defaultdict(list)
+        mcols = list(open_meteo.MARINE_VARIABLES.values())
+        for r in conn.execute(f"""select location_id, valid_time, {', '.join(mcols)} from forecast_marine
+                                  where valid_time >= now() - interval '1 hour'"""):
+            marine[r[0]].append((r[1], dict(zip(mcols, r[2:]))))
+        observations = {r[0]: {"estacion": r[1], "red": r[2], "hora": snapshot._iso_local(r[3]),
+                               "temperatura": r[4], "humedad": r[5], "presion": r[6],
+                               "viento": None if r[7] is None else round(r[7] * 3.6),
+                               "viento_dir": r[8]}
+                        for r in conn.execute("""
+            select distinct on (s.location_id) s.location_id, s.nombre, s.red, o.observed_at,
+                   o.temperatura, o.humedad, o.presion, o.viento_vel, o.viento_dir
+            from observations o join stations s on s.id = o.station_id
+            where o.observed_at > now() - interval '3 hours'
+            order by s.location_id, o.observed_at desc""")}
+
+        payloads = {}
+        for loc in locations:
+            if not rows.get(loc["id"]):
+                run.warn(f"Sin pronóstico: {loc['slug']}")
+                continue
+            payloads[loc["id"]] = snapshot.build(loc, rows[loc["id"]], marine.get(loc["id"]),
+                                                 observations.get(loc["id"]), fetched.get(loc["id"]), now)
+
+        with conn.transaction():
+            with conn.cursor() as cur:
+                cur.executemany("""
+                    insert into location_snapshots (location_id, slug, payload, updated_at)
+                    values (%s, %s, %s, now())
+                    on conflict (location_id) do update set payload = excluded.payload, updated_at = now()""",
+                    [(loc_id, p["ubicacion"]["slug"], Jsonb(p)) for loc_id, p in payloads.items()])
+
+        index = [{"slug": l["slug"], "nombre": l["nombre"], "alias": l["alias"], "region": l["region"],
+                  "costera": l["es_costera"]} for l in locations]
+        items = {f"loc:{p['ubicacion']['slug']}": p for p in payloads.values()}
+        items["indice"] = index
+        items["meta"] = {"generado": snapshot._iso_local(now), "ubicaciones": len(payloads)}
+        published = redis.publish(items)
+        if not redis.configured():
+            run.detalle.append("Redis no configurado: solo location_snapshots")
+        run.filas = len(payloads)
+        log.info("snapshots: %d ubicaciones, redis=%d claves", len(payloads), published)
+
+
 def maintenance(conn: psycopg.Connection) -> None:
     """Aplica la retención: borra datos antiguos y el JSON original de observaciones viejas."""
     with track_run(conn, "mantencion") as run:
@@ -155,12 +283,19 @@ def auto(conn: psycopg.Connection, with_observations: bool = True) -> None:
     failures = []
     jobs = [("open_meteo", forecast, FORECAST_EVERY),
             ("open_meteo_archivo", archive, ARCHIVE_EVERY),
+            ("armada_avisos", warnings, None),
+            ("snapshots", snapshots, "tras_pronostico"),
             ("mantencion", maintenance, MAINTENANCE_EVERY)]
     if with_observations:
         jobs.insert(0, ("armada_obs", observations, None))
     for name, job, every in jobs:
         last = last_success(conn, name)
-        if every and last and now - last < every - MARGIN:
+        if every == "tras_pronostico":   # solo si hay un pronóstico más nuevo que el último precálculo
+            forecast_at = last_success(conn, "open_meteo")
+            if last and forecast_at and last > forecast_at:
+                log.info("%s: no corresponde (sin pronóstico nuevo)", name)
+                continue
+        elif every and last and now - last < every - MARGIN:
             log.info("%s: no corresponde (última %s)", name, last.isoformat(timespec="minutes"))
             continue
         try:

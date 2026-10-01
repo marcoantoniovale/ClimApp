@@ -10,6 +10,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
+catalogo = ["shapely>=2"]   # solo para scripts/build_coast.py
 
 [build-system]
 requires = ["setuptools>=68"]
