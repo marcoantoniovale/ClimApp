@@ -81,7 +81,8 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Stack **aprobado** (2026-10-01): ETL en Python, API como Route Handlers de Next.js en Vercel leyendo Redis, cron en GitHub Actions, monorepo en `ClimAppWeb/`.
 - Fase 1, **semana 1 completa**: spikes ([docs/spikes-semana1.md](docs/spikes-semana1.md)), catálogo geográfico, esquema de BD v1 aplicado en Supabase con el catálogo cargado (346 comunas, 100 estaciones).
 - **Semana 2**: ETL funcionando contra Supabase (pronóstico de 346 comunas × 3 modelos, archivo en 48 estaciones, retención). Cron horario en GitHub Actions ([.github/workflows/ingesta.yml](.github/workflows/ingesta.yml)) activo desde `main`. **Las observaciones de la Armada no se recolectan automáticamente**: su API bloquea las IP de nube (pendiente).
-- **Semana 3 en curso** (rama `feature/semana3-avisos-api`): avisos de la Armada, comunas costeras (106), oleaje, precálculo de JSON por comuna y API en Next.js 16 (`ClimAppWeb/web`). **Falta Upstash Redis** (cuenta del usuario) para publicar y probar la API de punta a punta.
+- **Semana 3 completa**: avisos de la Armada, comunas costeras (106), oleaje, precálculo de JSON por comuna publicado en Upstash Redis y API en Next.js 16 (`ClimAppWeb/web`), p95 140 ms.
+- Redis: Upstash `bold-garfish-225379` (São Paulo). Credenciales en `ClimAppWeb/.env` (ETL) y `ClimAppWeb/web/.env.local` (API), no versionados; en GitHub como secretos.
 - Ramas: `main` es la rama estable; el trabajo nuevo sale de `main` en ramas `feature/…` o `docs/…` y entra por pull request.
 - El flujo de GitHub Actions vive en `.github/` en la raíz (requisito de GitHub), aunque ejecuta código de `ClimAppWeb/`.
 - Base de datos: Supabase, proyecto `drtgaltvmwbqffbsjaiw`, región São Paulo, PostgreSQL 17. Conexión por Session pooler en `ClimAppWeb/.env` (no versionado).
@@ -149,6 +150,8 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Robustez: `get_json` reintenta respuestas vacías/no JSON (Open-Meteo devolvió un 200 vacío).
 - **Web** (`ClimAppWeb/web`): Next.js 16.3.8 + Tailwind v4 creado con create-next-app. API de solo lectura sobre Redis con `Cache-Control: s-maxage` (ver [web/README.md](ClimAppWeb/web/README.md)). Compila y pasa lint. Next.js 16 incluye `AGENTS.md`: leer `node_modules/next/dist/docs/` antes de escribir código.
 - Pruebas ETL: 41/41. Base: 66 MB.
+- Upstash conectado (credenciales del usuario): 349 claves publicadas (346 comunas + avisos, índice, meta; JSON de ~16 KB). Secretos `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` en GitHub; corrida de `avisos` desde Actions publicó en Redis.
+- API probada en local (`next start`): todos los endpoints OK, 404 para slugs inexistentes o inválidos; 200 peticiones a comunas al azar sin CDN: p50 72 ms, **p95 140 ms**, máx. 228 ms.
 
 ---
 
@@ -181,12 +184,13 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 
 ### Fase 1 (MVP) — detalle y plan semanal en [docs/fase1-mapeo-requisitos.md §5](docs/fase1-mapeo-requisitos.md)
 - [x] Semana 1: spikes, estructura del monorepo, catálogo geográfico, esquema de BD v1 aplicado en Supabase, repositorio remoto. (2026-10-01)
-- [ ] Seguridad: cambiar la contraseña de la base de datos de Supabase (se compartió en el chat) y actualizar `ClimAppWeb/.env`.
+- [ ] Seguridad: cambiar la contraseña de la base de datos de Supabase y rotar el token de Upstash (ambos se compartieron en el chat); actualizar `ClimAppWeb/.env`, `web/.env.local` y los secretos de GitHub.
 - [x] Comunas costeras marcadas (106) con geometría; zonas de avisos → comunas con nomenclátor. (2026-10-01)
 - [ ] Catálogo de puertos/sectores costeros como ubicaciones propias (`tipo = 'puerto'`), con viento en nudos. Por ahora solo comunas.
 - [x] Semana 2 (código): conector Open-Meteo (11 variables, 3 modelos), unidades canónicas con pruebas, `forecast_current` / `forecast_archive`, conector de observaciones Armada (adelantado de la semana 3), `ingestion_runs`, retención, flujo de GitHub Actions. (2026-10-01)
 - [ ] Semana 2 (cierre): verificar 3 días seguidos de corridas automáticas del cron (criterio de cierre; revisar `ingestion_runs` o la pestaña Actions). Fusionado a `main` el 2026-10-01.
 - [x] Oleaje (API marina de Open-Meteo) para las 106 comunas costeras en `forecast_marine`. (2026-10-01)
 - [x] Semana 3 (código): avisos Armada, precálculo (`location_snapshots`), publicación en Redis, API (`/api/forecast/:slug`, `/api/warnings[/:slug]`, `/api/locations`, `/api/health`). (2026-10-01)
-- [ ] Semana 3 (cierre): crear Upstash Redis (usuario) → `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` en `ClimAppWeb/.env` y en secretos de GitHub; token de solo lectura en `ClimAppWeb/web/.env.local`; probar la API (p95 < 300 ms).
+- [x] Semana 3 (cierre): Upstash conectado, secretos en GitHub, API probada (p95 140 ms < 300 ms). (2026-10-01)
+- [ ] Antes de publicar en Vercel (semana 4): usar el **token de solo lectura** de Upstash en la web (hoy `web/.env.local` usa el token completo, provisorio).
 - [ ] Semana 4: buscador, panel 7 días, avisos marítimos, despliegue en Vercel, alertas de fallas de ingesta. Incluir atribución CC BY 4.0 a Open-Meteo. Implementar sobre la plantilla `Template/` con los 13 ajustes de [docs/frontend-template-analisis.md](docs/frontend-template-analisis.md) (Server Components, Tailwind v4, íconos PWA desde SVG con `sharp`, sin `radar/` hasta Fase 3).
