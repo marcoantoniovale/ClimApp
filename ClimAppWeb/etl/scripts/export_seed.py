@@ -35,7 +35,7 @@ def main() -> None:
 
     lines = [
         "-- Generado por etl/scripts/export_seed.py a partir de etl/data/catalog. No editar a mano.",
-        "begin;",
+        "-- Idempotente: se puede volver a aplicar con etl/scripts/migrate.py --seed.",
         "",
         "insert into locations (tipo, cut, slug, nombre, alias, region_id, region, lat, lon) values",
     ]
@@ -53,7 +53,7 @@ def main() -> None:
         for s in estaciones if s["coord_valida"] == "True"
     ) + "\non conflict (id) do update set nombre = excluded.nombre, lat = excluded.lat,"
         " lon = excluded.lon, location_id = excluded.location_id;")
-    lines += ["", "commit;", ""]
+    lines.append("")
 
     SEEDS.mkdir(parents=True, exist_ok=True)
     out = SEEDS / "0001_catalogo.sql"

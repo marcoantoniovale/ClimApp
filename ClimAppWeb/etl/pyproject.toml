@@ -3,7 +3,7 @@ name = "climapp-etl"
 version = "0.1.0"
 description = "Ingesta y procesamiento de datos meteorológicos de ClimApp"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = ["psycopg[binary]>=3.2"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]

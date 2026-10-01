@@ -1,5 +1,5 @@
 -- Generado por etl/scripts/export_seed.py a partir de etl/data/catalog. No editar a mano.
-begin;
+-- Idempotente: se puede volver a aplicar con etl/scripts/migrate.py --seed.
 
 insert into locations (tipo, cut, slug, nombre, alias, region_id, region, lat, lon) values
   ('comuna', '01101', 'iquique', 'Iquique', null, '01', 'Tarapaca', -20.2141, -70.1524),
@@ -452,5 +452,3 @@ insert into stations (id, red, nombre, lat, lon, location_id) values
   ('NATALES', 'capitania', 'CP. PUERTO NATALES', -51.7291, -72.514, (select id from locations where cut = '12401')),
   ('felix', 'capitania', 'Faro Bahía Félix', -52.5736, -74.0415, (select id from locations where cut = '12401'))
 on conflict (id) do update set nombre = excluded.nombre, lat = excluded.lat, lon = excluded.lon, location_id = excluded.location_id;
-
-commit;

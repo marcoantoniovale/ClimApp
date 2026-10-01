@@ -111,6 +111,13 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Creado [docs/frontend-template-analisis.md](docs/frontend-template-analisis.md): qué se adopta (paleta, logo, componentes, PWA, mobile-first) y 13 ajustes (ubicación en `ClimAppWeb/web`, rutas por ubicación, Server Components, variables faltantes, Tailwind v4, íconos maskable, SVG como fuente única, etc.).
 - Nuevas variables para el ETL: estado del cielo, sensación térmica, índice UV. Agregadas como columnas a `forecast_current` en [0001_init.sql](ClimAppWeb/db/migrations/0001_init.sql) (migración aún no aplicada en ninguna base).
 
+### 2026-10-01 — rama `feature/supabase-setup`
+- Aplicador de migraciones [migrate.py](ClimAppWeb/etl/scripts/migrate.py): aplica `db/migrations/*.sql` pendientes (registro en `schema_migrations`) y con `--seed` las semillas idempotentes. Lee `DATABASE_URL` del entorno o de `ClimAppWeb/.env` (ignorado por git; plantilla en `.env.example`).
+- Quitados `begin;`/`commit;` de los SQL: las transacciones las maneja el aplicador.
+- [0002_rls.sql](ClimAppWeb/db/migrations/0002_rls.sql): RLS activado sin políticas en todas las tablas, para que la API REST pública de Supabase no exponga datos.
+- Dependencia `psycopg[binary]` agregada al ETL.
+- Conexión: usar el **Session pooler** de Supabase (IPv4); la conexión directa es solo IPv6.
+
 ---
 
 ## 8. Pendientes
@@ -138,7 +145,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Open-Meteo: revisar comunas costeras cuyo punto de grilla cae en el mar.
 
 ### Fase 1 (MVP) — detalle y plan semanal en [docs/fase1-mapeo-requisitos.md §5](docs/fase1-mapeo-requisitos.md)
-- [ ] Semana 1: spikes ✅, estructura del monorepo ✅, catálogo geográfico ✅, esquema de BD v1 ✅. **Falta:** crear proyecto Supabase y aplicar migración + semilla (requiere cuenta del usuario); repositorio remoto.
+- [ ] Semana 1: spikes ✅, estructura del monorepo ✅, catálogo geográfico ✅, esquema de BD v1 ✅. **Falta:** crear proyecto Supabase (usuario) → poner `DATABASE_URL` en `ClimAppWeb/.env` → `python scripts/migrate.py --seed`; repositorio remoto.
 - [ ] Catálogo, pendientes: marcar comunas costeras (`es_costera`); catálogo de puertos/sectores costeros y mapeo de zonas de avisos → comunas (semana 3); exportar JSON para el buscador (semana 4).
 - [ ] Semana 2: conector Open-Meteo, unidades canónicas con pruebas, tablas `forecast_current` / `forecast_archive`, cron, `ingestion_runs`. Considerar adelantar el conector de observaciones Armada (API JSON). Incluir `weather_code`, `apparent_temperature` y `uv_index` (requeridos por la plantilla de frontend).
 - [ ] Semana 3: conector Armada (avisos + observaciones si no se adelantó), precálculo a Redis, endpoints de API.

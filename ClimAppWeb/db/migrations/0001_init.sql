@@ -1,9 +1,9 @@
 -- ClimApp — esquema inicial (v1), Fase 1.
 -- Diseño: docs/fase1-mapeo-requisitos.md §4.2.
+-- Se aplica con etl/scripts/migrate.py, que envuelve cada archivo en una transacción.
 -- Convenciones: tiempos en UTC (timestamptz); unidades canónicas:
 --   temperatura °C, presión hPa, precipitación mm, viento m/s, oleaje m / s / grados.
 
-begin;
 
 -- ---------------------------------------------------------------------------
 -- Catálogo geográfico
@@ -149,4 +149,3 @@ create index forecast_archive_valid_time_idx on forecast_archive (valid_time);
 create index marine_warnings_vigencia_idx on marine_warnings (emitido_at desc);
 create index ingestion_runs_conector_idx on ingestion_runs (conector, started_at desc);
 
-commit;
