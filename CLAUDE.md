@@ -82,7 +82,7 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Fase 1, **semana 1 completa**: spikes ([docs/spikes-semana1.md](docs/spikes-semana1.md)), catálogo geográfico, esquema de BD v1 aplicado en Supabase con el catálogo cargado (346 comunas, 100 estaciones).
 - **Semana 2**: ETL funcionando contra Supabase (pronóstico de 346 comunas × 3 modelos, archivo en 48 estaciones, retención). Cron horario en GitHub Actions ([.github/workflows/ingesta.yml](.github/workflows/ingesta.yml)) activo desde `main`. **Las observaciones de la Armada no se recolectan automáticamente**: su API bloquea las IP de nube (pendiente).
 - **Semana 3 completa**: avisos de la Armada, comunas costeras (106), oleaje, precálculo de JSON por comuna publicado en Upstash Redis y API en Next.js 16 (`ClimAppWeb/web`), p95 140 ms.
-- **Producción: https://climapp-chile.vercel.app** (Vercel, equipo `mlam`, proyecto `clim-app`, Root Directory `ClimAppWeb/web`, región `gru1`). Cada fusión a `main` se publica sola; los PR tienen dirección de prueba privada (protección de despliegues activa). Hoy la portada es la plantilla de Next.js; la API ya funciona.
+- **Producción: https://climapp-chile.vercel.app** (Vercel, equipo `mlam`, proyecto `clim-app`, Root Directory `ClimAppWeb/web`, región `gru1`). Cada fusión a `main` se publica sola; los PR tienen dirección de prueba privada (protección de despliegues activa). Interfaz de la semana 4 en la rama `feature/semana4-frontend` (se publica al fusionar).
 - Redis: Upstash `bold-garfish-225379` (São Paulo). Credenciales en `ClimAppWeb/.env` (ETL) y `ClimAppWeb/web/.env.local` (API), no versionados; en GitHub como secretos.
 - Ramas: `main` es la rama estable; el trabajo nuevo sale de `main` en ramas `feature/…` o `docs/…` y entra por pull request.
 - El flujo de GitHub Actions vive en `.github/` en la raíz (requisito de GitHub), aunque ejecuta código de `ClimAppWeb/`.
@@ -154,6 +154,15 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Upstash conectado (credenciales del usuario): 349 claves publicadas (346 comunas + avisos, índice, meta; JSON de ~16 KB). Secretos `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` en GitHub; corrida de `avisos` desde Actions publicó en Redis.
 - `ClimAppWeb/web/vercel.json`: funciones en la región `gru1` (São Paulo), junto a Upstash y Supabase.
 
+### 2026-10-01 — rama `feature/semana4-frontend`
+- Leídas las guías de Next.js 16 en `node_modules/next/dist/docs/` (Route Handlers, caché sin Cache Components, ISR, `generateStaticParams`, metadata, viewport, manifest, íconos), como exige `web/AGENTS.md`.
+- Páginas: `/` (buscador, avisos vigentes, ciudades), `/comuna/[slug]` (ISR: se genera en la primera visita y se renueva cada 10 min), `/avisos`, 404 y error. Lectura de Redis con `force-cache` + `revalidate` en páginas; la API sigue sin caché de servidor.
+- Componentes (`web/src/components/`): `Search` (combobox accesible, sin tildes, alias SUBDERE), `WeatherIcon` (estilo del logo, códigos WMO), `CurrentWeather`, `HourlyForecast` (48 h, curva de temperatura y barras de prob. de lluvia en bandas separadas, detalle de la hora seleccionada con mouse/toque/teclado), `ClimateMetrics`, `WeeklyForecast` (barras mín.–máx. en escala común y rango entre modelos = fiabilidad), `MarineForecast`, `WarningList`, `Header`, `BottomNav`, `Footer` (atribución CC BY 4.0).
+- Colores de gráficos validados con el validador de la guía de visualización: `#EA580C` (temperatura) y `#0284C7` (lluvia/oleaje) pasan banda de luminosidad, daltonismo y contraste sobre `#1E293B`; los de marca (`#F97316`, `#0EA5E9`) quedan para acentos.
+- PWA: `app/manifest.ts`; íconos generados desde el SVG con `npm run icons` (`scripts/generate-icons.mjs`, `sharp`): 192/512, maskable a sangre completa y `apple-icon.png`.
+- Correcciones tras revisar capturas (Chrome headless): horas pasadas se descartan al mostrar (el JSON se regenera cada 6 h); regiones con tildes y "Región de …"; conectores en minúscula en zonas de aviso; sin barras de lluvia bajo 5 %; contraste de botones (sky-700).
+- Lint y build sin errores.
+
 ### 2026-10-01 — Vercel (PR #3 y rama `docs/vercel-produccion`)
 - Proyecto importado por el usuario; la dirección asignada exigía inicio de sesión (protección de despliegues) y `clim-app.vercel.app` no estaba disponible → dominio de producción `climapp-chile.vercel.app`.
 - API en producción: todos los endpoints OK desde Chile, CDN y funciones en `gru1`. 100 comunas al azar, tiempo de servidor sin TLS: sin caché p50 91 ms / **p95 117 ms**; con caché de CDN p50 70 ms / **p95 93 ms**. Primera llamada tras un despliegue ~1 s (arranque en frío).
@@ -201,4 +210,6 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Antes de publicar en Vercel (semana 4): usar el **token de solo lectura** de Upstash en la web (hoy `web/.env.local` usa el token completo, provisorio).
 - [x] Vercel: proyecto importado, dominio público `climapp-chile.vercel.app` (`clim-app.vercel.app` estaba ocupado), API verificada en producción. (2026-10-01)
 - [ ] Confirmar que la variable `UPSTASH_REDIS_REST_READONLY_TOKEN` de Vercel tiene el token de **solo lectura**.
-- [ ] Semana 4: buscador, panel 7 días, avisos marítimos, despliegue en Vercel, alertas de fallas de ingesta. Incluir atribución CC BY 4.0 a Open-Meteo. Implementar sobre la plantilla `Template/` con los 13 ajustes de [docs/frontend-template-analisis.md](docs/frontend-template-analisis.md) (Server Components, Tailwind v4, íconos PWA desde SVG con `sharp`, sin `radar/` hasta Fase 3).
+- [x] Semana 4 (interfaz): buscador, página por comuna (actual, 48 h, métricas, 7 días, oleaje, avisos), página de avisos, PWA, atribución. (2026-10-01)
+- [ ] Semana 4 (cierre): fusionar y verificar en producción; alertas de fallas de ingesta (hoy: correo de GitHub cuando falla el cron + `/api/health` devuelve 503 si los datos tienen más de 8 h; falta un monitor externo que lo consulte).
+- [x] Atribución CC BY 4.0 y ajustes de la plantilla aplicados sobre `Template/` con los 13 ajustes de [docs/frontend-template-analisis.md](docs/frontend-template-analisis.md) (Server Components, Tailwind v4, íconos PWA desde SVG con `sharp`, sin `radar/` hasta Fase 3).

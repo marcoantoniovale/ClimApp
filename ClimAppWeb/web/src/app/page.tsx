@@ -1,69 +1,78 @@
 import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+import Search from "@/components/Search";
+import { getAvisos } from "@/lib/data";
+import { tipoAviso } from "@/lib/format";
+
+export const revalidate = 600;
+
+const CIUDADES = [
+  ["arica", "Arica"], ["iquique", "Iquique"], ["antofagasta", "Antofagasta"], ["la-serena", "La Serena"],
+  ["valparaiso", "Valparaíso"], ["vina-del-mar", "Viña del Mar"], ["santiago", "Santiago"], ["concepcion", "Concepción"],
+  ["temuco", "Temuco"], ["valdivia", "Valdivia"], ["puerto-montt", "Puerto Montt"], ["punta-arenas", "Punta Arenas"],
+] as const;
+
+async function avisosVigentes() {
+  try {
+    return (await getAvisos({ revalidate: 600 }))?.avisos ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export default async function Home() {
+  const avisos = await avisosVigentes();
+  const porTipo = Object.entries(
+    avisos.reduce<Record<string, number>>((acc, a) => ({ ...acc, [a.tipo]: (acc[a.tipo] ?? 0) + 1 }), {}),
+  );
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="space-y-8">
+      <section className="flex flex-col items-center pt-6 text-center sm:pt-12">
+        <Image src="/brand/climapp_logo.svg" alt="" width={96} height={96} priority className="rounded-3xl" />
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">El tiempo en tu comuna</h1>
+        <p className="mt-2 max-w-md text-slate-300">
+          Pronóstico para las 346 comunas de Chile combinando tres modelos globales, con avisos marítimos y oleaje de la Armada.
+        </p>
+        <div className="mt-6 w-full max-w-xl">
+          <Search />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </section>
+
+      {avisos.length > 0 && (
+        <Link
+          href="/avisos"
+          className="flex items-start gap-3 rounded-3xl border border-climapp-warn/40 bg-climapp-warn/10 p-4 hover:bg-climapp-warn/15"
+        >
+          <svg className="mt-0.5 h-5 w-5 shrink-0 text-climapp-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 3l10 18H2z" /><path d="M12 10v5M12 18h.01" />
+          </svg>
+          <span className="text-sm">
+            <strong className="text-climapp-warn">{avisos.length} avisos marítimos vigentes</strong>
+            <span className="block text-slate-300">
+              {porTipo.map(([tipo, n]) => `${tipoAviso(tipo)} (${n})`).join(" · ")} — ver detalle
+            </span>
+          </span>
+        </Link>
+      )}
+
+      <section aria-labelledby="ciudades">
+        <h2 id="ciudades" className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">Ciudades</h2>
+        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {CIUDADES.map(([slug, nombre]) => (
+            <li key={slug}>
+              <Link
+                href={`/comuna/${slug}`}
+                className="block rounded-2xl border border-climapp-line bg-climapp-card/70 px-4 py-3 font-medium hover:border-climapp-teal hover:text-white"
+              >
+                {nombre}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }
