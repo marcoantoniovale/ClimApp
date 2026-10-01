@@ -1,0 +1,15 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo Base Oscuro -->
+  <rect width="1024" height="1024" fill="#0F172A"/>
+
+  <!-- Elemento Sol (Naranja Cálido) -->
+  <circle cx="630" cy="370" r="110" fill="#F97316"/>
+
+  <!-- Elemento Nube (Turquesa Vivo) -->
+  <circle cx="390" cy="590" r="130" fill="#0EA5E9"/>
+  <circle cx="590" cy="530" r="170" fill="#0EA5E9"/>
+  <rect x="390" y="530" width="290" height="190" fill="#0EA5E9"/>
+
+  <!-- Trazo Dinámico de Viento / Flujo Climático -->
+  <path d="M 280 400 A 292 292 0 0 1 720 280" stroke="#FFFFFF" stroke-width="16" stroke-linecap="round"/>
+</svg>

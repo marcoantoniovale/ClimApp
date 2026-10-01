@@ -1,0 +1,29 @@
+# Dependencias
+node_modules/
+.venv/
+venv/
+__pycache__/
+
+# Builds
+.next/
+dist/
+build/
+out/
+
+# Entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Archivos temporales de Office
+~$*
+
+# Python
+*.egg-info/
+.pytest_cache/

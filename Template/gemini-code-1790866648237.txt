@@ -1,0 +1,24 @@
+climapp-frontend/
+├── app/
+│   ├── layout.tsx              # Layout raíz con proveedores y metadatos PWA
+│   ├── page.tsx                # Dashboard principal de la app
+│   ├── globals.css             # Configuración de Tailwind y variables CSS
+│   └── (routes)/
+│       ├── radar/page.tsx      # Vista de mapas de precipitación/satélite
+│       └── alerts/page.tsx     # Alertas meteorológicas y de emergencias
+├── components/
+│   ├── ui/                     # Componentes atómicos (Botones, Tarjetas, Badges)
+│   ├── weather/                # Componentes específicos de clima
+│   │   ├── CurrentWeather.tsx  # Clima actual (Temperatura, estado, sens. térmica)
+│   │   ├── HourlyForecast.tsx  # Pronóstico por horas (Scroll horizontal)
+│   │   ├── WeeklyForecast.tsx  # Pronóstico de 7 días
+│   │   └── ClimateMetrics.tsx  # Radiación UV, humedad, viento, presión
+│   └── navigation/
+│       ├── Header.tsx          # Barra superior con buscador y ubicación
+│       └── BottomNav.tsx       # Navegación inferior (Móvil)
+├── lib/
+│   ├── utils.ts                # Funciones helper (formato de fechas, grados, etc.)
+│   └── constants.ts            # Constantes y temas
+└── public/
+    ├── icons/                  # Iconos PWA (512x512, 192x192)
+    └── manifest.json           # Configuración PWA para instalación en inicio

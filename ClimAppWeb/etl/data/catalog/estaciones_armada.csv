@@ -1,0 +1,101 @@
+id,red,nombre,lat,lon,coord_valida,comuna_cut,comuna,distancia_km
+34646,ema,Puerto Edén,-49.12917,-74.42918,True,11302,O'Higgins,155.0
+66666,ema,Valparaíso EMA,-33.02,-71.642,True,05101,Valparaíso,3.6
+82931,ema,Faro Punta Dungeness,-52.39493,-68.43139,True,12302,Primavera,65.9
+85467,ema,Caldera,-27.06303,-70.82578,True,03102,Caldera,1.0
+85558,ema,Faro Punta Angeles,-33.06356,-71.5741,True,05101,Valparaíso,4.7
+85645,ema,Constitucion,-35.32417,-72.40806,True,07102,Constitución,1.3
+85648,ema,Faro Cabo Carranza,-36.733,-73.00014,True,08107,Penco,0.8
+85679,ema,Faro Isla Quiriquina,-36.622,-73.0005,True,08111,Tomé,3.9
+85680,ema,METEOTALC,-36.7,-73.001,True,08107,Penco,4.3
+85732,ema,Faro Isla Mocha,-36.6,-73.00067,True,08111,Tomé,4.3
+85802,ema,METEOPMO,-41.466,-72.933,True,10101,Puerto Montt,0.8
+89066,ema,Base Antártica Bahia Paraíso,-64.82355,-62.85966,True,12202,Antártica,349.9
+89074,ema,Base Antártica Bahía Fíldes,-62.20154,-58.96139,True,12202,Antártica,0.2
+95684,ema,San Andrés,-36.733,-76.00011,True,08201,Lebu,229.4
+99111,ema,Faro Punta Corona,-41.78394,-73.87991,True,10202,Ancud,10.3
+99161,ema,Faro Cabo Espíritu Santo,-52.6588,-68.607,True,12302,Primavera,43.8
+99202,ema,Iquique,-20.21128,-70.15343,True,01101,Iquique,0.3
+99230,ema,Mejillones,-23.08429,-70.48572,True,02102,Mejillones,4.0
+99271,ema,Hanga Roa,-27.15,-109.45,True,05201,Isla de Pascua,10.5
+99331,ema,Faro Punta Panul,-33.567,-71.616,True,05601,San Antonio,1.6
+99333,ema,Faro Punta Panul,-33.57503,-71.62514,True,05601,San Antonio,1.3
+99334,ema,Juan Fernández,-33.6,-73.8,True,06205,Navidad,185.5
+99364,ema,Isla Quiriquina,-36.55,-73.00017,True,08111,Tomé,8.4
+99370,ema,Coronel,-37.03,-73.17,True,08102,Coronel,3.6
+99374,ema,Lebu,-37.62,-73.65,True,08201,Lebu,1.2
+99395,ema,Corral,-39.87,-73.41,True,14102,Corral,2.8
+99412,ema,Maullin,-41.32,-73.6,True,10106,Los Muermos,13.2
+99413,ema,Puerto Montt,-41.466,-72.933,True,10101,Puerto Montt,0.8
+99431,ema,Quellon,-43.13,-73.75,True,10208,Quellón,10.6
+99433,ema,Faro Guafo,-43.56,-75.75,True,11203,Guaitecas,166.0
+99435,ema,Faro Bahía Félix,-52.9414,-74.134,True,12102,Laguna Blanca,168.3
+99436,ema,Faro Islote Fairway,-52.73185,-73.78053,True,12102,Laguna Blanca,137.1
+99458,ema,Isla Pictón,-55.01986,-66.92526,True,12201,Cabo de Hornos,45.2
+99465,ema,Faro Cabo Raper,-46.81,-75.62,True,11303,Tortel,192.1
+99522,ema,Islas Evangelistas,-52.38,-75.083,True,12401,Natales,189.6
+99523,ema,Punta Delgada,-53.00013,-70.8,True,12101,Punta Arenas,19.4
+99529,ema,Paso Tortuoso,-53.53531,-72.35512,True,12101,Punta Arenas,104.6
+99538,ema,Punta Arenas (Centro Meteorológico),-53.1654,-70.90435,True,12101,Punta Arenas,0.4
+99545,ema,Paso Timbales,-54.86759,-70.29193,True,12303,Timaukel,135.9
+99547,ema,Puerto Navarino,-54.92564,-68.32365,True,12201,Cabo de Hornos,45.2
+99550,ema,Puerto Corriente,-54.98857,-68.34445,True,12201,Cabo de Hornos,46.9
+99551,ema,Isla Nueva,-55.17724,-66.54766,True,12201,Cabo de Hornos,73.3
+99552,ema,Isla Lennox,-55.2995,-66.84035,True,12201,Cabo de Hornos,64.0
+99556,ema,Cabo de Hornos,-55.95,-67.21,True,12201,Cabo de Hornos,115.9
+99563,ema,Diego Ramirez,-56.51,-68.7,True,12201,Cabo de Hornos,188.0
+99680,ema,Isla Quiriquina EMA,-36.633,-73.066,True,08111,Tomé,9.8
+100001,ema,Campbell Punta Delgada,-53.983,-70.48,True,12303,Timaukel,51.8
+100002,ema,Campbell Faro Guafo,-43.56662,-74.8278,True,11203,Guaitecas,94.7
+100003,ema,Campbell Faro Punta Dungeness,-52.39474,-68.43098,True,12302,Primavera,65.9
+100004,ema,Campbell Base Antártica Bahía Fíldes,-62.20123,-58.96156,True,12202,Antártica,0.2
+100005,ema,Campell Faro Cabo Raper,-46.8033,-75.6382,True,11303,Tortel,193.6
+100006,ema,Campbell Punta Delgada,-52.45594,-69.54594,True,12104,San Gregorio,18.1
+100007,ema,Campbell Cabo de Hornos,-55.96333,-67.2211,True,12201,Cabo de Hornos,117.2
+100008,ema,Campbell Diego Ramirez,-56.52126,-68.7148,True,12201,Cabo de Hornos,189.5
+100009,ema,Campbell Paso Tortuoso,-53.5353,-72.3551,True,12101,Punta Arenas,104.6
+100010,ema,Campbell Faro Islotes Evangelistas,-52.38923,-75.09935,True,12401,Natales,191.0
+100011,ema,Campbell Faro Punta Corona,-41.78389,-73.87992,True,10202,Ancud,10.3
+ARICA,capitania,CP. ARICA,-18.47692,-70.32194,True,15101,Arica,0.2
+PISAGUA,capitania,ALCAMAR PISAGUA,-19.59594,-70.2112,True,01404,Huara,62.2
+IQUIQUE,capitania,CP. IQUIQUE,-20.21128,-70.15343,True,01101,Iquique,0.3
+PATACHE,capitania,CP. PATACHE,-20.79975,-70.18801,True,01107,Alto Hospicio,61.6
+TOCOPILLA,capitania,CP. TOCOPILLA,-22.09409,-70.20578,True,02301,Tocopilla,1.2
+MEJILLONES,capitania,CP. MEJILLONES,-23.09889,-70.45278,True,02102,Mejillones,0.3
+TALTAL,capitania,CP. TALTAL,-25.40759,-70.48841,True,02104,Taltal,3.6
+CHANARAL,capitania,CP. CHANARAL,-26.35111,-70.6377,True,03201,Chañaral,1.6
+CALDERA,capitania,CP. CALDERA,-27.06303,-70.82578,True,03102,Caldera,1.0
+HUASCO,capitania,CP. HUASCO,-28.46165,-71.22665,True,03304,Huasco,1.6
+PASCUA,capitania,CP. PASCUA,-27.14987,-109.43702,True,05201,Isla de Pascua,9.6
+TORTUGA,capitania,CP. TORTUGA,-29.93544,-71.3422,True,04102,Coquimbo,2.0
+CUMBERLAND,capitania,CP. CUMBERLAND,-33.63604,-78.82943,True,05104,Juan Fernández,4.1
+LOSVILOS,capitania,CP. LOSVILOS,-31.90931,-71.51366,True,04203,Los Vilos,1.1
+QUINTERO,capitania,CP. QUINTERO,-32.77551,-71.52544,True,05107,Quintero,1.1
+VALPARAISO,capitania,CP. VALPARAISO,-33.03798,-71.62734,True,05101,Valparaíso,1.1
+PANUL,capitania,CP. PANUL,-33.57503,-71.62514,True,05601,San Antonio,1.3
+PICHILEMU,capitania,CP. PICHILEMU,-34.38495,-72.00851,True,06201,Pichilemu,0.3
+CONSTITUCION,capitania,CP. CONSTITUCION,-35.32417,-72.40806,True,07102,Constitución,1.3
+LIRQUEN,capitania,CP. LIRQUEN,-36.71142,-72.97783,True,08107,Penco,3.3
+TALCAHUANO,capitania,CP. TALCAHUANO,-36.70806,-73.11278,True,08110,Talcahuano,0.7
+CORONEL,capitania,CP. CORONEL,-37.02722,-73.14861,True,08102,Coronel,1.8
+LOTA,capitania,CP. LOTA,-37.09726,-73.15953,True,08106,Lota,0.4
+LEBU,capitania,CP. LEBU,-37.60467,-73.6537,True,08201,Lebu,0.7
+CARAHUE,capitania,CP. CARAHUE,-38.78833,-73.39722,True,09116,Saavedra,0.6
+CORRAL,capitania,CP. CORRAL,-39.88771,-73.42778,True,14102,Corral,0.4
+QUINZONA,capitania,CP. QUINZONA,-41.48451,-72.96135,True,10101,Puerto Montt,2.3
+MAULLIN,capitania,CP. MAULLIN,-41.6158,-73.59537,True,10108,Maullín,0.4
+ALCAMARCHACAO,capitania,CP. ALCAMARCHACAO,-41.82947,-73.51869,True,10108,Maullín,24.6
+ANCUD,capitania,CP. ANCUD,-41.8663,-73.83093,True,10202,Ancud,0.3
+QUEMCHI,capitania,CP. QUEMCHI,-42.14488,-73.473,True,10209,Quemchi,3.8
+CHONCHI,capitania,CP. CHONCHI,-42.61873,-73.7705,True,10203,Chonchi,0.6
+CHAITEN,capitania,CP. CHAITEN,-42.91462,-72.71182,True,10401,Chaitén,0.6
+QUELLON,capitania,CP. QUELLON,-43.12065,-73.62171,True,10208,Quellón,0.1
+MELINKA,capitania,CP. MELINKA,-43.89659,-73.74889,True,11203,Guaitecas,1.9
+AGUIRRE,capitania,CP. PUERTO AGUIRRE,-45.16467,-73.52172,True,11201,Aysén,69.4
+CHACABUCO,capitania,CP. PUERTO CHACABUCO,-45.46505,-72.82149,True,11201,Aysén,11.9
+NAVARINO,capitania,CP. NAVARINO,-54.92564,-68.32364,True,12201,Cabo de Hornos,45.2
+TIMBALES,capitania,CP. TIMBALES,-54.86759,-70.29193,True,12303,Timaukel,135.9
+CORRIENTES,capitania,CP. CORRIENTES,-54.98857,-68.34445,True,12201,Cabo de Hornos,46.9
+EDEN,capitania,CP. EDEN,-49.12917,-74.42918,True,11302,O'Higgins,155.0
+NATALES,capitania,CP. PUERTO NATALES,-51.7291,-72.514,True,12401,Natales,0.5
+felix,capitania,Faro Bahía Félix,-52.5736,-74.0415,True,12401,Natales,139.8
