@@ -25,7 +25,7 @@ ARCHIVE_EVERY = timedelta(hours=12)
 MAINTENANCE_EVERY = timedelta(hours=24)
 MARGIN = timedelta(minutes=30)
 
-# Retención (pendiente de aprobación; ver db/migrations/0003_retencion.sql y CLAUDE.md).
+# Retención aprobada el 2026-10-01 (~210 MB estables; ver db/migrations/0003_retencion.sql).
 RETENTION = {
     "forecast_archive": timedelta(days=90),
     "observations": timedelta(days=365),

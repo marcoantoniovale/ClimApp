@@ -80,7 +80,8 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 
 - Stack **aprobado** (2026-10-01): ETL en Python, API como Route Handlers de Next.js en Vercel leyendo Redis, cron en GitHub Actions, monorepo en `ClimAppWeb/`.
 - Fase 1, **semana 1 completa**: spikes ([docs/spikes-semana1.md](docs/spikes-semana1.md)), catálogo geográfico, esquema de BD v1 aplicado en Supabase con el catálogo cargado (346 comunas, 100 estaciones).
-- **Semana 2 en curso** (rama `feature/semana2-ingesta`): ETL funcionando contra Supabase (observaciones Armada, pronóstico de 346 comunas × 3 modelos, archivo en 48 estaciones, retención). Cron horario en [.github/workflows/ingesta.yml](.github/workflows/ingesta.yml), que **solo se activa al llegar a `main`**.
+- **Semana 2**: ETL funcionando contra Supabase (pronóstico de 346 comunas × 3 modelos, archivo en 48 estaciones, retención). Cron horario en GitHub Actions ([.github/workflows/ingesta.yml](.github/workflows/ingesta.yml)) activo desde `main`. **Las observaciones de la Armada no se recolectan automáticamente**: su API bloquea las IP de nube (pendiente).
+- Ramas: `main` es la rama estable; el trabajo nuevo sale de `main` en ramas `feature/…` o `docs/…` y entra por pull request.
 - El flujo de GitHub Actions vive en `.github/` en la raíz (requisito de GitHub), aunque ejecuta código de `ClimAppWeb/`.
 - Base de datos: Supabase, proyecto `drtgaltvmwbqffbsjaiw`, región São Paulo, PostgreSQL 17. Conexión por Session pooler en `ClimAppWeb/.env` (no versionado).
 - Repositorio: https://github.com/marcoantoniovale/ClimApp (privado). `gh` instalado en `C:\Program Files\GitHub CLI\`.
@@ -133,6 +134,8 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - [0003_retencion.sql](ClimAppWeb/db/migrations/0003_retencion.sql) y job `mantencion`: retención provisional (ver Pendientes). Base actual: 39 MB.
 - [.github/workflows/ingesta.yml](.github/workflows/ingesta.yml): `auto` cada hora (minuto 17); decide qué corre según la última corrida exitosa. Secreto `DATABASE_URL` cargado en el repositorio.
 - Pruebas: 28/28 OK.
+- **API de observaciones de la Armada bloqueada desde la nube**: `serviciosonline.directemar.cl` no acepta conexiones desde GitHub Actions (Azure, EE.UU.) ni desde Supabase (AWS São Paulo, probado con `pg_net` y luego desinstalado). `meteoarmada.directemar.cl` y Open-Meteo sí responden. El cron corre `auto --sin-observaciones`; agregada opción `--log` (para `pythonw`).
+- Decisiones del usuario: retención aprobada; fusionar a `main` por pull request; recolección de observaciones queda pendiente.
 
 ---
 
@@ -144,12 +147,12 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [x] Cron: GitHub Actions programado (depende del repo remoto). (Aprobado 2026-10-01)
 - [x] Estructura: monorepo en `ClimAppWeb/` (`web/`, `etl/`, `db/`); docs en `docs/`. (Aprobado 2026-10-01)
 - [ ] Proveedor LLM: Gemini Flash vs. GPT-4o-mini (u otro). No bloquea la Fase 1.
-- [ ] **Retención** (aprobar): 12 meses no cabe en 500 MB (medido: archivo ~430 MB/año, observaciones ~420 MB/año). Implementado provisionalmente en `RETENTION` de [jobs.py](ClimAppWeb/etl/src/climapp_etl/jobs.py): archivo de pronósticos 90 días, observaciones 1 año (JSON original 14 días), corridas 90 días → ~210 MB estables.
-- [ ] **Fusionar a `main`** (aprobar): el cron de GitHub Actions solo corre desde la rama por defecto. Hasta entonces la ingesta no es automática.
+- [x] Retención (aprobada 2026-10-01): archivo de pronósticos 90 días, observaciones 1 año (JSON original 14 días), corridas 90 días → ~210 MB estables. En `RETENTION` de [jobs.py](ClimAppWeb/etl/src/climapp_etl/jobs.py). 12 meses de archivo no cabía en 500 MB.
+- [ ] **Recolección de observaciones de la Armada** (decidir): la API solo responde desde Chile. Opciones: (a) tarea programada de Windows en el PC del usuario (`pythonw -m climapp_etl observaciones --log …`), gratis pero con huecos si el PC está apagado; (b) VM gratuita de Oracle Cloud en la región Santiago (requiere cuenta; no garantizado que no esté bloqueada); (c) ambas. Sin esto, `forecast_archive` se llena pero no hay observaciones contra qué compararlo (bloquea la Fase 2).
 - [ ] Pronóstico provisional de la Fase 1 = promedio simple de GFS/ECMWF/ICON.
 - [ ] ¿Incluir la vista de dispersión entre modelos (RF05.3) en la Fase 1?
 - [x] Repositorio remoto: https://github.com/marcoantoniovale/ClimApp (privado). (2026-10-01)
-- [ ] Política de ramas/merge. Hoy las ramas están encadenadas (cada una sale de la anterior) y `main` solo tiene el SRS. Propuesta: fusionar a `main` con pull requests.
+- [x] Política de ramas: trabajo en ramas desde `main` y fusión por pull request. (Aprobado 2026-10-01)
 - [ ] Vincular el repo al proyecto de claude.ai "ClimApp" (https://claude.ai/project/01a0f79e-6e15-723a-a00e-5c252c791837) desde *Agregar contenido → GitHub* (usuario; resincronizar tras cada push).
 
 ### Investigación
@@ -166,7 +169,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Seguridad: cambiar la contraseña de la base de datos de Supabase (se compartió en el chat) y actualizar `ClimAppWeb/.env`.
 - [ ] Catálogo, pendientes: marcar comunas costeras (`es_costera`); catálogo de puertos/sectores costeros y mapeo de zonas de avisos → comunas (semana 3); exportar JSON para el buscador (semana 4).
 - [x] Semana 2 (código): conector Open-Meteo (11 variables, 3 modelos), unidades canónicas con pruebas, `forecast_current` / `forecast_archive`, conector de observaciones Armada (adelantado de la semana 3), `ingestion_runs`, retención, flujo de GitHub Actions. (2026-10-01)
-- [ ] Semana 2 (cierre): fusionar a `main` para activar el cron y verificar 3 días seguidos de corridas automáticas (criterio de cierre).
+- [ ] Semana 2 (cierre): verificar 3 días seguidos de corridas automáticas del cron (criterio de cierre; revisar `ingestion_runs` o la pestaña Actions). Fusionado a `main` el 2026-10-01.
 - [ ] Open-Meteo: datos marinos (oleaje) para comunas costeras — depende de marcar `es_costera`.
 - [ ] Semana 3: conector Armada (avisos + observaciones si no se adelantó), precálculo a Redis, endpoints de API.
 - [ ] Semana 4: buscador, panel 7 días, avisos marítimos, despliegue en Vercel, alertas de fallas de ingesta. Incluir atribución CC BY 4.0 a Open-Meteo. Implementar sobre la plantilla `Template/` con los 13 ajustes de [docs/frontend-template-analisis.md](docs/frontend-template-analisis.md) (Server Components, Tailwind v4, íconos PWA desde SVG con `sharp`, sin `radar/` hasta Fase 3).
