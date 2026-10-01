@@ -74,8 +74,8 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 
 ## 6. Estado actual
 
-- Repositorio inicializado. Solo existe el documento de requisitos y este archivo.
-- No hay código aún. Stack aún no confirmado (ver Pendientes).
+- Repositorio inicializado. Solo hay documentación; aún no hay código.
+- Fase 1 analizada y mapeada en [docs/fase1-mapeo-requisitos.md](docs/fase1-mapeo-requisitos.md), con un stack propuesto **pendiente de aprobación**.
 
 ---
 
@@ -87,28 +87,36 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Agregado `.gitignore` base.
 - Intento de crear repositorio remoto: no realizado por falta de `gh` y credenciales; queda en Pendientes con los pasos.
 
+### 2026-10-01 — rama `docs/fase1-mapeo-requisitos`
+- Creado [docs/fase1-mapeo-requisitos.md](docs/fase1-mapeo-requisitos.md): qué requisitos entran en la Fase 1, riesgos y vacíos del SRS, arquitectura propuesta, esquema de BD, unidades canónicas, conectores, API, frontend, plan de 4 semanas y decisiones por aprobar.
+- Hallazgos clave: la Fase 1 debe archivar pronósticos y observaciones desde el día 1 para que exista el ensemble de la Fase 2; el volumen de pronósticos excede la capa gratuita de Supabase si se archiva todo; la fuente Armada probablemente requiera scraping (sin API confirmada).
+
 ---
 
 ## 8. Pendientes
 
 ### Decisiones por tomar
-- [ ] Backend: **Node.js vs. Python (FastAPI)** — Python facilita el procesamiento numérico (GRIB/NetCDF, ensemble).
-- [ ] Hosting backend: Render vs. Cloudflare Workers.
-- [ ] Proveedor LLM: Gemini Flash vs. GPT-4o-mini (u otro).
-- [ ] Estructura del repositorio (monorepo frontend + backend o repos separados).
+Propuestas en [docs/fase1-mapeo-requisitos.md §3 y §6](docs/fase1-mapeo-requisitos.md); esperan aprobación.
+- [ ] Backend: **Node.js vs. Python (FastAPI)** — propuesta: ETL en Python; API como Route Handlers de Next.js leyendo Redis.
+- [ ] Hosting backend / cron: Render vs. Cloudflare Workers — propuesta: GitHub Actions programado (depende del repo remoto).
+- [ ] Proveedor LLM: Gemini Flash vs. GPT-4o-mini (u otro). No bloquea la Fase 1.
+- [ ] Estructura del repositorio — propuesta: monorepo `web/`, `etl/`, `db/`, `docs/`.
+- [ ] Retención del archivo histórico de pronósticos (propuesta: 12 meses, 3-horario).
+- [ ] Pronóstico provisional de la Fase 1 = promedio simple de GFS/ECMWF/ICON.
+- [ ] ¿Incluir la vista de dispersión entre modelos (RF05.3) en la Fase 1?
 - [ ] Repositorio remoto (GitHub u otro) y política de ramas/merge.
   - Bloqueo (2026-10-01): GitHub CLI (`gh`) no instalado y sin credenciales de GitHub en git. Pasos: `winget install --id GitHub.cli` → `gh auth login` → `gh repo create ClimApp --private --source . --remote origin` → push de `main` y `docs/claude-md-contexto`.
   - Luego vincular el repo al proyecto de claude.ai "ClimApp" (https://claude.ai/project/01a0f79e-6e15-723a-a00e-5c252c791837) desde *Agregar contenido → GitHub* (requiere resincronizar tras cada push).
 
 ### Investigación
-- [ ] Revisar qué datos publica la Armada de Chile (Servimet/Directemar): formatos, frecuencia, si hay API o requiere scraping, términos de uso.
-- [ ] Confirmar límites y cobertura de Open-Meteo / NOAA GFS / ECMWF Open Data para Chile.
+- [ ] Revisar qué datos publica la Armada de Chile (Servimet/Directemar): formatos, frecuencia, si hay API o requiere scraping, términos de uso. Define el go/no-go del conector.
+- [ ] Verificar si las boyas son de Servimet o de otra institución (p. ej., SHOA).
+- [ ] Confirmar límites y cobertura de Open-Meteo (llamadas/día, modelos, API marina) y su licencia no comercial.
+- [ ] Confirmar condiciones de capas gratuitas: Vercel Hobby (uso no comercial, cron), Supabase Free (500 MB, pausa por inactividad), Upstash, GitHub Actions.
 - [ ] Definir catálogo geográfico: comunas, puertos y sectores costeros con coordenadas.
 
-### Fase 1 (MVP)
-- [ ] Esquema de base de datos (Supabase/PostgreSQL).
-- [ ] ETL de ingesta Open-Meteo.
-- [ ] Conector Armada de Chile.
-- [ ] Normalización de unidades e indexación espacial.
-- [ ] API REST básica con caché (Upstash Redis).
-- [ ] UI básica de pronóstico (Next.js + Tailwind) con búsqueda por comuna.
+### Fase 1 (MVP) — detalle y plan semanal en [docs/fase1-mapeo-requisitos.md §5](docs/fase1-mapeo-requisitos.md)
+- [ ] Semana 1: spikes (Armada, Open-Meteo), estructura del monorepo, catálogo geográfico, esquema de BD v1.
+- [ ] Semana 2: conector Open-Meteo, unidades canónicas con pruebas, tablas `forecast_current` / `forecast_archive`, cron, `ingestion_runs`.
+- [ ] Semana 3: conector Armada (observaciones + avisos), precálculo a Redis, endpoints de API.
+- [ ] Semana 4: buscador, panel 7 días, avisos marítimos, despliegue en Vercel, alertas de fallas de ingesta.
