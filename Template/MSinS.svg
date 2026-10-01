@@ -1,0 +1,25 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="110" fill="#000000"/>
+
+  <!-- Lentes -->
+  <g fill="#FFFFFF">
+    <rect x="226" y="210" width="60" height="14" rx="7"/>
+    <path d="M 40 190 L 100 210 L 95 222 L 35 202 Z"/>
+    <path d="M 472 190 L 412 210 L 417 222 L 477 202 Z"/>
+    <path d="M 85 175 C 85 175 155 165 225 175 C 235 215 230 290 155 290 C 80 290 75 215 85 175 Z"/>
+    <path d="M 287 175 C 297 165 367 165 427 175 C 437 215 432 290 357 290 C 282 290 277 215 287 175 Z"/>
+  </g>
+  <g fill="#000000">
+    <path d="M 97 185 C 97 185 152 177 213 185 C 221 217 217 277 155 277 C 93 277 89 217 97 185 Z"/>
+    <path d="M 299 185 C 299 185 354 177 415 185 C 423 217 419 277 357 277 C 295 277 291 217 299 185 Z"/>
+  </g>
+  <g fill="#FFFFFF">
+    <polygon points="115,193 145,193 125,263 105,253"/>
+    <polygon points="317,193 347,193 327,263 307,253"/>
+  </g>
+
+  <!-- Tipografía 2: Ultra Wide Minimalist -->
+  <text x="256" y="380" text-anchor="middle" fill="#FFFFFF" font-family="'Syne', 'Montserrat', 'Arial Black', sans-serif" font-weight="800" font-size="34" letter-spacing="12">
+    MSINS
+  </text>
+</svg>
