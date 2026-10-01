@@ -214,7 +214,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [x] **Disparador de la ingesta** activo (2026-10-01): token guardado por el usuario en el Vault; prueba manual → GitHub 204 y corrida `workflow_dispatch` exitosa. Corre a las HH:05 UTC.
 - [ ] **Renovar el token fine-grained `climapp-supabase-cron`** antes de su vencimiento (fecha elegida por el usuario al crearlo); luego `select vault.update_secret(...)` o borrar y volver a crear `github_actions_token`.
 
-- [ ] **RutaClimApp** (decidir, ver [§8 de la propuesta](docs/rutaclimapp-propuesta.md)): aprobación y prioridad frente a la Fase 2; cuenta y API key de openrouteservice; perfil camión en MVP; mapa en R1 o R2; horizonte.
+- [ ] **RutaClimApp** — **en pausa por decisión del usuario (2026-10-01)**; retomar desde la propuesta (ver [§8 de la propuesta](docs/rutaclimapp-propuesta.md)): aprobación y prioridad frente a la Fase 2; cuenta y API key de openrouteservice; perfil camión en MVP; mapa en R1 o R2; horizonte.
 
 ### Investigación
 - [x] Datos de la Armada: observaciones por API JSON; avisos imagen/PDF. Ver [docs/spikes-semana1.md](docs/spikes-semana1.md).
