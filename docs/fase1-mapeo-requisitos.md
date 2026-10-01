@@ -5,6 +5,8 @@ Alcance de la Fase 1 según el SRS (semanas 1–4): **configuración de BD y ETL
 
 Los datos marcados con **(verificar)** son supuestos que deben confirmarse en los spikes de la semana 1 antes de construir sobre ellos.
 
+> **Actualización 2026-10-01:** los spikes de la semana 1 están en [spikes-semana1.md](spikes-semana1.md). Cambios principales: las observaciones de la Armada tienen API JSON (no requieren scraping); los avisos son imagen/PDF escaneado (en Fase 1 solo metadatos); las boyas son del SHOA; Open-Meteo confirmado (no comercial, CC BY 4.0, ~3.300 llamadas/día estimadas).
+
 ---
 
 ## 1. Qué requisitos entran en la Fase 1
@@ -78,7 +80,7 @@ Resuelve varias decisiones pendientes del CLAUDE.md. Es una **propuesta**: requi
 | Lenguaje del ETL | **Python** | Mejor ecosistema para scraping (httpx, BeautifulSoup, pdfplumber) y datos numéricos (pandas); es lo que se usará en el ensemble de la Fase 2. |
 | Backend / API | **Route Handlers de Next.js en Vercel** (sin servidor aparte) | Solo leen JSON precalculado desde Redis; evita un servicio siempre encendido y los arranques en frío. FastAPI queda para cuando haya lógica de servidor real. |
 | Ejecución del cron | **GitHub Actions** (workflow programado) | Gratis dentro de la cuota (~2.000 min/mes en repos privados; uso estimado ~250 min/mes) **(verificar)**. Requiere el repositorio remoto (pendiente). |
-| Estructura del repo | **Monorepo**: `web/`, `etl/`, `db/`, `docs/` | Un solo lugar para el esquema, la ingesta y el frontend. |
+| Estructura del repo | **Monorepo**: código en `ClimAppWeb/` (`web/`, `etl/`, `db/`); documentación en `docs/` | Un solo lugar para el esquema, la ingesta y el frontend. |
 | Búsqueda | Catálogo estático (~400 entradas) enviado al cliente | Búsqueda instantánea sin llamadas a la API. |
 
 ---

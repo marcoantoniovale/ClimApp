@@ -1,0 +1,5922 @@
+[
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16104"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.0246149 -36.897855)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "El Carmen"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16102"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.29854 -36.74232)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Bulnes"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05602"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.668139 -33.369256)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Algarrobo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "02101"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.398055555 -23.646388888)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Antofagasta"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05402"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.066388888 -32.426666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Cabildo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08303"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.4 -37.033333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Cabrero"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08101"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.050277777 -36.826944444)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Concepción"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "15"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.314166666 -18.475)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Región de Arica y Parinacota"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.650277777 -33.437777777)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Región Metropolitana de Santiago"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.741111111 -34.169722222)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Región de O'Higgins"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "03302"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.462277777 -28.933555555)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Alto del Carmen"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07201"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.27998 -35.97135)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Cauquenes"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07201"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.31543 -35.96713)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Cauquenes"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "02"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.398333333 -23.646944444)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Región de Antofagasta"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.619777777 -33.046305555)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Región de Valparaíso"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07402"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.416666666 -35.7)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Colbún"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "01403"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-68.639646 -19.275411)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Colchane"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "04302"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.05 -31.166666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Combarbalá"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06106"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.726527777 -34.064611111)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Graneros"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08105"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.9384 -36.9759)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Hualqui"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05504"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.233333333 -32.816666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "La Cruz"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08204"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.233333333 -38.0)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Contulmo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "04102"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.338 -29.9532)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Coquimbo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.666666666 -38.9)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Región de La Araucanía"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08314"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.316666666 -38.05)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Alto Biobío"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "03101"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.3323 -27.3665)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Copiapó"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09102"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.166666666 -38.7)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Carahue"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07202"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.533333333 -35.733333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Chanco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06303"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.040277777 -34.708888888)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Chimbarongo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.936666666 -41.471666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Región de Los Lagos"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "11"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.066111111 -45.57)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Región de Aysén del General Carlos Ibáñez del Campo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09103"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.033333333 -38.916666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Cunco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07103"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.016666666 -35.083333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Curepto"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07301"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.2394 -34.9854)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Curicó"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08104"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.666666666 -36.816666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Florida"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "03303"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.066666666 -28.5)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Freirina"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09107"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.683333333 -39.1)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Gorbea"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.671666666 -35.426666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Región del Maule"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "01402"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-69.416666666 -19.3)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Camiña"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "04202"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.45 -31.4)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Canela"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05603"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.6 -33.55)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Cartagena"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "01107"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.116666666 -20.25)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Alto Hospicio"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "04103"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.083333333 -30.216666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Andacollo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "02201"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-68.9272 -22.4624)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Calama"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09201"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.7086 -37.7988)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Angol"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08302"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.683333333 -37.333333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Antuco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "04"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.254166666 -29.907777777)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Región de Coquimbo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08202"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.3175 -37.2463)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Arauco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "03102"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.816666666 -27.066666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Caldera"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13403"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.816666666 -33.65)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Calera de Tango"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "03"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.332222222 -27.366666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Región de Atacama"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08102"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.133333333 -37.016666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Coronel"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09203"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.883333333 -38.433333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Curacautín"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "011"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.1525 -20.213889)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Provincia de Iquique"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09119"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.379444444 -39.118333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Vilcún"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05201"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-109.375 -27.0833)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Isla de Pascua"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05405"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.34 -32.59)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Zapallar"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "02203"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-68.2 -22.916666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Pedro de Atacama"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07406"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.7353 -35.5924)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Javier de Loncomilla"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08311"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.016666666 -37.666666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Santa Bárbara"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05703"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.966666666 -32.85)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Llay-Llay"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07403"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.683333333 -35.966666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Longaví"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05301"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.5982 -32.8337)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Los Andes"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "01"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-69.333333333 -20.283333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Región de Tarapacá"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "12"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.9225 -53.1625)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Región de Magallanes y de la Antártica Chilena"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "15101"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.321222222 -18.478388888)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Arica"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13402"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.75 -33.733333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Buin"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "12201"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-67.616666666 -54.933333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Cabo de Hornos"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08108"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.10311 -36.84082)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Pedro de la Paz"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07304"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.305555555 -35.113055555)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Molina"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.063055555 -36.772777777)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Región del Biobío"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13502"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.1 -34.033333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Alhué"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10202"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.8287 -41.8682)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Ancud"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "11201"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.7 -45.4)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Aysén"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06104"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.1 -34.3)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Coltauco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07102"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.416666666 -35.333333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Constitución"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09202"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.433333333 -37.95)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Collipulli"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05103"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.516666666 -32.916666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Concón"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "14102"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.4325 -39.888333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Corral"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10102"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.1275 -41.7712)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Calbuco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13102"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.7 -33.483333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Cerrillos"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13103"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.716666666 -33.416666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Cerro Navia"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16101"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.1033 -36.6067)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Chillán"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13503"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.15 -33.4)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Curacaví"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08205"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.35 -37.466666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Curanilahue"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07101"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.665555555 -35.426944444)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Talca"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "14"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.241666666 -39.808333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Región de Los Ríos"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "03201"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.6224 -26.3479)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Chañaral"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08103"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.016666666 -36.916666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Chiguayante"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16103"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.1317 -36.6229)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Chillán Viejo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "11203"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.733333333 -43.883333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Guaitecas"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10403"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.683333333 -42.016666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Hualaihué"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13108"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.664517326 -33.414622477)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Independencia"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09104"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.583 -39.35)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Curarrehue"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "03202"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.05 -26.366666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Diego de Almagro"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05605"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.666666666 -33.45)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "El Tabo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "04203"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.516666666 -31.9)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Los Vilos"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08206"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.466666666 -37.616666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Los Álamos"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08206"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.35687 -37.67359)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Los Álamos"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05502"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.216666666 -32.783333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "La Calera"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05302"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.633333333 -32.85)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Calle Larga"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13104"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.616666666 -33.35)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Conchalí"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10204"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.6029 -42.4397)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Curaco de Vélez"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05401"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.2317 -32.4494)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "La Ligua"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09108"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.435 -38.529166666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Lautaro"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05802"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.283333333 -32.983333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Limache"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05702"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.033333333 -32.633333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Catemu"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08203"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.383333333 -37.8)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Cañete"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10401"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.708824 -42.91931)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Chaitén"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "11401"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.7293 -46.5376)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Chile Chico"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09121"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.85 -38.6)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Cholchol"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06101"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.739805555 -34.165388888)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Rancagua"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10203"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.7725 -42.6238)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Chonchi"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16202"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.783333333 -36.133333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Cobquecura"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10103"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.316666666 -41.5)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Cochamó"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05604"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.7 -33.4)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "El Quisco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09204"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.383333333 -38.05)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Ercilla"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08109"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.933333333 -37.166666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Santa Juana"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05706"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.666666666 -32.75)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Santa María"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05606"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.65 -33.633333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Santo Domingo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07309"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.0 -34.883333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Vichuquén"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08313"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.533333333 -37.133333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Yumbel"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07308"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.183333333 -34.866666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Teno"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07104"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.283333333 -35.6)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Empedrado"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09106"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.783333333 -38.4)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Galvarino"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05503"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.166666666 -32.8)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Hijuelas"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09206"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.833333333 -37.966666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Los Sauces"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09207"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.916666666 -38.15)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Lumaco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "02102"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.45 -23.1)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Mejillones"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "15102"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-69.866666666 -19.016666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Comuna de Camarones"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05102"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.416666666 -33.316666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Casablanca"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10201"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.7643 -42.4824)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Castro"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "04304"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.266666666 -30.9)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Punitaqui"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09208"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.083333333 -38.016666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Purén"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09208"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.05044 -38.01213)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Purén"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06107"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.316666666 -34.3)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Las Cabras"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07303"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.0 -34.983333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Licantén"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07401"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.5979 -35.8454)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Linares"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06109"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.95 -34.45)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Malloa"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "02302"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-69.666666666 -22.35)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "María Elena"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "11301"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.5732 -47.2539)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Cochrane"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16203"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.702331611 -36.487600388)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Coelemu"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "11101"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.0685 -45.5712)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Coyhaique"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13603"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.9 -33.75)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Isla de Maipo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13109"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.664055555 -33.534833333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "La Cisterna"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13110"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.566666666 -33.55)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "La Florida"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13111"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.631944444 -33.543055555)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "La Granja"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "02104"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.466666666 -25.433333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Taltal"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09118"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.163885 -39.1782056)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Nueva Toltén"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08312"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.95 -37.283333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Tucapel"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08112"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.083333333 -36.783333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Hualpén"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "03304"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.216666666 -28.45)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Huasco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06302"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.283333333 -34.733333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Chépica"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06102"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.666666666 -34.033333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Codegua"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06103"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.966666666 -34.266666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Coinco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "04201"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.1683 -31.6327)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Illapel"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06202"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.666666666 -34.2)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "La Estrella"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "04104"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.266666666 -29.5)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "La Higuera"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "04101"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.252 -29.9027)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "La Serena"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13107"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.666666666 -33.35)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Huechuraba"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "01101"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.1524 -20.2141)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Iquique"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06304"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.644722222 -34.728611111)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Lolol"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09109"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.633333333 -39.366666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Loncoche"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09109"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.58252 -39.35605)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Loncoche"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05107"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.533333333 -32.783333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Quintero"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09209"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.5757 -37.71779)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Renaico"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07405"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.766666666 -36.05)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Retiro"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07306"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.133333333 -34.966666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Romeral"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07107"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.816666666 -35.4)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Pencahue"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06307"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.483333333 -34.483333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Peralillo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09115"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.966666666 -39.266666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Pucón"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13501"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.214611111 -33.685527777)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Melipilla"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13105"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.666666666 -33.566666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "El Bosque"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10104"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.4223 -41.1531)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Fresia"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10105"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.0605 -41.1258)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Frutillar"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09105"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.633333333 -38.95)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Freire"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07302"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.804786111 -34.976533333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Hualañé"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "01404"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-69.766666666 -19.966666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Huara"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "14106"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.96169 -39.53913)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Mariquina"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10108"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.6 -41.616666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Maullín"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10101"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.9396 -41.4718)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Puerto Montt"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05104"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-78.866666666 -33.616666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Juan Fernández"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "11102"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.851666666 -44.241666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Lago Verde"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "12102"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.916666666 -52.25)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Laguna Blanca"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "14105"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.95 -39.65)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Máfil"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16204"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.4 -36.4)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Ninhue"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "11302"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.566666666 -48.466666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "O'Higgins"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08305"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.233333333 -37.716666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Mulchén"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "12401"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.516666666 -51.733333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Natales"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "04301"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.203 -30.6031)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Ovalle"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08301"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.3517 -37.4707)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Los Ángeles"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08106"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.1563 -37.0944)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Lota"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "04305"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.7 -30.266666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Río Hurtado"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07307"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.383333333 -35.0)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Sagrada Familia"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05804"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.3744 -33.0428)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Villa Alemana"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05303"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.7 -32.833333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Rinconada"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16206"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.55 -36.65)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Ránquil"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "14204"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.9568 -40.3337)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Río Bueno"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07108"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.266666666 -35.283333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Río Claro"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05403"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.45 -32.516666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Papudo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07106"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.45 -35.383333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Pelarco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07203"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.577 -35.815)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Pelluhue"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13122"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.533333333 -33.483333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Peñalolén"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08304"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.7 -37.266666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Laja"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "14103"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.7755 -39.4523)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Lanco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08201"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.6561 -37.6103)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Lebu"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "14203"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.5 -40.316666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Lago Ranco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13302"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.9 -33.283333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Lampa"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13114"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.583333333 -33.416666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Las Condes"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08306"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.666666666 -37.5)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Nacimiento"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08307"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.516666666 -37.583333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Negrete"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05506"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.233333333 -32.716666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Nogales"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05404"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.933333333 -32.25)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Petorca"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06112"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.166666666 -34.4)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Peumo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06108"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.651111111 -34.182583333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Machalí"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13119"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.766666666 -33.516666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Maipú"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13504"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.133333333 -33.533333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "María Pinto"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08110"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.1141 -36.7145)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Talcahuano"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08309"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.966666666 -37.466666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Quilleco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16107"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.466666666 -36.733333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Quillón"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10205"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.6473 -42.3796)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Dalcahue"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06105"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.966666666 -34.233333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Doñihue"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13602"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.016666666 -33.683333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "El Monte"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13106"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.678889 -33.451944)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Estación Central"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09110"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.7 -38.85)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Melipeuco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "04303"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.933333333 -30.683333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Monte Patria"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06110"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.7 -33.983333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Mostazal"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06110"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.56939 -33.95603)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Mostazal"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05803"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.2 -33.0)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Olmué"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06206"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.89922 -34.64808)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Paredones"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07404"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.833333333 -36.15)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Parral"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10306"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.4 -40.516666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Juan de la Costa"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16305"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.216666666 -36.5)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Nicolás"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10307"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.016666666 -40.4)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Pablo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13505"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.466666666 -33.9)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Pedro"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13112"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.616666666 -33.583333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "La Pintana"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13113"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.55 -33.45)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "La Reina"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "14201"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.0822 -40.2952)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "La Unión"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10209"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.516666666 -42.133333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Quemchi"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13125"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.75 -33.366666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Quilicura"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13126"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.7 -33.45)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Quinta Normal"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06305"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.216666666 -34.666666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Nancagua"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06205"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.833333333 -33.933333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Navidad"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09111"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.95 -38.733333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Nueva Imperial"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05101"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.619722222 -33.046111111)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Valparaíso"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13203"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.366666666 -33.633333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San José de Maipo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13130"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.649938217 -33.485964313)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Miguel"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13131"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.64383 -33.54279)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Ramón"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "11202"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.7 -44.75)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Cisnes"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16302"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.833333333 -36.616666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Coihueco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13301"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.674888888 -33.202277777)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Colina"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05601"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.6132 -33.5809)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Antonio"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09101"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.5901 -38.7399)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Temuco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13124"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.716666666 -33.433333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Pudahuel"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13201"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.583333333 -33.616666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Puente Alto"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10402"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.8667 -43.1858)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Futaleufú"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "14202"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.4 -40.133333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Futrono"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "15202"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-69.5 -17.566666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "General Lagos"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06203"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.733333333 -34.116666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Litueche"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09113"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.383333333 -38.416666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Perquenco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10302"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.9 -40.966666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Puerto Octay"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10109"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.9827 -41.3178)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Puerto Varas"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10207"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.472417024 -42.887836271)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Queilén"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10301"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.15 -40.566666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Osorno"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13404"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.75 -33.816666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Paine"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06111"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.817597 -34.209998)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Olivar"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "02202"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-68.2531 -21.2246)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Ollagüe"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09112"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.57925 -38.79198)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Padre Las Casas"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09112"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.6 -38.766666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Padre Las Casas"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10404"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.8039 -43.6178)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Palena"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "14108"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.3334 -39.6419)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Panguipulli"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13121"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.677027936 -33.492614907)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Pedro Aguirre Cerda"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10304"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.616666666 -40.666666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Puyehue"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "14104"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.833333333 -39.85)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Los Lagos"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10106"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.483333333 -41.4)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Los Muermos"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13118"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.599541289 -33.487630262)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Macul"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13604"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.833333333 -33.566666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Padre Hurtado"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "14107"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.8727 -40.0706)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Paillaco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06306"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.366666666 -34.6)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Palmilla"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07105"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.7 -35.533333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Maule"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08310"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.716666666 -37.266666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Rosendo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06201"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.005 -34.385)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Pichilemu"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06301"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.9891 -34.5839)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Fernando"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07110"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.533333333 -35.316666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Rafael"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16205"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.46651 -36.54644)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Portezuelo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16205"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.433333333 -36.533333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Portezuelo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10303"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.166666666 -40.916666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Purranque"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "15201"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-69.31158 -18.42869)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Putre"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "15201"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-69.5592 -18.1964)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Putre"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07305"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.316666666 -34.933333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Rauco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13127"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.65 -33.416666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Recoleta"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13128"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.733333333 -33.4)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Renca"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16105"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.1 -36.966666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Pemuco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13605"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.916666666 -33.616666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Peñaflor"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13202"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.5729 -33.6352)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Pirque"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "12301"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.366666666 -53.3)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Porvenir"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10107"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.016666666 -41.25)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Llanquihue"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13115"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.516666666 -33.35)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Lo Barnechea"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10206"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.6763 -42.5993)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Puqueldón"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "11303"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.566666666 -47.833333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Tortel"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16301"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.9581 -36.4248)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Carlos"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "12202"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.5 -75.0)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Antártica"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "12101"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.908055555 -53.1625)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Punta Arenas"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13116"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.716666666 -33.533333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Lo Espejo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13117"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.716666666 -33.433333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Lo Prado"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09205"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.233333333 -38.433333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Lonquimay"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "01405"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-69.333333333 -20.5)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Pica"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06113"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.3 -34.35)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Pichidegua"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "01401"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-69.7862 -20.2597)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Pozo Almonte"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10305"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.21614 -40.79615)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Río Negro"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13401"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.716666666 -33.6)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Bernardo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09116"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.4 -38.783333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Saavedra"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "04204"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.966666666 -31.766666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Salamanca"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "02301"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.195833333 -22.088888888)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Tocopilla"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08111"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.9575 -36.6171)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Tomé"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05801"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.4415 -33.0498)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Quilpué"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10210"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.416666666 -42.533333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Quinchao"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16201"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.540861111 -36.282722222)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Quirihue"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05105"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.4151 -32.7261)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Puchuncaví"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05705"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.733333333 -32.633333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Putaendo"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08308"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.006361111 -37.684361111)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Quilaco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05501"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.2474 -32.8799)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Quillota"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06114"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.964016 -34.354558)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Quinta de Tilcoco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06116"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.833333333 -34.283333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Requínoa"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06117"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.07751 -34.43859)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Vicente de Tagua Tagua"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13101"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.666666666 -33.45)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Santiago"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "03103"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.266666666 -27.466666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Tierra Amarilla"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06310"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.366666666 -34.633333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Santa Cruz"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09117"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.11473 -38.98482)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Teodoro Schmidt"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09117"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.05 -38.966666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Teodoro Schmidt"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07408"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.583333333 -35.75)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Yerbas Buenas"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "04105"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.51708 -30.02884)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Paihuano"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05704"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.833333333 -32.8)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Panquehue"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08107"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.993888888 -36.738611111)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Penco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16106"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.9 -36.7)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Pinto"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09114"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.65 -38.983333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Pitrufquén"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06308"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.116666666 -34.633333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Placilla"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05109"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.5518 -33.0245)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Viña del Mar"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05701"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.7251 -32.7507)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Felipe"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "10208"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.6203 -43.1201)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Quellón"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.95 -36.616666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Región de Ñuble"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "08207"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.5 -38.333333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Tirúa"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "12402"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.35 -51.266666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Torres del Paine"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09210"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.683333333 -38.25)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Traiguén"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07109"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.483333333 -35.55)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Clemente"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "05304"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.583333333 -32.8)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Esteban"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16304"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.55 -36.55)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Fabián"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13129"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.616666666 -33.5)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Joaquín"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "12104"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-69.683333333 -52.316666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Gregorio"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16108"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.030350694 -36.799823305)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "San Ignacio"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "02103"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-69.316666666 -22.883333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Sierra Gorda"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13601"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.933333333 -33.666666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Talagante"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13303"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.933333333 -33.083333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Tiltil"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "12303"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-69.9 -53.666666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Timaukel"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16207"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.666666666 -36.433333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Treguaco"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13132"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.6 -33.4)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Vitacura"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "12302"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-69.25 -52.716666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Primavera"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13123"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.616666666 -33.433333333)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Providencia"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "03301"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.7616 -28.5751)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Vallenar"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09211"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.333333333 -38.216666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Victoria"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "04106"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.7 -30.016666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Vicuña"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16109"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.016666666 -37.116666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Yungay"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "13120"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-70.6 -33.466666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Ñuñoa"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "07407"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.75 -35.666666666)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Villa Alegre"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "09120"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-72.227396 -39.27807)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Villarrica"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "11402"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.933333333 -46.3)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Río Ibáñez"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "12103"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.483333333 -52.65)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Río Verde"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "14101"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-73.2459 -39.8142)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Valdivia"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "16303"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.9 -36.3)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Ñiquén"
+  }
+ },
+ {
+  "cut": {
+   "type": "literal",
+   "value": "06309"
+  },
+  "coord": {
+   "datatype": "http://www.opengis.net/ont/geosparql#wktLiteral",
+   "type": "literal",
+   "value": "Point(-71.666666666 -34.6)"
+  },
+  "label": {
+   "xml:lang": "es",
+   "type": "literal",
+   "value": "Pumanque"
+  }
+ }
+]

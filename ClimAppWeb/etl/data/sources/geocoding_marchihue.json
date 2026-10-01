@@ -1,0 +1,20 @@
+[
+ {
+  "id": 3880534,
+  "name": "Marchihue",
+  "latitude": -34.39754,
+  "longitude": -71.61938,
+  "elevation": 141.0,
+  "feature_code": "PPL",
+  "country_code": "CL",
+  "admin1_id": 3883281,
+  "admin2_id": 8181712,
+  "admin3_id": 8261259,
+  "timezone": "America/Santiago",
+  "country_id": 3895114,
+  "country": "Chile",
+  "admin1": "Región del Libertador General Bernardo O'Higgins",
+  "admin2": "Cardenal Caro",
+  "admin3": "Marchihue"
+ }
+]

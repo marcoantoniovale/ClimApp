@@ -66,7 +66,10 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 ## 5. Convenciones de trabajo
 
 - Idioma de documentación y comunicación: **español**.
+- **Todo el código fuente va dentro de [ClimAppWeb/](ClimAppWeb/)** (`etl/`, `db/`, `web/`). La documentación del proyecto queda en [docs/](docs/) y este archivo en la raíz.
 - Control de versiones con git. El trabajo se hace en **ramas**, no directamente en `main`.
+- Herramientas locales: Python 3.12 en `%LOCALAPPDATA%\Programs\Python\Python312\` (venv en `ClimAppWeb/etl/.venv`), Node.js 24 LTS en `C:\Program Files\nodejs\`. Pueden no estar en el PATH de la terminal: usar rutas completas.
+- Ejecutar Python con `PYTHONIOENCODING=utf-8` (la consola de Windows rompe las tildes).
 - Al terminar cada sesión o cambio relevante:
   1. Agregar una entrada en **Bitácora de cambios** (fecha, rama, qué se hizo).
   2. Actualizar **Pendientes** (marcar lo completado, agregar lo nuevo).
@@ -74,8 +77,9 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 
 ## 6. Estado actual
 
-- Repositorio inicializado. Solo hay documentación; aún no hay código.
-- Fase 1 analizada y mapeada en [docs/fase1-mapeo-requisitos.md](docs/fase1-mapeo-requisitos.md), con un stack propuesto **pendiente de aprobación**.
+- Stack **aprobado** (2026-10-01): ETL en Python, API como Route Handlers de Next.js en Vercel leyendo Redis, cron en GitHub Actions, monorepo en `ClimAppWeb/`.
+- Fase 1, semana 1 casi completa: spikes ([docs/spikes-semana1.md](docs/spikes-semana1.md)), catálogo geográfico, esquema de BD v1 y semilla SQL. Falta crear Supabase y el repositorio remoto.
+- Diseño de la Fase 1: [docs/fase1-mapeo-requisitos.md](docs/fase1-mapeo-requisitos.md).
 
 ---
 
@@ -91,32 +95,45 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Creado [docs/fase1-mapeo-requisitos.md](docs/fase1-mapeo-requisitos.md): qué requisitos entran en la Fase 1, riesgos y vacíos del SRS, arquitectura propuesta, esquema de BD, unidades canónicas, conectores, API, frontend, plan de 4 semanas y decisiones por aprobar.
 - Hallazgos clave: la Fase 1 debe archivar pronósticos y observaciones desde el día 1 para que exista el ensemble de la Fase 2; el volumen de pronósticos excede la capa gratuita de Supabase si se archiva todo; la fuente Armada probablemente requiera scraping (sin API confirmada).
 
+### 2026-10-01 — rama `feature/semana1-bases`
+- Stack aprobado por el usuario. Código fuente en `ClimAppWeb/` (instrucción del usuario).
+- Instalados Python 3.12.10 y Node.js 24.19.0 con winget.
+- Spikes en [docs/spikes-semana1.md](docs/spikes-semana1.md): Open-Meteo confirmado; **observaciones Armada disponibles como API JSON** (`serviciosonline.directemar.cl/meteomapa/api/meteo`); avisos solo como imagen/PDF escaneado; boyas son del SHOA. Muestras reales en `ClimAppWeb/etl/tests/fixtures/`.
+- Estructura `ClimAppWeb/{etl,db,web}` y proyecto Python `climapp-etl` (`pyproject.toml`, venv local).
+- Catálogo: [build_catalog.py](ClimAppWeb/etl/scripts/build_catalog.py) genera `comunas.csv` (346 comunas, CUT oficial, coordenadas Wikidata/Open-Meteo) y `estaciones_armada.csv` (100 estaciones). Fuentes guardadas en `etl/data/sources/` para regenerar sin red. Correcciones manuales: comuna Antártica y la EMA Paso Timbales.
+- Esquema de BD v1: [db/migrations/0001_init.sql](ClimAppWeb/db/migrations/0001_init.sql). Semilla generada por [export_seed.py](ClimAppWeb/etl/scripts/export_seed.py) en `db/seeds/0001_catalogo.sql`. Sintaxis validada con el parser de PostgreSQL (pglast); falta probarla en una base real.
+- Pruebas de integridad del catálogo: 9/9 OK (`pytest`).
+- Actualizado [docs/fase1-mapeo-requisitos.md](docs/fase1-mapeo-requisitos.md) con los resultados de los spikes.
+
 ---
 
 ## 8. Pendientes
 
 ### Decisiones por tomar
-Propuestas en [docs/fase1-mapeo-requisitos.md §3 y §6](docs/fase1-mapeo-requisitos.md); esperan aprobación.
-- [ ] Backend: **Node.js vs. Python (FastAPI)** — propuesta: ETL en Python; API como Route Handlers de Next.js leyendo Redis.
-- [ ] Hosting backend / cron: Render vs. Cloudflare Workers — propuesta: GitHub Actions programado (depende del repo remoto).
+Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.md).
+- [x] Backend: ETL en Python; API como Route Handlers de Next.js leyendo Redis. (Aprobado 2026-10-01)
+- [x] Cron: GitHub Actions programado (depende del repo remoto). (Aprobado 2026-10-01)
+- [x] Estructura: monorepo en `ClimAppWeb/` (`web/`, `etl/`, `db/`); docs en `docs/`. (Aprobado 2026-10-01)
 - [ ] Proveedor LLM: Gemini Flash vs. GPT-4o-mini (u otro). No bloquea la Fase 1.
-- [ ] Estructura del repositorio — propuesta: monorepo `web/`, `etl/`, `db/`, `docs/`.
 - [ ] Retención del archivo histórico de pronósticos (propuesta: 12 meses, 3-horario).
 - [ ] Pronóstico provisional de la Fase 1 = promedio simple de GFS/ECMWF/ICON.
 - [ ] ¿Incluir la vista de dispersión entre modelos (RF05.3) en la Fase 1?
 - [ ] Repositorio remoto (GitHub u otro) y política de ramas/merge.
-  - Bloqueo (2026-10-01): GitHub CLI (`gh`) no instalado y sin credenciales de GitHub en git. Pasos: `winget install --id GitHub.cli` → `gh auth login` → `gh repo create ClimApp --private --source . --remote origin` → push de `main` y `docs/claude-md-contexto`.
+  - Bloqueo (2026-10-01): GitHub CLI (`gh`) no instalado y sin credenciales de GitHub en git. Pasos: `winget install --id GitHub.cli` → `gh auth login` → `gh repo create ClimApp --private --source . --remote origin` → `git push -u origin --all`.
   - Luego vincular el repo al proyecto de claude.ai "ClimApp" (https://claude.ai/project/01a0f79e-6e15-723a-a00e-5c252c791837) desde *Agregar contenido → GitHub* (requiere resincronizar tras cada push).
 
 ### Investigación
-- [ ] Revisar qué datos publica la Armada de Chile (Servimet/Directemar): formatos, frecuencia, si hay API o requiere scraping, términos de uso. Define el go/no-go del conector.
-- [ ] Verificar si las boyas son de Servimet o de otra institución (p. ej., SHOA).
-- [ ] Confirmar límites y cobertura de Open-Meteo (llamadas/día, modelos, API marina) y su licencia no comercial.
+- [x] Datos de la Armada: observaciones por API JSON; avisos imagen/PDF. Ver [docs/spikes-semana1.md](docs/spikes-semana1.md).
+- [x] Boyas: son del SHOA → fuera de la Fase 1.
+- [x] Open-Meteo: límites, modelos, API marina, licencia (no comercial, CC BY 4.0).
 - [ ] Confirmar condiciones de capas gratuitas: Vercel Hobby (uso no comercial, cron), Supabase Free (500 MB, pausa por inactividad), Upstash, GitHub Actions.
-- [ ] Definir catálogo geográfico: comunas, puertos y sectores costeros con coordenadas.
+- [ ] Armada: unidad del viento en capitanías (no declarada; ¿nudos?) y zona horaria de `fecha`.
+- [ ] Armada: endpoint `/top` y pronósticos por zona (insumo del boletín, Fase 2).
+- [ ] Open-Meteo: revisar comunas costeras cuyo punto de grilla cae en el mar.
 
 ### Fase 1 (MVP) — detalle y plan semanal en [docs/fase1-mapeo-requisitos.md §5](docs/fase1-mapeo-requisitos.md)
-- [ ] Semana 1: spikes (Armada, Open-Meteo), estructura del monorepo, catálogo geográfico, esquema de BD v1.
-- [ ] Semana 2: conector Open-Meteo, unidades canónicas con pruebas, tablas `forecast_current` / `forecast_archive`, cron, `ingestion_runs`.
-- [ ] Semana 3: conector Armada (observaciones + avisos), precálculo a Redis, endpoints de API.
-- [ ] Semana 4: buscador, panel 7 días, avisos marítimos, despliegue en Vercel, alertas de fallas de ingesta.
+- [ ] Semana 1: spikes ✅, estructura del monorepo ✅, catálogo geográfico ✅, esquema de BD v1 ✅. **Falta:** crear proyecto Supabase y aplicar migración + semilla (requiere cuenta del usuario); repositorio remoto.
+- [ ] Catálogo, pendientes: marcar comunas costeras (`es_costera`); catálogo de puertos/sectores costeros y mapeo de zonas de avisos → comunas (semana 3); exportar JSON para el buscador (semana 4).
+- [ ] Semana 2: conector Open-Meteo, unidades canónicas con pruebas, tablas `forecast_current` / `forecast_archive`, cron, `ingestion_runs`. Considerar adelantar el conector de observaciones Armada (API JSON).
+- [ ] Semana 3: conector Armada (avisos + observaciones si no se adelantó), precálculo a Redis, endpoints de API.
+- [ ] Semana 4: buscador, panel 7 días, avisos marítimos, despliegue en Vercel, alertas de fallas de ingesta. Incluir atribución CC BY 4.0 a Open-Meteo.

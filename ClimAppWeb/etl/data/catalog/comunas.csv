@@ -1,0 +1,347 @@
+cut,nombre,alias,provincia,region_id,region,lat,lon,fuente_coord
+01101,Iquique,,Iquique,01,Tarapaca,-20.2141,-70.1524,wikidata
+01107,Alto Hospicio,,Iquique,01,Tarapaca,-20.25,-70.11667,wikidata
+01401,Pozo Almonte,,Tamarugal,01,Tarapaca,-20.2597,-69.7862,wikidata
+01402,Camiña,,Tamarugal,01,Tarapaca,-19.3,-69.41667,wikidata
+01403,Colchane,,Tamarugal,01,Tarapaca,-19.27541,-68.63965,wikidata
+01404,Huara,,Tamarugal,01,Tarapaca,-19.96667,-69.76667,wikidata
+01405,Pica,,Tamarugal,01,Tarapaca,-20.5,-69.33333,wikidata
+02101,Antofagasta,,Antofagasta,02,Antofagasta,-23.64639,-70.39806,wikidata
+02102,Mejillones,,Antofagasta,02,Antofagasta,-23.1,-70.45,wikidata
+02103,Sierra Gorda,,Antofagasta,02,Antofagasta,-22.88333,-69.31667,wikidata
+02104,Taltal,,Antofagasta,02,Antofagasta,-25.43333,-70.46667,wikidata
+02201,Calama,,El Loa,02,Antofagasta,-22.4624,-68.9272,wikidata
+02202,Ollagüe,,El Loa,02,Antofagasta,-21.2246,-68.2531,wikidata
+02203,San Pedro de Atacama,,El Loa,02,Antofagasta,-22.91667,-68.2,wikidata
+02301,Tocopilla,,Tocopilla,02,Antofagasta,-22.08889,-70.19583,wikidata
+02302,María Elena,,Tocopilla,02,Antofagasta,-22.35,-69.66667,wikidata
+03101,Copiapó,,Copiapo,03,Atacama,-27.3665,-70.3323,wikidata
+03102,Caldera,,Copiapo,03,Atacama,-27.06667,-70.81667,wikidata
+03103,Tierra Amarilla,,Copiapo,03,Atacama,-27.46667,-70.26667,wikidata
+03201,Chañaral,,Chanaral,03,Atacama,-26.3479,-70.6224,wikidata
+03202,Diego de Almagro,,Chanaral,03,Atacama,-26.36667,-70.05,wikidata
+03301,Vallenar,,Huasco,03,Atacama,-28.5751,-70.7616,wikidata
+03302,Alto del Carmen,,Huasco,03,Atacama,-28.93356,-70.46228,wikidata
+03303,Freirina,,Huasco,03,Atacama,-28.5,-71.06667,wikidata
+03304,Huasco,,Huasco,03,Atacama,-28.45,-71.21667,wikidata
+04101,La Serena,,Elqui,04,Coquimbo,-29.9027,-71.252,wikidata
+04102,Coquimbo,,Elqui,04,Coquimbo,-29.9532,-71.338,wikidata
+04103,Andacollo,,Elqui,04,Coquimbo,-30.21667,-71.08333,wikidata
+04104,La Higuera,,Elqui,04,Coquimbo,-29.5,-71.26667,wikidata
+04105,Paihuano,Paiguano,Elqui,04,Coquimbo,-30.02884,-70.51708,wikidata
+04106,Vicuña,,Elqui,04,Coquimbo,-30.01667,-70.7,wikidata
+04201,Illapel,,Choapa,04,Coquimbo,-31.6327,-71.1683,wikidata
+04202,Canela,,Choapa,04,Coquimbo,-31.4,-71.45,wikidata
+04203,Los Vilos,,Choapa,04,Coquimbo,-31.9,-71.51667,wikidata
+04204,Salamanca,,Choapa,04,Coquimbo,-31.76667,-70.96667,wikidata
+04301,Ovalle,,Limari,04,Coquimbo,-30.6031,-71.203,wikidata
+04302,Combarbalá,,Limari,04,Coquimbo,-31.16667,-71.05,wikidata
+04303,Monte Patria,,Limari,04,Coquimbo,-30.68333,-70.93333,wikidata
+04304,Punitaqui,,Limari,04,Coquimbo,-30.9,-71.26667,wikidata
+04305,Río Hurtado,,Limari,04,Coquimbo,-30.26667,-70.7,wikidata
+05101,Valparaíso,,Valparaiso,05,Valparaiso,-33.04611,-71.61972,wikidata
+05102,Casablanca,,Valparaiso,05,Valparaiso,-33.31667,-71.41667,wikidata
+05103,Concón,,Valparaiso,05,Valparaiso,-32.91667,-71.51667,wikidata
+05104,Juan Fernández,,Valparaiso,05,Valparaiso,-33.61667,-78.86667,wikidata
+05105,Puchuncaví,,Valparaiso,05,Valparaiso,-32.7261,-71.4151,wikidata
+05107,Quintero,,Valparaiso,05,Valparaiso,-32.78333,-71.53333,wikidata
+05109,Viña del Mar,,Valparaiso,05,Valparaiso,-33.0245,-71.5518,wikidata
+05201,Isla de Pascua,,Isla de Pascua,05,Valparaiso,-27.0833,-109.375,wikidata
+05301,Los Andes,,Los Andes,05,Valparaiso,-32.8337,-70.5982,wikidata
+05302,Calle Larga,,Los Andes,05,Valparaiso,-32.85,-70.63333,wikidata
+05303,Rinconada,,Los Andes,05,Valparaiso,-32.83333,-70.7,wikidata
+05304,San Esteban,,Los Andes,05,Valparaiso,-32.8,-70.58333,wikidata
+05401,La Ligua,,Petorca,05,Valparaiso,-32.4494,-71.2317,wikidata
+05402,Cabildo,,Petorca,05,Valparaiso,-32.42667,-71.06639,wikidata
+05403,Papudo,,Petorca,05,Valparaiso,-32.51667,-71.45,wikidata
+05404,Petorca,,Petorca,05,Valparaiso,-32.25,-70.93333,wikidata
+05405,Zapallar,,Petorca,05,Valparaiso,-32.59,-71.34,wikidata
+05501,Quillota,,Quillota,05,Valparaiso,-32.8799,-71.2474,wikidata
+05502,La Calera,Calera,Quillota,05,Valparaiso,-32.78333,-71.21667,wikidata
+05503,Hijuelas,,Quillota,05,Valparaiso,-32.8,-71.16667,wikidata
+05504,La Cruz,,Quillota,05,Valparaiso,-32.81667,-71.23333,wikidata
+05506,Nogales,,Quillota,05,Valparaiso,-32.71667,-71.23333,wikidata
+05601,San Antonio,,San Antonio,05,Valparaiso,-33.5809,-71.6132,wikidata
+05602,Algarrobo,,San Antonio,05,Valparaiso,-33.36926,-71.66814,wikidata
+05603,Cartagena,,San Antonio,05,Valparaiso,-33.55,-71.6,wikidata
+05604,El Quisco,,San Antonio,05,Valparaiso,-33.4,-71.7,wikidata
+05605,El Tabo,,San Antonio,05,Valparaiso,-33.45,-71.66667,wikidata
+05606,Santo Domingo,,San Antonio,05,Valparaiso,-33.63333,-71.65,wikidata
+05701,San Felipe,,San Felipe de Aconcagua,05,Valparaiso,-32.7507,-70.7251,wikidata
+05702,Catemu,,San Felipe de Aconcagua,05,Valparaiso,-32.63333,-71.03333,wikidata
+05703,Llay-Llay,Llaillay,San Felipe de Aconcagua,05,Valparaiso,-32.85,-70.96667,wikidata
+05704,Panquehue,,San Felipe de Aconcagua,05,Valparaiso,-32.8,-70.83333,wikidata
+05705,Putaendo,,San Felipe de Aconcagua,05,Valparaiso,-32.63333,-70.73333,wikidata
+05706,Santa María,,San Felipe de Aconcagua,05,Valparaiso,-32.75,-70.66667,wikidata
+05801,Quilpué,,Marga Marga,05,Valparaiso,-33.0498,-71.4415,wikidata
+05802,Limache,,Marga Marga,05,Valparaiso,-32.98333,-71.28333,wikidata
+05803,Olmué,,Marga Marga,05,Valparaiso,-33.0,-71.2,wikidata
+05804,Villa Alemana,,Marga Marga,05,Valparaiso,-33.0428,-71.3744,wikidata
+06101,Rancagua,,Cachapoal,06,Libertador General Bernardo OHiggins,-34.16539,-70.73981,wikidata
+06102,Codegua,,Cachapoal,06,Libertador General Bernardo OHiggins,-34.03333,-70.66667,wikidata
+06103,Coinco,,Cachapoal,06,Libertador General Bernardo OHiggins,-34.26667,-70.96667,wikidata
+06104,Coltauco,,Cachapoal,06,Libertador General Bernardo OHiggins,-34.3,-71.1,wikidata
+06105,Doñihue,,Cachapoal,06,Libertador General Bernardo OHiggins,-34.23333,-70.96667,wikidata
+06106,Graneros,,Cachapoal,06,Libertador General Bernardo OHiggins,-34.06461,-70.72653,wikidata
+06107,Las Cabras,,Cachapoal,06,Libertador General Bernardo OHiggins,-34.3,-71.31667,wikidata
+06108,Machalí,,Cachapoal,06,Libertador General Bernardo OHiggins,-34.18258,-70.65111,wikidata
+06109,Malloa,,Cachapoal,06,Libertador General Bernardo OHiggins,-34.45,-70.95,wikidata
+06110,Mostazal,,Cachapoal,06,Libertador General Bernardo OHiggins,-33.98333,-70.7,wikidata
+06111,Olivar,,Cachapoal,06,Libertador General Bernardo OHiggins,-34.21,-70.8176,wikidata
+06112,Peumo,,Cachapoal,06,Libertador General Bernardo OHiggins,-34.4,-71.16667,wikidata
+06113,Pichidegua,,Cachapoal,06,Libertador General Bernardo OHiggins,-34.35,-71.3,wikidata
+06114,Quinta de Tilcoco,,Cachapoal,06,Libertador General Bernardo OHiggins,-34.35456,-70.96402,wikidata
+06115,Rengo,,Cachapoal,06,Libertador General Bernardo OHiggins,-34.40639,-70.85834,open-meteo-geocoding
+06116,Requínoa,,Cachapoal,06,Libertador General Bernardo OHiggins,-34.28333,-70.83333,wikidata
+06117,San Vicente de Tagua Tagua,San Vicente,Cachapoal,06,Libertador General Bernardo OHiggins,-34.43859,-71.07751,wikidata
+06201,Pichilemu,,Cardenal Caro,06,Libertador General Bernardo OHiggins,-34.385,-72.005,wikidata
+06202,La Estrella,,Cardenal Caro,06,Libertador General Bernardo OHiggins,-34.2,-71.66667,wikidata
+06203,Litueche,,Cardenal Caro,06,Libertador General Bernardo OHiggins,-34.11667,-71.73333,wikidata
+06204,Marchihue,,Cardenal Caro,06,Libertador General Bernardo OHiggins,-34.39754,-71.61938,open-meteo-geocoding
+06205,Navidad,,Cardenal Caro,06,Libertador General Bernardo OHiggins,-33.93333,-71.83333,wikidata
+06206,Paredones,,Cardenal Caro,06,Libertador General Bernardo OHiggins,-34.64808,-71.89922,wikidata
+06301,San Fernando,,Colchagua,06,Libertador General Bernardo OHiggins,-34.5839,-70.9891,wikidata
+06302,Chépica,,Colchagua,06,Libertador General Bernardo OHiggins,-34.73333,-71.28333,wikidata
+06303,Chimbarongo,,Colchagua,06,Libertador General Bernardo OHiggins,-34.70889,-71.04028,wikidata
+06304,Lolol,,Colchagua,06,Libertador General Bernardo OHiggins,-34.72861,-71.64472,wikidata
+06305,Nancagua,,Colchagua,06,Libertador General Bernardo OHiggins,-34.66667,-71.21667,wikidata
+06306,Palmilla,,Colchagua,06,Libertador General Bernardo OHiggins,-34.6,-71.36667,wikidata
+06307,Peralillo,,Colchagua,06,Libertador General Bernardo OHiggins,-34.48333,-71.48333,wikidata
+06308,Placilla,,Colchagua,06,Libertador General Bernardo OHiggins,-34.63333,-71.11667,wikidata
+06309,Pumanque,,Colchagua,06,Libertador General Bernardo OHiggins,-34.6,-71.66667,wikidata
+06310,Santa Cruz,,Colchagua,06,Libertador General Bernardo OHiggins,-34.63333,-71.36667,wikidata
+07101,Talca,,Talca,07,Maule,-35.42694,-71.66556,wikidata
+07102,Constitución,,Talca,07,Maule,-35.33333,-72.41667,wikidata
+07103,Curepto,,Talca,07,Maule,-35.08333,-72.01667,wikidata
+07104,Empedrado,,Talca,07,Maule,-35.6,-72.28333,wikidata
+07105,Maule,,Talca,07,Maule,-35.53333,-71.7,wikidata
+07106,Pelarco,,Talca,07,Maule,-35.38333,-71.45,wikidata
+07107,Pencahue,,Talca,07,Maule,-35.4,-71.81667,wikidata
+07108,Río Claro,,Talca,07,Maule,-35.28333,-71.26667,wikidata
+07109,San Clemente,,Talca,07,Maule,-35.55,-71.48333,wikidata
+07110,San Rafael,,Talca,07,Maule,-35.31667,-71.53333,wikidata
+07201,Cauquenes,,Cauquenes,07,Maule,-35.97135,-72.27998,wikidata
+07202,Chanco,,Cauquenes,07,Maule,-35.73333,-72.53333,wikidata
+07203,Pelluhue,,Cauquenes,07,Maule,-35.815,-72.577,wikidata
+07301,Curicó,,Curico,07,Maule,-34.9854,-71.2394,wikidata
+07302,Hualañé,,Curico,07,Maule,-34.97653,-71.80479,wikidata
+07303,Licantén,,Curico,07,Maule,-34.98333,-72.0,wikidata
+07304,Molina,,Curico,07,Maule,-35.11306,-71.30556,wikidata
+07305,Rauco,,Curico,07,Maule,-34.93333,-71.31667,wikidata
+07306,Romeral,,Curico,07,Maule,-34.96667,-71.13333,wikidata
+07307,Sagrada Familia,,Curico,07,Maule,-35.0,-71.38333,wikidata
+07308,Teno,,Curico,07,Maule,-34.86667,-71.18333,wikidata
+07309,Vichuquén,,Curico,07,Maule,-34.88333,-72.0,wikidata
+07401,Linares,,Linares,07,Maule,-35.8454,-71.5979,wikidata
+07402,Colbún,,Linares,07,Maule,-35.7,-71.41667,wikidata
+07403,Longaví,,Linares,07,Maule,-35.96667,-71.68333,wikidata
+07404,Parral,,Linares,07,Maule,-36.15,-71.83333,wikidata
+07405,Retiro,,Linares,07,Maule,-36.05,-71.76667,wikidata
+07406,San Javier de Loncomilla,San Javier,Linares,07,Maule,-35.5924,-71.7353,wikidata
+07407,Villa Alegre,,Linares,07,Maule,-35.66667,-71.75,wikidata
+07408,Yerbas Buenas,,Linares,07,Maule,-35.75,-71.58333,wikidata
+08101,Concepción,,Concepcion,08,Biobio,-36.82694,-73.05028,wikidata
+08102,Coronel,,Concepcion,08,Biobio,-37.01667,-73.13333,wikidata
+08103,Chiguayante,,Concepcion,08,Biobio,-36.91667,-73.01667,wikidata
+08104,Florida,,Concepcion,08,Biobio,-36.81667,-72.66667,wikidata
+08105,Hualqui,,Concepcion,08,Biobio,-36.9759,-72.9384,wikidata
+08106,Lota,,Concepcion,08,Biobio,-37.0944,-73.1563,wikidata
+08107,Penco,,Concepcion,08,Biobio,-36.73861,-72.99389,wikidata
+08108,San Pedro de la Paz,,Concepcion,08,Biobio,-36.84082,-73.10311,wikidata
+08109,Santa Juana,,Concepcion,08,Biobio,-37.16667,-72.93333,wikidata
+08110,Talcahuano,,Concepcion,08,Biobio,-36.7145,-73.1141,wikidata
+08111,Tomé,,Concepcion,08,Biobio,-36.6171,-72.9575,wikidata
+08112,Hualpén,,Concepcion,08,Biobio,-36.78333,-73.08333,wikidata
+08201,Lebu,,Arauco,08,Biobio,-37.6103,-73.6561,wikidata
+08202,Arauco,,Arauco,08,Biobio,-37.2463,-73.3175,wikidata
+08203,Cañete,,Arauco,08,Biobio,-37.8,-73.38333,wikidata
+08204,Contulmo,,Arauco,08,Biobio,-38.0,-73.23333,wikidata
+08205,Curanilahue,,Arauco,08,Biobio,-37.46667,-73.35,wikidata
+08206,Los Álamos,,Arauco,08,Biobio,-37.61667,-73.46667,wikidata
+08207,Tirúa,,Arauco,08,Biobio,-38.33333,-73.5,wikidata
+08301,Los Ángeles,,Biobio,08,Biobio,-37.4707,-72.3517,wikidata
+08302,Antuco,,Biobio,08,Biobio,-37.33333,-71.68333,wikidata
+08303,Cabrero,,Biobio,08,Biobio,-37.03333,-72.4,wikidata
+08304,Laja,,Biobio,08,Biobio,-37.26667,-72.7,wikidata
+08305,Mulchén,,Biobio,08,Biobio,-37.71667,-72.23333,wikidata
+08306,Nacimiento,,Biobio,08,Biobio,-37.5,-72.66667,wikidata
+08307,Negrete,,Biobio,08,Biobio,-37.58333,-72.51667,wikidata
+08308,Quilaco,,Biobio,08,Biobio,-37.68436,-72.00636,wikidata
+08309,Quilleco,,Biobio,08,Biobio,-37.46667,-71.96667,wikidata
+08310,San Rosendo,,Biobio,08,Biobio,-37.26667,-72.71667,wikidata
+08311,Santa Bárbara,,Biobio,08,Biobio,-37.66667,-72.01667,wikidata
+08312,Tucapel,,Biobio,08,Biobio,-37.28333,-71.95,wikidata
+08313,Yumbel,,Biobio,08,Biobio,-37.13333,-72.53333,wikidata
+08314,Alto Biobío,,Biobio,08,Biobio,-38.05,-71.31667,wikidata
+09101,Temuco,,Cautin,09,La Araucania,-38.7399,-72.5901,wikidata
+09102,Carahue,,Cautin,09,La Araucania,-38.7,-73.16667,wikidata
+09103,Cunco,,Cautin,09,La Araucania,-38.91667,-72.03333,wikidata
+09104,Curarrehue,,Cautin,09,La Araucania,-39.35,-71.583,wikidata
+09105,Freire,,Cautin,09,La Araucania,-38.95,-72.63333,wikidata
+09106,Galvarino,,Cautin,09,La Araucania,-38.4,-72.78333,wikidata
+09107,Gorbea,,Cautin,09,La Araucania,-39.1,-72.68333,wikidata
+09108,Lautaro,,Cautin,09,La Araucania,-38.52917,-72.435,wikidata
+09109,Loncoche,,Cautin,09,La Araucania,-39.36667,-72.63333,wikidata
+09110,Melipeuco,,Cautin,09,La Araucania,-38.85,-71.7,wikidata
+09111,Nueva Imperial,,Cautin,09,La Araucania,-38.73333,-72.95,wikidata
+09112,Padre Las Casas,,Cautin,09,La Araucania,-38.79198,-72.57925,wikidata
+09113,Perquenco,,Cautin,09,La Araucania,-38.41667,-72.38333,wikidata
+09114,Pitrufquén,,Cautin,09,La Araucania,-38.98333,-72.65,wikidata
+09115,Pucón,,Cautin,09,La Araucania,-39.26667,-71.96667,wikidata
+09116,Saavedra,,Cautin,09,La Araucania,-38.78333,-73.4,wikidata
+09117,Teodoro Schmidt,,Cautin,09,La Araucania,-38.98482,-73.11473,wikidata
+09118,Nueva Toltén,Tolten,Cautin,09,La Araucania,-39.17821,-73.16388,wikidata
+09119,Vilcún,,Cautin,09,La Araucania,-39.11833,-72.37944,wikidata
+09120,Villarrica,,Cautin,09,La Araucania,-39.27807,-72.2274,wikidata
+09121,Cholchol,,Cautin,09,La Araucania,-38.6,-72.85,wikidata
+09201,Angol,,Malleco,09,La Araucania,-37.7988,-72.7086,wikidata
+09202,Collipulli,,Malleco,09,La Araucania,-37.95,-72.43333,wikidata
+09203,Curacautín,,Malleco,09,La Araucania,-38.43333,-71.88333,wikidata
+09204,Ercilla,,Malleco,09,La Araucania,-38.05,-72.38333,wikidata
+09205,Lonquimay,,Malleco,09,La Araucania,-38.43333,-71.23333,wikidata
+09206,Los Sauces,,Malleco,09,La Araucania,-37.96667,-72.83333,wikidata
+09207,Lumaco,,Malleco,09,La Araucania,-38.15,-72.91667,wikidata
+09208,Purén,,Malleco,09,La Araucania,-38.01667,-73.08333,wikidata
+09209,Renaico,,Malleco,09,La Araucania,-37.71779,-72.5757,wikidata
+09210,Traiguén,,Malleco,09,La Araucania,-38.25,-72.68333,wikidata
+09211,Victoria,,Malleco,09,La Araucania,-38.21667,-72.33333,wikidata
+10101,Puerto Montt,,Llanquihue,10,Los Lagos,-41.4718,-72.9396,wikidata
+10102,Calbuco,,Llanquihue,10,Los Lagos,-41.7712,-73.1275,wikidata
+10103,Cochamó,,Llanquihue,10,Los Lagos,-41.5,-72.31667,wikidata
+10104,Fresia,,Llanquihue,10,Los Lagos,-41.1531,-73.4223,wikidata
+10105,Frutillar,,Llanquihue,10,Los Lagos,-41.1258,-73.0605,wikidata
+10106,Los Muermos,,Llanquihue,10,Los Lagos,-41.4,-73.48333,wikidata
+10107,Llanquihue,,Llanquihue,10,Los Lagos,-41.25,-73.01667,wikidata
+10108,Maullín,,Llanquihue,10,Los Lagos,-41.61667,-73.6,wikidata
+10109,Puerto Varas,,Llanquihue,10,Los Lagos,-41.3178,-72.9827,wikidata
+10201,Castro,,Chiloe,10,Los Lagos,-42.4824,-73.7643,wikidata
+10202,Ancud,,Chiloe,10,Los Lagos,-41.8682,-73.8287,wikidata
+10203,Chonchi,,Chiloe,10,Los Lagos,-42.6238,-73.7725,wikidata
+10204,Curaco de Vélez,,Chiloe,10,Los Lagos,-42.4397,-73.6029,wikidata
+10205,Dalcahue,,Chiloe,10,Los Lagos,-42.3796,-73.6473,wikidata
+10206,Puqueldón,,Chiloe,10,Los Lagos,-42.5993,-73.6763,wikidata
+10207,Queilén,,Chiloe,10,Los Lagos,-42.88784,-73.47242,wikidata
+10208,Quellón,,Chiloe,10,Los Lagos,-43.1201,-73.6203,wikidata
+10209,Quemchi,,Chiloe,10,Los Lagos,-42.13333,-73.51667,wikidata
+10210,Quinchao,,Chiloe,10,Los Lagos,-42.53333,-73.41667,wikidata
+10301,Osorno,,Osorno,10,Los Lagos,-40.56667,-73.15,wikidata
+10302,Puerto Octay,,Osorno,10,Los Lagos,-40.96667,-72.9,wikidata
+10303,Purranque,,Osorno,10,Los Lagos,-40.91667,-73.16667,wikidata
+10304,Puyehue,,Osorno,10,Los Lagos,-40.66667,-72.61667,wikidata
+10305,Río Negro,,Osorno,10,Los Lagos,-40.79615,-73.21614,wikidata
+10306,San Juan de la Costa,,Osorno,10,Los Lagos,-40.51667,-73.4,wikidata
+10307,San Pablo,,Osorno,10,Los Lagos,-40.4,-73.01667,wikidata
+10401,Chaitén,,Palena,10,Los Lagos,-42.91931,-72.70882,wikidata
+10402,Futaleufú,,Palena,10,Los Lagos,-43.1858,-71.8667,wikidata
+10403,Hualaihué,,Palena,10,Los Lagos,-42.01667,-72.68333,wikidata
+10404,Palena,,Palena,10,Los Lagos,-43.6178,-71.8039,wikidata
+11101,Coyhaique,Coihaique,Coihaique,11,Aysen del General Carlos Ibanez del Campo,-45.5712,-72.0685,wikidata
+11102,Lago Verde,,Coihaique,11,Aysen del General Carlos Ibanez del Campo,-44.24167,-71.85167,wikidata
+11201,Aysén,Aisen,Aisen,11,Aysen del General Carlos Ibanez del Campo,-45.4,-72.7,wikidata
+11202,Cisnes,,Aisen,11,Aysen del General Carlos Ibanez del Campo,-44.75,-72.7,wikidata
+11203,Guaitecas,,Aisen,11,Aysen del General Carlos Ibanez del Campo,-43.88333,-73.73333,wikidata
+11301,Cochrane,,Capitan Prat,11,Aysen del General Carlos Ibanez del Campo,-47.2539,-72.5732,wikidata
+11302,O'Higgins,OHiggins,Capitan Prat,11,Aysen del General Carlos Ibanez del Campo,-48.46667,-72.56667,wikidata
+11303,Tortel,,Capitan Prat,11,Aysen del General Carlos Ibanez del Campo,-47.83333,-73.56667,wikidata
+11401,Chile Chico,,General Carrera,11,Aysen del General Carlos Ibanez del Campo,-46.5376,-71.7293,wikidata
+11402,Río Ibáñez,,General Carrera,11,Aysen del General Carlos Ibanez del Campo,-46.3,-71.93333,wikidata
+12101,Punta Arenas,,Magallanes,12,Magallanes y de la Antartica Chilena,-53.1625,-70.90806,wikidata
+12102,Laguna Blanca,,Magallanes,12,Magallanes y de la Antartica Chilena,-52.25,-71.91667,wikidata
+12103,Río Verde,,Magallanes,12,Magallanes y de la Antartica Chilena,-52.65,-71.48333,wikidata
+12104,San Gregorio,,Magallanes,12,Magallanes y de la Antartica Chilena,-52.31667,-69.68333,wikidata
+12201,Cabo de Hornos,,Antartica Chilena,12,Magallanes y de la Antartica Chilena,-54.93333,-67.61667,wikidata
+12202,Antártica,,Antartica Chilena,12,Magallanes y de la Antartica Chilena,-62.2,-58.96,manual
+12301,Porvenir,,Tierra del Fuego,12,Magallanes y de la Antartica Chilena,-53.3,-70.36667,wikidata
+12302,Primavera,,Tierra del Fuego,12,Magallanes y de la Antartica Chilena,-52.71667,-69.25,wikidata
+12303,Timaukel,,Tierra del Fuego,12,Magallanes y de la Antartica Chilena,-53.66667,-69.9,wikidata
+12401,Natales,,Ultima Esperanza,12,Magallanes y de la Antartica Chilena,-51.73333,-72.51667,wikidata
+12402,Torres del Paine,,Ultima Esperanza,12,Magallanes y de la Antartica Chilena,-51.26667,-72.35,wikidata
+13101,Santiago,,Santiago,13,Metropolitana de Santiago,-33.45,-70.66667,wikidata
+13102,Cerrillos,,Santiago,13,Metropolitana de Santiago,-33.48333,-70.7,wikidata
+13103,Cerro Navia,,Santiago,13,Metropolitana de Santiago,-33.41667,-70.71667,wikidata
+13104,Conchalí,,Santiago,13,Metropolitana de Santiago,-33.35,-70.61667,wikidata
+13105,El Bosque,,Santiago,13,Metropolitana de Santiago,-33.56667,-70.66667,wikidata
+13106,Estación Central,,Santiago,13,Metropolitana de Santiago,-33.45194,-70.67889,wikidata
+13107,Huechuraba,,Santiago,13,Metropolitana de Santiago,-33.35,-70.66667,wikidata
+13108,Independencia,,Santiago,13,Metropolitana de Santiago,-33.41462,-70.66452,wikidata
+13109,La Cisterna,,Santiago,13,Metropolitana de Santiago,-33.53483,-70.66406,wikidata
+13110,La Florida,,Santiago,13,Metropolitana de Santiago,-33.55,-70.56667,wikidata
+13111,La Granja,,Santiago,13,Metropolitana de Santiago,-33.54306,-70.63194,wikidata
+13112,La Pintana,,Santiago,13,Metropolitana de Santiago,-33.58333,-70.61667,wikidata
+13113,La Reina,,Santiago,13,Metropolitana de Santiago,-33.45,-70.55,wikidata
+13114,Las Condes,,Santiago,13,Metropolitana de Santiago,-33.41667,-70.58333,wikidata
+13115,Lo Barnechea,,Santiago,13,Metropolitana de Santiago,-33.35,-70.51667,wikidata
+13116,Lo Espejo,,Santiago,13,Metropolitana de Santiago,-33.53333,-70.71667,wikidata
+13117,Lo Prado,,Santiago,13,Metropolitana de Santiago,-33.43333,-70.71667,wikidata
+13118,Macul,,Santiago,13,Metropolitana de Santiago,-33.48763,-70.59954,wikidata
+13119,Maipú,,Santiago,13,Metropolitana de Santiago,-33.51667,-70.76667,wikidata
+13120,Ñuñoa,,Santiago,13,Metropolitana de Santiago,-33.46667,-70.6,wikidata
+13121,Pedro Aguirre Cerda,,Santiago,13,Metropolitana de Santiago,-33.49261,-70.67703,wikidata
+13122,Peñalolén,,Santiago,13,Metropolitana de Santiago,-33.48333,-70.53333,wikidata
+13123,Providencia,,Santiago,13,Metropolitana de Santiago,-33.43333,-70.61667,wikidata
+13124,Pudahuel,,Santiago,13,Metropolitana de Santiago,-33.43333,-70.71667,wikidata
+13125,Quilicura,,Santiago,13,Metropolitana de Santiago,-33.36667,-70.75,wikidata
+13126,Quinta Normal,,Santiago,13,Metropolitana de Santiago,-33.45,-70.7,wikidata
+13127,Recoleta,,Santiago,13,Metropolitana de Santiago,-33.41667,-70.65,wikidata
+13128,Renca,,Santiago,13,Metropolitana de Santiago,-33.4,-70.73333,wikidata
+13129,San Joaquín,,Santiago,13,Metropolitana de Santiago,-33.5,-70.61667,wikidata
+13130,San Miguel,,Santiago,13,Metropolitana de Santiago,-33.48596,-70.64994,wikidata
+13131,San Ramón,,Santiago,13,Metropolitana de Santiago,-33.54279,-70.64383,wikidata
+13132,Vitacura,,Santiago,13,Metropolitana de Santiago,-33.4,-70.6,wikidata
+13201,Puente Alto,,Cordillera,13,Metropolitana de Santiago,-33.61667,-70.58333,wikidata
+13202,Pirque,,Cordillera,13,Metropolitana de Santiago,-33.6352,-70.5729,wikidata
+13203,San José de Maipo,,Cordillera,13,Metropolitana de Santiago,-33.63333,-70.36667,wikidata
+13301,Colina,,Chacabuco,13,Metropolitana de Santiago,-33.20228,-70.67489,wikidata
+13302,Lampa,,Chacabuco,13,Metropolitana de Santiago,-33.28333,-70.9,wikidata
+13303,Tiltil,,Chacabuco,13,Metropolitana de Santiago,-33.08333,-70.93333,wikidata
+13401,San Bernardo,,Maipo,13,Metropolitana de Santiago,-33.6,-70.71667,wikidata
+13402,Buin,,Maipo,13,Metropolitana de Santiago,-33.73333,-70.75,wikidata
+13403,Calera de Tango,,Maipo,13,Metropolitana de Santiago,-33.65,-70.81667,wikidata
+13404,Paine,,Maipo,13,Metropolitana de Santiago,-33.81667,-70.75,wikidata
+13501,Melipilla,,Melipilla,13,Metropolitana de Santiago,-33.68553,-71.21461,wikidata
+13502,Alhué,,Melipilla,13,Metropolitana de Santiago,-34.03333,-71.1,wikidata
+13503,Curacaví,,Melipilla,13,Metropolitana de Santiago,-33.4,-71.15,wikidata
+13504,María Pinto,,Melipilla,13,Metropolitana de Santiago,-33.53333,-71.13333,wikidata
+13505,San Pedro,,Melipilla,13,Metropolitana de Santiago,-33.9,-71.46667,wikidata
+13601,Talagante,,Talagante,13,Metropolitana de Santiago,-33.66667,-70.93333,wikidata
+13602,El Monte,,Talagante,13,Metropolitana de Santiago,-33.68333,-71.01667,wikidata
+13603,Isla de Maipo,,Talagante,13,Metropolitana de Santiago,-33.75,-70.9,wikidata
+13604,Padre Hurtado,,Talagante,13,Metropolitana de Santiago,-33.56667,-70.83333,wikidata
+13605,Peñaflor,,Talagante,13,Metropolitana de Santiago,-33.61667,-70.91667,wikidata
+14101,Valdivia,,Valdivia,14,Los Rios,-39.8142,-73.2459,wikidata
+14102,Corral,,Valdivia,14,Los Rios,-39.88833,-73.4325,wikidata
+14103,Lanco,,Valdivia,14,Los Rios,-39.4523,-72.7755,wikidata
+14104,Los Lagos,,Valdivia,14,Los Rios,-39.85,-72.83333,wikidata
+14105,Máfil,,Valdivia,14,Los Rios,-39.65,-72.95,wikidata
+14106,Mariquina,,Valdivia,14,Los Rios,-39.53913,-72.96169,wikidata
+14107,Paillaco,,Valdivia,14,Los Rios,-40.0706,-72.8727,wikidata
+14108,Panguipulli,,Valdivia,14,Los Rios,-39.6419,-72.3334,wikidata
+14201,La Unión,,Ranco,14,Los Rios,-40.2952,-73.0822,wikidata
+14202,Futrono,,Ranco,14,Los Rios,-40.13333,-72.4,wikidata
+14203,Lago Ranco,,Ranco,14,Los Rios,-40.31667,-72.5,wikidata
+14204,Río Bueno,,Ranco,14,Los Rios,-40.3337,-72.9568,wikidata
+15101,Arica,,Arica,15,Arica y Parinacota,-18.47839,-70.32122,wikidata
+15102,Camarones,,Arica,15,Arica y Parinacota,-19.01667,-69.86667,wikidata
+15201,Putre,,Parinacota,15,Arica y Parinacota,-18.42869,-69.31158,wikidata
+15202,General Lagos,,Parinacota,15,Arica y Parinacota,-17.56667,-69.5,wikidata
+16101,Chillán,,Diguillin,16,Nuble,-36.6067,-72.1033,wikidata
+16102,Bulnes,,Diguillin,16,Nuble,-36.74232,-72.29854,wikidata
+16103,Chillán Viejo,,Diguillin,16,Nuble,-36.6229,-72.1317,wikidata
+16104,El Carmen,,Diguillin,16,Nuble,-36.89785,-72.02461,wikidata
+16105,Pemuco,,Diguillin,16,Nuble,-36.96667,-72.1,wikidata
+16106,Pinto,,Diguillin,16,Nuble,-36.7,-71.9,wikidata
+16107,Quillón,,Diguillin,16,Nuble,-36.73333,-72.46667,wikidata
+16108,San Ignacio,,Diguillin,16,Nuble,-36.79982,-72.03035,wikidata
+16109,Yungay,,Diguillin,16,Nuble,-37.11667,-72.01667,wikidata
+16201,Quirihue,,Itata,16,Nuble,-36.28272,-72.54086,wikidata
+16202,Cobquecura,,Itata,16,Nuble,-36.13333,-72.78333,wikidata
+16203,Coelemu,,Itata,16,Nuble,-36.4876,-72.70233,wikidata
+16204,Ninhue,,Itata,16,Nuble,-36.4,-72.4,wikidata
+16205,Portezuelo,,Itata,16,Nuble,-36.54644,-72.46651,wikidata
+16206,Ránquil,,Itata,16,Nuble,-36.65,-72.55,wikidata
+16207,Treguaco,,Itata,16,Nuble,-36.43333,-72.66667,wikidata
+16301,San Carlos,,Punilla,16,Nuble,-36.4248,-71.9581,wikidata
+16302,Coihueco,,Punilla,16,Nuble,-36.61667,-71.83333,wikidata
+16303,Ñiquén,,Punilla,16,Nuble,-36.3,-71.9,wikidata
+16304,San Fabián,,Punilla,16,Nuble,-36.55,-71.55,wikidata
+16305,San Nicolás,,Punilla,16,Nuble,-36.5,-72.21667,wikidata

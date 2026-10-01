@@ -1,0 +1,21 @@
+[
+ {
+  "id": 3873441,
+  "name": "Rengo",
+  "latitude": -34.40639,
+  "longitude": -70.85834,
+  "elevation": 326.0,
+  "feature_code": "PPL",
+  "country_code": "CL",
+  "admin1_id": 3883281,
+  "admin2_id": 3897525,
+  "admin3_id": 8261279,
+  "timezone": "America/Santiago",
+  "population": 38100,
+  "country_id": 3895114,
+  "country": "Chile",
+  "admin1": "Región del Libertador General Bernardo O'Higgins",
+  "admin2": "Cachapoal",
+  "admin3": "Rengo"
+ }
+]
