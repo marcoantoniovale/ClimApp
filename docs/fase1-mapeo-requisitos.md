@@ -106,7 +106,7 @@ Resuelve varias decisiones pendientes del CLAUDE.md. Es una **propuesta**: requi
 | `bulletins_raw` | id, fuente, emitido, contenido, url | Texto crudo; entrada del LLM en Fase 2. |
 | `ingestion_runs` | id, conector, inicio, fin, estado, filas, error | Monitoreo y depuración. |
 
-Variables mínimas: temperatura, probabilidad y cantidad de precipitación, velocidad/dirección/ráfaga de viento, humedad relativa, presión; en puntos costeros, altura/período/dirección de oleaje (API marina de Open-Meteo **(verificar)**).
+Variables mínimas: temperatura, sensación térmica, estado del cielo (`weather_code`), índice UV, probabilidad y cantidad de precipitación, velocidad/dirección/ráfaga de viento, humedad relativa, presión; en puntos costeros, altura/período/dirección de oleaje (API marina de Open-Meteo, confirmada). Sensación térmica, estado del cielo e índice UV se agregaron por la plantilla de frontend.
 
 ### 4.3 Unidades canónicas (RF02.1)
 | Variable | Se almacena en | Se muestra en |
@@ -138,6 +138,8 @@ La conversión se hace en un único módulo con pruebas unitarias; la UI elige l
 - Encabezados de caché HTTP para que el CDN absorba los picos (RNF03).
 
 ### 4.7 Frontend (RF05.1, RF05.2)
+Referencia visual y de componentes: plantilla `Template/`, con los ajustes de [frontend-template-analisis.md](frontend-template-analisis.md).
+
 - Página de inicio con buscador de comuna/ciudad/puerto.
 - Página por ubicación: tarjetas diarias a 7 días, gráfico horario (temperatura, precipitación, viento, humedad), banner de avisos marítimos vigentes, hora de la última actualización y aviso de "pronóstico provisional".
 - Diseño responsivo (uso móvil en zonas costeras).

@@ -80,6 +80,7 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Stack **aprobado** (2026-10-01): ETL en Python, API como Route Handlers de Next.js en Vercel leyendo Redis, cron en GitHub Actions, monorepo en `ClimAppWeb/`.
 - Fase 1, semana 1 casi completa: spikes ([docs/spikes-semana1.md](docs/spikes-semana1.md)), catálogo geográfico, esquema de BD v1 y semilla SQL. Falta crear Supabase y el repositorio remoto.
 - Diseño de la Fase 1: [docs/fase1-mapeo-requisitos.md](docs/fase1-mapeo-requisitos.md).
+- Referencia visual del frontend: [Template/](Template/) (aportada por el usuario) con ajustes en [docs/frontend-template-analisis.md](docs/frontend-template-analisis.md). Paleta: fondo `#0F172A`, turquesa `#0EA5E9`, naranja `#F97316`.
 
 ---
 
@@ -104,6 +105,11 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Esquema de BD v1: [db/migrations/0001_init.sql](ClimAppWeb/db/migrations/0001_init.sql). Semilla generada por [export_seed.py](ClimAppWeb/etl/scripts/export_seed.py) en `db/seeds/0001_catalogo.sql`. Sintaxis validada con el parser de PostgreSQL (pglast); falta probarla en una base real.
 - Pruebas de integridad del catálogo: 9/9 OK (`pytest`).
 - Actualizado [docs/fase1-mapeo-requisitos.md](docs/fase1-mapeo-requisitos.md) con los resultados de los spikes.
+
+### 2026-10-01 — rama `docs/frontend-template`
+- Revisada la carpeta `Template/` aportada por el usuario (propuesta de frontend Gemini, logo e ícono SVG, script de PNG). Se incorpora al repositorio sin cambios como referencia.
+- Creado [docs/frontend-template-analisis.md](docs/frontend-template-analisis.md): qué se adopta (paleta, logo, componentes, PWA, mobile-first) y 13 ajustes (ubicación en `ClimAppWeb/web`, rutas por ubicación, Server Components, variables faltantes, Tailwind v4, íconos maskable, SVG como fuente única, etc.).
+- Nuevas variables para el ETL: estado del cielo, sensación térmica, índice UV. Agregadas como columnas a `forecast_current` en [0001_init.sql](ClimAppWeb/db/migrations/0001_init.sql) (migración aún no aplicada en ninguna base).
 
 ---
 
@@ -134,6 +140,6 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 ### Fase 1 (MVP) — detalle y plan semanal en [docs/fase1-mapeo-requisitos.md §5](docs/fase1-mapeo-requisitos.md)
 - [ ] Semana 1: spikes ✅, estructura del monorepo ✅, catálogo geográfico ✅, esquema de BD v1 ✅. **Falta:** crear proyecto Supabase y aplicar migración + semilla (requiere cuenta del usuario); repositorio remoto.
 - [ ] Catálogo, pendientes: marcar comunas costeras (`es_costera`); catálogo de puertos/sectores costeros y mapeo de zonas de avisos → comunas (semana 3); exportar JSON para el buscador (semana 4).
-- [ ] Semana 2: conector Open-Meteo, unidades canónicas con pruebas, tablas `forecast_current` / `forecast_archive`, cron, `ingestion_runs`. Considerar adelantar el conector de observaciones Armada (API JSON).
+- [ ] Semana 2: conector Open-Meteo, unidades canónicas con pruebas, tablas `forecast_current` / `forecast_archive`, cron, `ingestion_runs`. Considerar adelantar el conector de observaciones Armada (API JSON). Incluir `weather_code`, `apparent_temperature` y `uv_index` (requeridos por la plantilla de frontend).
 - [ ] Semana 3: conector Armada (avisos + observaciones si no se adelantó), precálculo a Redis, endpoints de API.
-- [ ] Semana 4: buscador, panel 7 días, avisos marítimos, despliegue en Vercel, alertas de fallas de ingesta. Incluir atribución CC BY 4.0 a Open-Meteo.
+- [ ] Semana 4: buscador, panel 7 días, avisos marítimos, despliegue en Vercel, alertas de fallas de ingesta. Incluir atribución CC BY 4.0 a Open-Meteo. Implementar sobre la plantilla `Template/` con los 13 ajustes de [docs/frontend-template-analisis.md](docs/frontend-template-analisis.md) (Server Components, Tailwind v4, íconos PWA desde SVG con `sharp`, sin `radar/` hasta Fase 3).

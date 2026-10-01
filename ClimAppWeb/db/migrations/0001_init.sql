@@ -44,6 +44,9 @@ create table forecast_current (
     valid_time          timestamptz not null,
     fetched_at          timestamptz not null,
     temperatura         real,
+    sensacion_termica   real,
+    estado_cielo        smallint,             -- código WMO (weather_code de Open-Meteo)
+    indice_uv           real,
     humedad             real,                 -- %
     precip_prob         real,                 -- %
     precipitacion       real,
