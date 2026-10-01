@@ -78,7 +78,8 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 ## 6. Estado actual
 
 - Stack **aprobado** (2026-10-01): ETL en Python, API como Route Handlers de Next.js en Vercel leyendo Redis, cron en GitHub Actions, monorepo en `ClimAppWeb/`.
-- Fase 1, semana 1 casi completa: spikes ([docs/spikes-semana1.md](docs/spikes-semana1.md)), catálogo geográfico, esquema de BD v1 y semilla SQL. Falta crear Supabase.
+- Fase 1, **semana 1 completa**: spikes ([docs/spikes-semana1.md](docs/spikes-semana1.md)), catálogo geográfico, esquema de BD v1 aplicado en Supabase con el catálogo cargado (346 comunas, 100 estaciones).
+- Base de datos: Supabase, proyecto `drtgaltvmwbqffbsjaiw`, región São Paulo, PostgreSQL 17. Conexión por Session pooler en `ClimAppWeb/.env` (no versionado).
 - Repositorio: https://github.com/marcoantoniovale/ClimApp (privado). `gh` instalado en `C:\Program Files\GitHub CLI\`.
 - Diseño de la Fase 1: [docs/fase1-mapeo-requisitos.md](docs/fase1-mapeo-requisitos.md).
 - Referencia visual del frontend: [Template/](Template/) (aportada por el usuario) con ajustes en [docs/frontend-template-analisis.md](docs/frontend-template-analisis.md). Paleta: fondo `#0F172A`, turquesa `#0EA5E9`, naranja `#F97316`.
@@ -119,6 +120,7 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Dependencia `psycopg[binary]` agregada al ETL.
 - Conexión: usar el **Session pooler** de Supabase (IPv4); la conexión directa es solo IPv6.
 - Instalado GitHub CLI 2.102.0; sesión `marcoantoniovale` (permisos `repo`, `workflow`). Creado el repositorio privado [marcoantoniovale/ClimApp](https://github.com/marcoantoniovale/ClimApp) y subidas todas las ramas. Revisado el historial antes de subir: sin secretos.
+- Supabase conectado: `migrate.py --seed` aplicó 0001_init y 0002_rls y cargó el catálogo (346 comunas, 16 regiones, 100 estaciones, todas con comuna). Verificado: RLS activo en 10/10 tablas (incluida `schema_migrations`), re-ejecución idempotente, base de 11 MB.
 
 ---
 
@@ -147,7 +149,8 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Open-Meteo: revisar comunas costeras cuyo punto de grilla cae en el mar.
 
 ### Fase 1 (MVP) — detalle y plan semanal en [docs/fase1-mapeo-requisitos.md §5](docs/fase1-mapeo-requisitos.md)
-- [ ] Semana 1: spikes ✅, estructura del monorepo ✅, catálogo geográfico ✅, esquema de BD v1 ✅. **Falta:** crear proyecto Supabase (usuario) → poner `DATABASE_URL` en `ClimAppWeb/.env` → `python scripts/migrate.py --seed`. Repositorio remoto ✅.
+- [x] Semana 1: spikes, estructura del monorepo, catálogo geográfico, esquema de BD v1 aplicado en Supabase, repositorio remoto. (2026-10-01)
+- [ ] Seguridad: cambiar la contraseña de la base de datos de Supabase (se compartió en el chat) y actualizar `ClimAppWeb/.env`.
 - [ ] Catálogo, pendientes: marcar comunas costeras (`es_costera`); catálogo de puertos/sectores costeros y mapeo de zonas de avisos → comunas (semana 3); exportar JSON para el buscador (semana 4).
 - [ ] Semana 2: conector Open-Meteo, unidades canónicas con pruebas, tablas `forecast_current` / `forecast_archive`, cron, `ingestion_runs`. Considerar adelantar el conector de observaciones Armada (API JSON). Incluir `weather_code`, `apparent_temperature` y `uv_index` (requeridos por la plantilla de frontend).
 - [ ] Semana 3: conector Armada (avisos + observaciones si no se adelantó), precálculo a Redis, endpoints de API.
