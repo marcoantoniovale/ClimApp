@@ -1,7 +1,10 @@
 # Ingesta horaria de ClimApp (código en ClimAppWeb/etl).
 # El modo "auto" decide qué corresponde según la última corrida exitosa registrada en
-# ingestion_runs: observaciones Armada cada hora, pronóstico cada 6 h, archivo cada 12 h,
-# mantención cada 24 h. Así tolera los retrasos habituales del cron de GitHub.
+# ingestion_runs: pronóstico cada 6 h, archivo cada 12 h, mantención cada 24 h. Así tolera
+# los retrasos habituales del cron de GitHub.
+#
+# Las observaciones de la Armada NO se recolectan aquí: su API bloquea las IP de GitHub Actions
+# (Azure) y de AWS (verificado el 2026-10-01). Se recolectan desde un equipo en Chile.
 #
 # Nota: GitHub solo ejecuta los "schedule" del archivo que está en la rama por defecto (main).
 
@@ -46,4 +49,4 @@ jobs:
       - name: Ejecutar
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python -m climapp_etl ${{ inputs.comando || 'auto' }}
+        run: python -m climapp_etl ${{ inputs.comando || 'auto' }} ${{ (inputs.comando || 'auto') == 'auto' && '--sin-observaciones' || '' }}

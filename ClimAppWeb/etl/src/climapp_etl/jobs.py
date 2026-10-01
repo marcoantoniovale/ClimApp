@@ -145,15 +145,20 @@ def maintenance(conn: psycopg.Connection) -> None:
         log.info("mantención: %s; base %s", counts, size)
 
 
-def auto(conn: psycopg.Connection) -> None:
+def auto(conn: psycopg.Connection, with_observations: bool = True) -> None:
     """Lo que corresponda según la última corrida exitosa: observaciones siempre,
-    pronóstico cada 6 h, archivo cada 12 h y mantención cada 24 h. Pensado para un cron horario."""
+    pronóstico cada 6 h, archivo cada 12 h y mantención cada 24 h. Pensado para un cron horario.
+
+    with_observations=False: la API de observaciones de la Armada bloquea las redes de nube
+    (GitHub Actions/Azure, AWS); ahí las observaciones se recolectan desde un equipo en Chile."""
     now = datetime.now(timezone.utc)
     failures = []
-    for name, job, every in (("armada_obs", observations, None),
-                             ("open_meteo", forecast, FORECAST_EVERY),
-                             ("open_meteo_archivo", archive, ARCHIVE_EVERY),
-                             ("mantencion", maintenance, MAINTENANCE_EVERY)):
+    jobs = [("open_meteo", forecast, FORECAST_EVERY),
+            ("open_meteo_archivo", archive, ARCHIVE_EVERY),
+            ("mantencion", maintenance, MAINTENANCE_EVERY)]
+    if with_observations:
+        jobs.insert(0, ("armada_obs", observations, None))
+    for name, job, every in jobs:
         last = last_success(conn, name)
         if every and last and now - last < every - MARGIN:
             log.info("%s: no corresponde (última %s)", name, last.isoformat(timespec="minutes"))
