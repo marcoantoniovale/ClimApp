@@ -23,6 +23,9 @@ export type UbicacionIndice = {
   alias: string | null;
   region: string;
   costera: boolean;
+  /** Cabecera comunal (para "Usar mi ubicación"); puede faltar en índices antiguos. */
+  lat?: number;
+  lon?: number;
 };
 
 export type Hora = {

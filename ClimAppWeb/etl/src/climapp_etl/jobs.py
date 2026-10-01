@@ -237,8 +237,11 @@ def snapshots(conn: psycopg.Connection) -> None:
                     on conflict (location_id) do update set payload = excluded.payload, updated_at = now()""",
                     [(loc_id, p["ubicacion"]["slug"], Jsonb(p)) for loc_id, p in payloads.items()])
 
+        # lat/lon de la cabecera comunal: la web busca la comuna más cercana a la posición del
+        # usuario en el propio dispositivo (la ubicación no se envía al servidor).
         index = [{"slug": l["slug"], "nombre": l["nombre"], "alias": l["alias"], "region": l["region"],
-                  "costera": l["es_costera"]} for l in locations]
+                  "costera": l["es_costera"], "lat": round(l["lat"], 3), "lon": round(l["lon"], 3)}
+                 for l in locations]
         items = {f"loc:{p['ubicacion']['slug']}": p for p in payloads.values()}
         items["indice"] = index
         items["meta"] = {"generado": snapshot._iso_local(now), "ubicaciones": len(payloads)}

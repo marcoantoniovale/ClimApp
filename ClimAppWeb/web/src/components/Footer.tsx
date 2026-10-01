@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function Footer() {
   return (
     <footer className="mx-auto w-full max-w-4xl px-4 pb-28 pt-10 text-xs leading-relaxed text-slate-400 md:pb-10">
@@ -11,6 +13,13 @@ export default function Footer() {
         </a>
         . Ante una emergencia, siga siempre los avisos oficiales.
       </p>
+
+      <div className="mt-6 flex items-center gap-2 border-t border-climapp-line/60 pt-4">
+        <Image src="/brand/msins-mark.svg" alt="" width={24} height={24} className="rounded-md ring-1 ring-white/15" />
+        <p>
+          Creador: <span className="font-semibold text-slate-200">Grupo MSinS</span>
+        </p>
+      </div>
     </footer>
   );
 }

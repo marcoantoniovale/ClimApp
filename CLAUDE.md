@@ -168,6 +168,13 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - API en producción: todos los endpoints OK desde Chile, CDN y funciones en `gru1`. 100 comunas al azar, tiempo de servidor sin TLS: sin caché p50 91 ms / **p95 117 ms**; con caché de CDN p50 70 ms / **p95 93 ms**. Primera llamada tras un despliegue ~1 s (arranque en frío).
 - API probada en local (`next start`): todos los endpoints OK, 404 para slugs inexistentes o inválidos; 200 peticiones a comunas al azar sin CDN: p50 72 ms, **p95 140 ms**, máx. 228 ms.
 
+### 2026-10-01 — rama `feature/geolocalizacion`
+- **"Usar mi ubicación"** en el buscador (botón dentro del campo). Privacidad: la posición no sale del dispositivo; el navegador descarga solo los polígonos de hasta 6 comunas cercanas y verifica en cuál cae el punto. Si no cae en ninguno (p. ej. en el mar), usa la cabecera más cercana; a más de 80 km de toda cabecera avisa que está fuera de Chile. Mensajes para permiso denegado, tiempo agotado y ubicación no disponible.
+- Por qué polígonos: con solo la cabecera más cercana, el Costanera Center (Providencia) caía en Vitacura. Con polígonos, 13/13 casos correctos.
+- ETL: el índice `climapp:v1:indice` incluye `lat`/`lon` de la cabecera (publicado; 48 KB). Nuevo [export_geo.py](ClimAppWeb/etl/scripts/export_geo.py): polígonos simplificados (~55 m; más gruesos si pasan de 60 KB, solo archipiélagos del sur) en `web/public/geo/<slug>.json` (345 archivos, 3,0 MB; Antártica no tiene polígono).
+- Web: [geo.ts](ClimAppWeb/web/src/lib/geo.ts) (distancia, punto en polígono con huecos, `comunaEnPosicion`). Pruebas con `node --test` (`npm test`, 9/9) usando el catálogo y los polígonos del repo; `tests/` excluido del `tsconfig`.
+- **Firma en el pie**: "Creador: Grupo MSinS" con logo pequeño (24 px). A pedido del usuario se modernizó el logo: [msins-mark.svg](ClimAppWeb/web/public/brand/msins-mark.svg) es una versión compacta (solo los lentes, sin texto, que a ese tamaño era ilegible y dependía de fuentes no disponibles). El original sigue en `Template/MSinS.svg`.
+
 ---
 
 ## 8. Pendientes
