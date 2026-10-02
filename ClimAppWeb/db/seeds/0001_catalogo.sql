@@ -350,6 +350,47 @@ insert into locations (tipo, cut, slug, nombre, alias, region_id, region, lat, l
   ('comuna', '16305', 'san-nicolas', 'San Nicolás', null, '16', 'Nuble', -36.5, -72.21667, false)
 on conflict (cut) do update set nombre = excluded.nombre, alias = excluded.alias, lat = excluded.lat, lon = excluded.lon, es_costera = excluded.es_costera;
 
+-- Pasos fronterizos (catálogo pasos.csv); slug con prefijo para no chocar con comunas.
+insert into locations (tipo, slug, nombre, region_id, region, lat, lon, altura_m, es_costera) values
+  ('paso', 'paso-visviri', 'Visviri', '15', 'Arica y Parinacota', -17.583, -69.467, 4095, false),
+  ('paso', 'paso-chungara', 'Chungará', '15', 'Arica y Parinacota', -18.267, -69.300, 4680, false),
+  ('paso', 'paso-concordia', 'Concordia', '15', 'Arica y Parinacota', -18.300, -70.300, 98, false),
+  ('paso', 'paso-colchane', 'Colchane', '01', 'Tarapaca', -19.267, -68.617, 3695, false),
+  ('paso', 'paso-ollague', 'Ollagüe', '02', 'Antofagasta', -21.217, -68.233, 3695, false),
+  ('paso', 'paso-san-pedro-de-atacama', 'San Pedro de Atacama', '02', 'Antofagasta', -22.900, -68.183, 2450, false),
+  ('paso', 'paso-hito-cajon', 'Hito Cajón', '02', 'Antofagasta', -22.900, -67.783, 4480, false),
+  ('paso', 'paso-jama', 'Jama', '02', 'Antofagasta', -23.233, -67.067, 4208, false),
+  ('paso', 'paso-sico', 'Sico', '02', 'Antofagasta', -23.850, -67.267, 4092, false),
+  ('paso', 'paso-san-francisco', 'San Francisco', '03', 'Atacama', -26.833, -69.033, 4748, false),
+  ('paso', 'paso-pircas-negras', 'Pircas Negras', '03', 'Atacama', -27.933, -69.333, 3100, false),
+  ('paso', 'paso-agua-negra', 'Agua Negra', '04', 'Coquimbo', -29.967, -70.083, 4779, false),
+  ('paso', 'paso-los-libertadores', 'Los Libertadores (Cristo Redentor)', '05', 'Valparaiso', -32.817, -70.083, 2900, false),
+  ('paso', 'paso-vergara', 'Vergara', '07', 'Maule', -35.133, -70.467, 2505, false),
+  ('paso', 'paso-pehuenche', 'Pehuenche', '07', 'Maule', -35.983, -70.400, 2553, false),
+  ('paso', 'paso-pichachen', 'Pichachén', '08', 'Biobio', -37.517, -71.200, 2060, false),
+  ('paso', 'paso-pino-hachado', 'Pino Hachado (Liucura)', '09', 'La Araucania', -38.633, -71.083, 1884, false),
+  ('paso', 'paso-mamuil-malal', 'Mamuil Malal (Icalma)', '09', 'La Araucania', -39.583, -71.467, 1207, false),
+  ('paso', 'paso-carirrine', 'Carirriñe', '14', 'Los Rios', -39.767, -71.700, 1223, false),
+  ('paso', 'paso-huahum', 'Huahum', '14', 'Los Rios', -40.083, -71.667, 659, false),
+  ('paso', 'paso-pajaritos', 'Pajaritos', '10', 'Los Lagos', -40.650, -72.117, 448, false),
+  ('paso', 'paso-cardenal-samore', 'Cardenal Samoré', '10', 'Los Lagos', -40.700, -71.933, 1321, false),
+  ('paso', 'paso-vicente-perez-rosales', 'Vicente Pérez Rosales', '10', 'Los Lagos', -41.083, -72.017, 200, false),
+  ('paso', 'paso-futaleufu', 'Futaleufú', '10', 'Los Lagos', -43.167, -71.750, 335, false),
+  ('paso', 'paso-coyhaique-huemules', 'Coyhaique (Huemules)', '11', 'Aysen del General Carlos Ibanez del Campo', -45.467, -71.600, 795, false),
+  ('paso', 'paso-ibanez-pallavicini', 'Ibáñez Pallavicini', '11', 'Aysen del General Carlos Ibanez del Campo', -46.283, -71.933, 327, false),
+  ('paso', 'paso-rio-jeinimeni', 'Río Jeinimeni', '11', 'Aysen del General Carlos Ibanez del Campo', -46.550, -71.667, 255, false),
+  ('paso', 'paso-roballos', 'Roballos', '11', 'Aysen del General Carlos Ibanez del Campo', -47.183, -71.967, 715, false),
+  ('paso', 'paso-rio-mayer', 'Río Mayer', '11', 'Aysen del General Carlos Ibanez del Campo', -48.200, -72.317, 456, false),
+  ('paso', 'paso-rio-mosco', 'Río Mosco', '11', 'Aysen del General Carlos Ibanez del Campo', -48.467, -72.550, 250, false),
+  ('paso', 'paso-dos-lagunas', 'Dos Lagunas', '11', 'Aysen del General Carlos Ibanez del Campo', -48.867, -72.733, 693, false),
+  ('paso', 'paso-monte-aymond', 'Monte Aymond (Integración Austral)', '12', 'Magallanes y de la Antartica Chilena', -52.150, -69.517, 150, false),
+  ('paso', 'paso-rio-don-guillermo', 'Río Don Guillermo', '12', 'Magallanes y de la Antartica Chilena', -51.250, -72.333, 260, false),
+  ('paso', 'paso-dorotea', 'Dorotea', '12', 'Magallanes y de la Antartica Chilena', -51.600, -72.317, 605, false),
+  ('paso', 'paso-casas-viejas', 'Casas Viejas', '12', 'Magallanes y de la Antartica Chilena', -51.683, -72.317, 240, false),
+  ('paso', 'paso-san-sebastian', 'San Sebastián', '12', 'Magallanes y de la Antartica Chilena', -53.317, -68.650, 17, false),
+  ('paso', 'paso-rio-bellavista', 'Río Bellavista', '12', 'Magallanes y de la Antartica Chilena', -54.000, -68.617, 113, false)
+on conflict (slug) do update set nombre = excluded.nombre, lat = excluded.lat, lon = excluded.lon, altura_m = excluded.altura_m, region = excluded.region, region_id = excluded.region_id;
+
 insert into stations (id, red, nombre, lat, lon, location_id) values
   ('34646', 'ema', 'Puerto Edén', -49.12917, -74.42918, (select id from locations where cut = '11302')),
   ('66666', 'ema', 'Valparaíso EMA', -33.02, -71.642, (select id from locations where cut = '05101')),

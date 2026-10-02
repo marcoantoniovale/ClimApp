@@ -1,0 +1,10 @@
+var fechaemision_aysen="Jueves 01 de Octubre del 2026 a las 16:59 horas";
+var PronoFechas_aysen="Viernes 02:S&aacute;bado 03:Domingo 04:Lunes 05:Martes 06";
+var apreciacion_aysen="Inestabilidad postfrontal.";
+var iso_registrada_aysen="";
+var iso_fecha_registrada_aysen="Jueves 01";
+var PronoRoballos="lluvianieve.png|Nublado y chubascos de aguanieve d&eacute;biles matinales.:lluvianieve.png|Nublado y chubascos de aguanieve d&eacute;biles a partir de la tarde.:lluvianoche.png|Nublado y chubascos de agua a fines del d&iacute;a:lluvia.png|Nublado y chubascos d&eacute;biles matinales.:lluvia.png|Nublado y chubascos d&eacute;biles matinales.";
+var PronoRioMayer="solparciallluvia.png|Cubierto y lluvia d&eacute;bil variando a nublado.:lluvianoche.png|Nublado y chubascos d&eacute;biles en la madrugada.:parcialalta.png|Nubosidad parcial.:parcial.png|Nublado.:parcialalta.png|Nubosidad parcial ocasionalmente nublado.";
+var PronoRioMosco="solparciallluvia.png|Cubierto y lluvia d&eacute;bil variando a nublado.:lluvianoche.png|Nublado y chubascos d&eacute;biles en la madrugada.:parcialalta.png|Nubosidad parcial.:parcial.png|Nublado.:parcialalta.png|Nubosidad parcial ocasionalmente nublado.";
+var PronoDosLagunas="lluvianieve.png|Cubierto y aguanieve d&eacute;bil variando a nublado.:lluvianoche.png|Nublado y chubascos d&eacute;biles en la madrugada.:parcialalta.png|Nubosidad parcial.:parcial.png|Nublado.:parcialalta.png|Nubosidad parcial ocasionalmente nublado.";
+var PronoIsotermas_aysen="1000:1000:1000:1000:1000";

@@ -1,0 +1,9 @@
+var fechaemision_AricaParinacota="Jueves 01 de Octubre del 2026 a las 17:53 horas";
+var PronoFechas_AricaParinacota="Viernes 02:S&aacute;bado 03:Domingo 04:Lunes 05:Martes 06";
+var apreciacion_AricaParinacota="Dorsal en altura";
+var iso_registrada_AricaParinacota="";
+var iso_fecha_registrada_AricaParinacota="Jueves 01";
+var PronoVisviri="sol.png|Despejado. Viento entre 40 y 60 km/h:sol.png|Despejado. Viento entre 40 y 60 km/h:sol.png|Despejado. Viento entre 40 y 60 km/h:sol.png|Despejado. Viento entre 40 y 60 km/h:sol.png|Despejado. Viento entre 40 y 60 km/h";
+var PronoChungara="sol.png|Despejado. Viento entre 40 y 60 km/h:sol.png|Despejado. Viento entre 40 y 60 km/h:sol.png|Despejado. Viento entre 40 y 60 km/h:sol.png|Despejado. Viento entre 40 y 60 km/h:sol.png|Despejado. Viento entre 40 y 60 km/h";
+var Pronoconcordia="cubierto.png|Cubierto variando a nublado.  Viento entre 25 y 40 km/h:cubierto.png|Cubierto variando a despejado.  Viento entre 25 y 40 km/h:cubierto.png|Cubierto variando a despejado.  Viento entre 25 y 40 km/h:cubierto.png|Cubierto variando a despejado.  Viento entre 25 y 40 km/h:cubierto.png|Cubierto variando a despejado.  Viento entre 25 y 40 km/h";
+var PronoIsotermas_AricaParinacota="5000-4900:4700-4800:4800-4900:4700-4900:4900-5100";

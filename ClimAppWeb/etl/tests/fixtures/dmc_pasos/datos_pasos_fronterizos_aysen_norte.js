@@ -1,0 +1,9 @@
+var fechaemision_aysen="Jueves 01 de Octubre del 2026 a las 16:51 horas";
+var PronoFechas_aysen="Viernes 02:S&aacute;bado 03:Domingo 04:Lunes 05:Martes 06";
+var apreciacion_aysen="Inestabilidad postfrontal.";
+var iso_registrada_aysen="";
+var iso_fecha_registrada_aysen="Jueves 01";
+var PronoCoyhaique="lluvianieve.png|Nublado y chubascos de nieve/aguanieve en declinaci&oacute;n.:solparcialnieve.png|Nublado y chubascos de nieve aislados.:solparcialnieve.png|Nublado y chubascos de nieve aislados.:parcialalta.png|Nublado variando a nubosidad parcial.:sol.png|Despejado.";
+var PronoIbanezpallavecini="solparciallluvia.png|Nublado y chubascos de agua hasta la ma&ntilde;ana:parcial.png|Nublado.:solparciallluvia.png|Nublado y chubascos de agua aislados.:parcialalta.png|Nublado variando a nubosidad parcial.:sol.png|Despejado.";
+var PronoRioJeinimeni="solparciallluvia.png|Nublado y chubascos de agua hasta la ma&ntilde;ana:parcial.png|Nublado.:parcial.png|Nublado.:lluvianoche.png|Nublado y chubascos de agua en la madrugada variando a despejado.:sol.png|Despejado.";
+var PronoIsotermas_aysenExtra="1000-700:700:700:700-1000:1000-1500";

@@ -48,6 +48,16 @@ def main() -> None:
     ) + "\non conflict (cut) do update set nombre = excluded.nombre, alias = excluded.alias,"
         " lat = excluded.lat, lon = excluded.lon, es_costera = excluded.es_costera;")
 
+    pasos = read_csv("pasos.csv")
+    lines += ["", "-- Pasos fronterizos (catálogo pasos.csv); slug con prefijo para no chocar con comunas.",
+              "insert into locations (tipo, slug, nombre, region_id, region, lat, lon, altura_m, es_costera) values"]
+    lines.append(",\n".join(
+        f"  ('paso', {sql_str('paso-' + p['slug'])}, {sql_str(p['nombre'])}, {sql_str(p['region_id'])}, "
+        f"{sql_str(p['region'])}, {p['lat']}, {p['lon']}, {p['altura_m']}, false)"
+        for p in pasos
+    ) + "\non conflict (slug) do update set nombre = excluded.nombre, lat = excluded.lat, lon = excluded.lon,"
+        " altura_m = excluded.altura_m, region = excluded.region, region_id = excluded.region_id;")
+
     lines += ["", "insert into stations (id, red, nombre, lat, lon, location_id) values"]
     lines.append(",\n".join(
         f"  ({sql_str(s['id'])}, {sql_str(s['red'])}, {sql_str(s['nombre'])}, {s['lat']}, {s['lon']}, "
@@ -60,7 +70,8 @@ def main() -> None:
     SEEDS.mkdir(parents=True, exist_ok=True)
     out = SEEDS / "0001_catalogo.sql"
     out.write_text("\n".join(lines), encoding="utf-8")
-    print(f"{out.relative_to(ROOT.parent)}: {len(comunas)} comunas ({len(costeras)} costeras), {len(estaciones)} estaciones")
+    print(f"{out.relative_to(ROOT.parent)}: {len(comunas)} comunas ({len(costeras)} costeras), "
+          f"{len(pasos)} pasos, {len(estaciones)} estaciones")
 
 
 if __name__ == "__main__":

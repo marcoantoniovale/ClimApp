@@ -86,7 +86,8 @@ export type Observacion = {
 
 export type Pronostico = {
   version: number;
-  ubicacion: { slug: string; nombre: string; region: string; tipo: string; lat: number; lon: number; es_costera: boolean };
+  ubicacion: { slug: string; nombre: string; region: string; tipo: string; lat: number; lon: number; es_costera: boolean;
+               altura_m?: number | null };
   generado: string;
   actualizado: string | null;
   provisional: boolean;
@@ -153,4 +154,45 @@ export function desdeAhora<T extends Pronostico>(p: T, ahora: Date = new Date())
   const inicio = new Date(ahora);
   inicio.setMinutes(0, 0, 0);
   return { ...p, horas: p.horas.filter((h) => Date.parse(h.hora) >= inicio.getTime()) };
+}
+
+// ---------------------------------------------------------------------------
+// Pasos fronterizos
+
+export type AlertaPaso = { fecha: string; nivel: "alerta" | "aviso"; tipo: string; texto: string };
+
+export type PasoResumen = {
+  slug: string;              // "paso-los-libertadores"
+  nombre: string;
+  region: string;
+  altura_m: number | null;
+  lat: number;
+  lon: number;
+  hoy: { estado_cielo: number | null; temperatura_max: number | null; temperatura_min: number | null;
+         nieve: number | null; rafaga_max: number | null };
+  alertas: AlertaPaso[];
+};
+
+export type PasoDmc = {
+  emision: string | null;
+  apreciacion: string | null;
+  dias: { fecha: string | null; etiqueta: string | null; icono: string | null; texto: string | null; isoterma: string | null }[];
+};
+
+export const slugPaso = (ruta: string) => `paso-${ruta}`;
+export const rutaPaso = (slug: string) => slug.replace(/^paso-/, "");
+
+export async function getPasos(options?: ReadOptions) {
+  const [pasos, dmc] = await getJson<[{ generado: string; pasos: PasoResumen[] }, { generado: string; pasos: Record<string, PasoDmc> }]>(
+    ["pasos", "pasos_dmc"], options);
+  return { pasos: pasos?.pasos ?? [], dmc: dmc?.pasos ?? {} };
+}
+
+/** Pronóstico ICON del paso (con sus alertas) y pronóstico oficial de la DMC. */
+export async function getPaso(ruta: string, options?: ReadOptions) {
+  const slug = slugPaso(ruta);
+  const [pronostico, dmc] = await getJson<[Pronostico & { alertas?: AlertaPaso[] }, { pasos: Record<string, PasoDmc> }]>(
+    [`loc:${slug}`, "pasos_dmc"], options);
+  if (!pronostico || pronostico.ubicacion.tipo !== "paso") return null;
+  return { p: { ...pronostico, avisos: [] as AvisoUbicacion[] }, alertas: pronostico.alertas ?? [], dmc: dmc?.pasos[slug] ?? null };
 }

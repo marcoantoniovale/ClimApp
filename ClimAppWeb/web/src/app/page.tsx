@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import Inicio from "@/components/pronostico/Inicio";
-import { getAvisos } from "@/lib/data";
+import { getAvisos, getPasos } from "@/lib/data";
 import { tipoAviso } from "@/lib/format";
 
 export const revalidate = 600;
@@ -12,6 +12,16 @@ const CIUDADES = [
   ["temuco", "Temuco"], ["valdivia", "Valdivia"], ["puerto-montt", "Puerto Montt"], ["punta-arenas", "Punta Arenas"],
 ] as const;
 
+async function pasosConAlerta() {
+  try {
+    const { pasos } = await getPasos({ revalidate: 600 });
+    return { total: pasos.length, alerta: pasos.filter((p) => p.alertas.some((a) => a.nivel === "alerta")).length,
+             conAlertas: pasos.filter((p) => p.alertas.length > 0).length };
+  } catch {
+    return { total: 0, alerta: 0, conAlertas: 0 };
+  }
+}
+
 async function avisosVigentes() {
   try {
     return (await getAvisos({ revalidate: 600 }))?.avisos ?? [];
@@ -21,7 +31,7 @@ async function avisosVigentes() {
 }
 
 export default async function Home() {
-  const avisos = await avisosVigentes();
+  const [avisos, pasos] = await Promise.all([avisosVigentes(), pasosConAlerta()]);
   const porTipo = Object.entries(
     avisos.reduce<Record<string, number>>((acc, a) => ({ ...acc, [a.tipo]: (acc[a.tipo] ?? 0) + 1 }), {}),
   );
@@ -43,6 +53,21 @@ export default async function Home() {
             <strong className="text-climapp-warn">{avisos.length} avisos marítimos vigentes</strong>
             <span className="block text-slate-300">
               {porTipo.map(([tipo, n]) => `${tipoAviso(tipo)} (${n})`).join(" · ")} — ver detalle
+            </span>
+          </span>
+        </Link>
+      )}
+
+      {pasos.total > 0 && (
+        <Link href="/pasos"
+          className="flex items-start gap-3 rounded-3xl border border-climapp-line bg-climapp-card/70 p-4 hover:border-climapp-teal">
+          <svg className="mt-0.5 h-5 w-5 shrink-0 text-climapp-teal" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            strokeWidth="2" strokeLinejoin="round" aria-hidden="true"><path d="M2 20l7-12 4 6 3-4 6 10z" /></svg>
+          <span className="text-sm">
+            <strong className="text-slate-100">Pasos fronterizos</strong>
+            <span className="block text-slate-300">
+              {pasos.conAlertas} de {pasos.total} con alertas en los próximos días
+              {pasos.alerta > 0 && ` (${pasos.alerta} de nivel alto)`} — ver detalle
             </span>
           </span>
         </Link>
