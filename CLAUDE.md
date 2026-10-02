@@ -239,6 +239,9 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Retención de `observations`: 365 → 180 días (job `mantencion`). Proyección estable ~387 MB (77 %).
 - Pie de página: "Pronóstico del modelo ICON (Servicio Meteorológico Alemán, DWD), procesado por el algoritmo ClimApp con mediciones de la Dirección Meteorológica de Chile; índice UV y visibilidad del modelo GFS. …" (se agregó la DMC como fuente de las mediciones).
 
+### 2026-10-01 — rama `feature/buscador-pasos`
+- Pedido del usuario: **buscador de pasos fronterizos** en `/pasos` ([ListaPasos.tsx](ClimAppWeb/web/src/components/pasos/ListaPasos.tsx)): filtra por nombre o región sin importar tildes, opción "Solo pasos con alertas" y contador de resultados.
+
 ---
 
 ## 8. Pendientes
