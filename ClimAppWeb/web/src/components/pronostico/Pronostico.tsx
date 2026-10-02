@@ -5,7 +5,7 @@ import { useId, useState, useSyncExternalStore } from "react";
 
 import type { Hora, PronosticoConAvisos } from "@/lib/data";
 import { diaLargo, duracion, fechaLocal, grados, hora, oracion } from "@/lib/format";
-import { ajustarHoras, minutoActual, minutoServidor, suscribirMinuto } from "@/lib/ahora";
+import { ajustarDias, ajustarHoras, minutoActual, minutoServidor, suscribirMinuto } from "@/lib/ahora";
 import { salidaPuesta } from "@/lib/sol";
 
 import MarineForecast from "../weather/MarineForecast";
@@ -22,12 +22,12 @@ import Horas from "./Horas";
 export default function Pronostico({ p, etiqueta }: { p: PronosticoConAvisos & { horasPrevias?: Hora[] }; etiqueta?: string }) {
   const [dia, setDia] = useState(0);
   const panelId = useId();
-  const dias = p.dias.slice(0, 7);
-  const elegido = dias[dia];
-  // Algoritmo ClimApp: las próximas horas también parten de la última medición cercana (lib/ahora.ts).
+  // Algoritmo ClimApp: horas, máximas y mínimas parten de las mediciones del momento (lib/ahora.ts).
   const minuto = useSyncExternalStore(suscribirMinuto, minutoActual, minutoServidor);
   const base = [...(p.horasPrevias ?? []), ...p.horas];
-  const horas = minuto != null ? ajustarHoras(p.horas, base, p.observacion, minuto) : p.horas;
+  const horas = minuto != null ? ajustarHoras(p.horas, p.ancla, minuto) : p.horas;
+  const dias = (minuto != null ? ajustarDias(p.dias, p.horas, p.ancla, minuto, fechaLocal) : p.dias).slice(0, 7);
+  const elegido = dias[dia];
   const horasDelDia = elegido ? horas.filter((h) => fechaLocal(h.hora) === elegido.fecha) : [];
   const sol = elegido ? salidaPuesta(new Date(`${elegido.fecha}T12:00:00-03:00`), p.ubicacion.lat, p.ubicacion.lon) : null;
   const ahora = p.horas[0];
@@ -36,7 +36,7 @@ export default function Pronostico({ p, etiqueta }: { p: PronosticoConAvisos & {
   return (
     <div className="space-y-4">
       <Ahora nombre={p.ubicacion.nombre} region={p.ubicacion.region} etiqueta={etiqueta}
-        ahora={ahora} horas={base} hoy={hoy} observacion={p.observacion} />
+        ahora={ahora} horas={base} hoy={hoy} observacion={p.observacion} ancla={p.ancla} />
 
       <WarningList avisos={p.avisos} />
 

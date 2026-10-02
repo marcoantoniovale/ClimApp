@@ -219,3 +219,23 @@ def rows(response: dict, variables: dict[str, str],
                 values[col] = plausible(col, value)
             if any(v is not None for v in values.values()):
                 yield model, valid_time, values
+
+
+ELEVATION_URL = "https://api.open-meteo.com/v1/elevation"
+
+
+def elevations(points: list[Point], budget: MinuteBudget | None = None,
+               get_json=http.get_json) -> dict[object, float]:
+    """Altura del terreno (m, modelo digital de Open-Meteo, ~90 m) de cada punto: {clave: m}.
+    Cada coordenada cuenta como una llamada en la cuota por minuto."""
+    budget = budget or MinuteBudget()
+    out = {}
+    for start in range(0, len(points), 100):
+        batch = points[start:start + 100]
+        budget.acquire(len(batch))
+        data = get_json(ELEVATION_URL, {"latitude": ",".join(f"{p.lat:.4f}" for p in batch),
+                                        "longitude": ",".join(f"{p.lon:.4f}" for p in batch)})
+        for p, h in zip(batch, data.get("elevation", [])):
+            if h is not None:
+                out[p.key] = float(h)
+    return out

@@ -1,21 +1,23 @@
-// Algoritmo ClimApp — temperatura actual minuto a minuto.
+// Algoritmo ClimApp v2 en el navegador (el detalle del cálculo está en etl/src/climapp_etl/correccion.py).
 //
-// 1. Curva: interpolación lineal del pronóstico horario (ya corregido con mediciones) entre la hora
-//    anterior y la siguiente. A las 21:30, entre 14,9° (21:00) y 14,5° (22:00), da 14,7°.
-// 2. Arranque desde la medición: si hay una medición cercana reciente (≤ 6 h), la diferencia entre lo
-//    medido y la curva en ese instante se suma y se desvanece exponencialmente (τ = 20 h): la estimación
-//    parte de lo medido y sigue la tendencia del pronóstico. τ medido en 134 estaciones DMC: el error de
-//    ICON persiste (factor 0,95 a 1 h, 0,86 a 3 h, 0,73 a 6 h); con τ = 20 h el error a 1 h baja de
-//    1,84 °C (solo la curva) a ~0,7 °C. Con τ = 3 h quedaba en 0,83 °C a 1 h y 1,45 °C a 3 h.
-// 3. El mismo ajuste se aplica a las próximas horas del pronóstico hora a hora (ajustarHoras).
-// Se calcula en el navegador con la hora actual (la página puede venir de caché).
+// 1. Curva: interpolación lineal del pronóstico horario, que ya viene corregido con el sesgo aprendido de
+//    las estaciones cercanas (DMC y SINCA). A las 21:30, entre 14,9° (21:00) y 14,5° (22:00), da 14,7°.
+// 2. Ancla: la anomalía del momento (lo medido menos la curva corregida, interpolado desde las estaciones
+//    por cuadrantes) se suma y se desvanece exponencialmente con τ, que el ETL ajusta cada día con la
+//    persistencia observada. Así la temperatura parte de lo medido y vuelve a la curva.
+// 3. El mismo ajuste se aplica al hora a hora (ajustarHoras) y a las máximas y mínimas (ajustarDias),
+//    para que todo cuente la misma historia.
+// Se calcula con la hora del navegador (la página puede venir de caché).
 
 type Punto = { hora: string; temperatura: number | null; sensacion_termica?: number | null };
-type Medicion = { hora: string; temperatura: number | null } | null | undefined;
+type DiaTemp = { fecha: string; temperatura_max: number | null; temperatura_min: number | null };
+
+/** Anomalía del momento en la comuna (clave `algoritmo` de Redis). */
+export type Ancla = { anomalia: number; hora: string; tau_h: number } | null | undefined;
 
 const HORA_MS = 3_600_000;
-const TAU_MS = 20 * HORA_MS;
-const MAX_EDAD_MEDICION_MS = 6 * HORA_MS;
+const MAX_EDAD_ANCLA_MS = 6 * HORA_MS;
+const ADELANTO_MS = 15 * 60_000;   // tolera relojes algo adelantados respecto del ETL
 
 /** Valor de la curva horaria en el instante t (ms). Fuera del rango, el extremo más cercano. */
 export function interpolar(horas: Punto[], campo: "temperatura" | "sensacion_termica", t: number): number | null {
@@ -34,25 +36,28 @@ export function interpolar(horas: Punto[], campo: "temperatura" | "sensacion_ter
 
 const redondear = (v: number) => Math.round(v * 10) / 10;
 
-/** Diferencia medición − curva en el instante t (ms), ya desvanecida; 0 si no hay medición útil. */
-function ajusteEn(horas: Punto[], medicion: Medicion, t: number): number {
-  if (medicion?.temperatura == null) return 0;
-  const tm = Date.parse(medicion.hora);
-  const edad = t - tm;
-  const curvaEnMedicion = interpolar(horas, "temperatura", tm);
-  if (Number.isNaN(tm) || edad < 0 || curvaEnMedicion == null) return 0;
-  return (medicion.temperatura - curvaEnMedicion) * Math.exp(-edad / TAU_MS);
+/** ¿El ancla sirve en el instante `ahora`? (no más de 6 h de antigüedad). */
+function anclaVigente(ancla: Ancla, ahora: number): ancla is NonNullable<Ancla> {
+  if (!ancla || !Number.isFinite(ancla.anomalia)) return false;
+  const edad = ahora - Date.parse(ancla.hora);
+  return edad >= -ADELANTO_MS && edad <= MAX_EDAD_ANCLA_MS;
+}
+
+/** °C a sumar a la curva en el instante t: la anomalía desvanecida desde la hora del ancla. */
+function ajusteEn(ancla: NonNullable<Ancla>, t: number): number {
+  const edad = Math.max(0, t - Date.parse(ancla.hora));
+  return ancla.anomalia * Math.exp(-edad / (Math.max(ancla.tau_h, 1) * HORA_MS));
 }
 
 /**
  * Temperatura y sensación térmica estimadas para el instante t (ms).
- * `ajustada` indica si se partió de una medición reciente.
+ * `ajustada` indica si se partió de las mediciones del momento.
  */
-export function estimacionActual(horas: Punto[], medicion: Medicion, t: number) {
+export function estimacionActual(horas: Punto[], ancla: Ancla, t: number) {
   const curva = interpolar(horas, "temperatura", t);
   const sensacion = interpolar(horas, "sensacion_termica", t);
   if (curva == null) return null;
-  const ajuste = medicionVigente(medicion, t) ? ajusteEn(horas, medicion, t) : 0;
+  const ajuste = anclaVigente(ancla, t) ? ajusteEn(ancla, t) : 0;
   return {
     temperatura: redondear(curva + ajuste),
     sensacion_termica: sensacion == null ? null : redondear(sensacion + ajuste),
@@ -60,27 +65,41 @@ export function estimacionActual(horas: Punto[], medicion: Medicion, t: number) 
   };
 }
 
-/** ¿La medición sirve de ancla en el instante t? (no es futura ni tiene más de 6 h). */
-function medicionVigente(medicion: Medicion, t: number): boolean {
-  if (medicion?.temperatura == null) return false;
-  const edad = t - Date.parse(medicion.hora);
-  return edad >= 0 && edad <= MAX_EDAD_MEDICION_MS;
-}
-
-/**
- * Horas del pronóstico con el ajuste de la medición (para que la tabla hora a hora no contradiga la
- * temperatura actual). `ahora` decide si la medición sigue vigente; `base` son las horas usadas para
- * la curva (incluye las previas a la medición).
- */
-export function ajustarHoras<T extends Punto>(horas: T[], base: Punto[], medicion: Medicion, ahora: number): T[] {
-  if (!medicionVigente(medicion, ahora)) return horas;
+/** Horas del pronóstico con el ajuste del momento (para que no contradigan la temperatura actual). */
+export function ajustarHoras<T extends Punto>(horas: T[], ancla: Ancla, ahora: number): T[] {
+  if (!anclaVigente(ancla, ahora)) return horas;
   return horas.map((h) => {
-    const ajuste = ajusteEn(base, medicion, Date.parse(h.hora));
-    if (ajuste === 0) return h;
+    const ajuste = ajusteEn(ancla, Date.parse(h.hora));
+    if (Math.abs(ajuste) < 0.05) return h;
     return {
       ...h,
       temperatura: h.temperatura == null ? null : redondear(h.temperatura + ajuste),
       sensacion_termica: h.sensacion_termica == null ? h.sensacion_termica : redondear(h.sensacion_termica + ajuste),
+    };
+  });
+}
+
+/**
+ * Máximas y mínimas con el mismo ajuste: se suma el ajuste de la hora en que el pronóstico pone la
+ * máxima (o la mínima) del día, si esa hora aún no pasa. Si ya pasó, queda como estaba.
+ */
+export function ajustarDias<D extends DiaTemp>(dias: D[], horas: Punto[], ancla: Ancla, ahora: number,
+                                               fechaDe: (iso: string) => string): D[] {
+  if (!anclaVigente(ancla, ahora)) return dias;
+  return dias.map((d) => {
+    const delDia = horas.filter((h) => h.temperatura != null && fechaDe(h.hora) === d.fecha);
+    if (delDia.length === 0) return d;
+    const ajusteDe = (h: Punto, extremo: number | null) =>
+      extremo != null && Math.abs(h.temperatura! - extremo) <= 1 ? ajusteEn(ancla, Date.parse(h.hora)) : 0;
+    const hMax = delDia.reduce((a, b) => (b.temperatura! > a.temperatura! ? b : a));
+    const hMin = delDia.reduce((a, b) => (b.temperatura! < a.temperatura! ? b : a));
+    const aMax = ajusteDe(hMax, d.temperatura_max);
+    const aMin = ajusteDe(hMin, d.temperatura_min);
+    if (Math.abs(aMax) < 0.05 && Math.abs(aMin) < 0.05) return d;
+    return {
+      ...d,
+      temperatura_max: d.temperatura_max == null ? null : redondear(d.temperatura_max + aMax),
+      temperatura_min: d.temperatura_min == null ? null : redondear(d.temperatura_min + aMin),
     };
   });
 }

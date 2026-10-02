@@ -8,6 +8,10 @@ export default function Footer() {
         de la{" "}
         <a href="https://climatologia.meteochile.gob.cl" className="underline hover:text-white" rel="noopener">
           Dirección Meteorológica de Chile
+        </a>{" "}
+        y del{" "}
+        <a href="https://sinca.mma.gob.cl" className="underline hover:text-white" rel="noopener">
+          SINCA (Ministerio del Medio Ambiente)
         </a>
         ; índice UV y visibilidad del modelo GFS. Datos meteorológicos de{" "}
         <a href="https://open-meteo.com" className="underline hover:text-white" rel="noopener">Open-Meteo</a>{" "}

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import functools
+from concurrent.futures import ThreadPoolExecutor
 import logging
 import math
 from collections import defaultdict
@@ -11,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 import psycopg
 from psycopg.types.json import Jsonb
 
-from . import armada, avisos, correccion, dmc_obs, dmc_pasos, open_meteo, redis, snapshot, web
+from . import armada, avisos, correccion, dmc_obs, dmc_pasos, geo, open_meteo, redis, sinca, snapshot, web
 from .db import last_success, track_run
 
 log = logging.getLogger("climapp_etl")
@@ -31,9 +32,10 @@ MODEL_MAX_AGE = timedelta(hours=9)
 MARINE_EVERY = timedelta(hours=3)
 PASOS_DMC_EVERY = timedelta(hours=3)   # la DMC emite ~2 veces al día
 CORRECTION_EVERY = timedelta(hours=3)
-CORRECTION_DAYS = 14                   # ventana de mediciones para el sesgo
+VALIDATION_EVERY = timedelta(hours=20)  # validación del algoritmo ClimApp (una vez al día)
+RESIDUOS_HORAS = 48                    # horas hacia atrás que revisa el registro de errores
 DMC_MAX_AGE = timedelta(hours=3)       # lecturas más antiguas del mapa DMC no se guardan
-PUBLICA_EN_WEB = {"snapshots", "armada_avisos", "pasos_dmc", "dmc_obs"}   # tras ellos, renovar la web
+PUBLICA_EN_WEB = {"snapshots", "armada_avisos", "pasos_dmc", "residuos"}   # tras ellos, renovar la web
 ARCHIVE_EVERY = timedelta(hours=12)
 MAINTENANCE_EVERY = timedelta(hours=24)
 MARGIN = timedelta(minutes=30)
@@ -44,6 +46,8 @@ RETENTION = {
     "observations": timedelta(days=180),     # 180 días (decisión del usuario, 2026-10-01)
     "observations_raw": timedelta(days=14),
     "ingestion_runs": timedelta(days=90),
+    "station_residuals": timedelta(days=45),    # el sesgo usa 30 días (~0,7 MB/día)
+    "algoritmo_validacion": timedelta(days=365),
 }
 
 CURRENT_COLUMNS = ["location_id", "modelo", "valid_time", "fetched_at", *open_meteo.COLUMNS]
@@ -262,9 +266,9 @@ def snapshots(conn: psycopg.Connection) -> None:
         now = datetime.now(timezone.utc)
         cols = list(open_meteo.COLUMNS)
         locations = [dict(zip(("id", "slug", "nombre", "alias", "region", "tipo", "lat", "lon", "es_costera",
-                               "altura_m"), r))
+                               "altura_m", "elevacion_m"), r))
                      for r in conn.execute("""select id, slug, nombre, alias, region, tipo, lat, lon, es_costera,
-                                                     altura_m from locations order by id""")]
+                                                     altura_m, elevacion_m from locations order by id""")]
         rows, fetched = defaultdict(list), {}
         for r in conn.execute(f"""select location_id, modelo, valid_time, fetched_at, {', '.join(cols)}
                                   from forecast_current where valid_time >= now() - interval '30 hours'"""):
@@ -277,15 +281,7 @@ def snapshots(conn: psycopg.Connection) -> None:
             marine[r[0]].append((r[1], dict(zip(mcols, r[2:]))))
         observations = _mediciones(conn, locations)
 
-        estaciones_sesgo: dict[str, dict] = {}
-        for sid, nombre, lat, lon, costera, f, sesgo in conn.execute("""
-                select s.id, s.nombre, s.lat, s.lon, coalesce(l.es_costera, false), b.franja, b.sesgo
-                from station_bias b join stations s on s.id = b.station_id
-                left join locations l on l.id = s.location_id"""):
-            e = estaciones_sesgo.setdefault(sid, {"id": sid, "nombre": nombre, "lat": lat, "lon": lon,
-                                                  "costera": costera, "sesgos": {}})
-            e["sesgos"][f] = sesgo
-        estaciones_sesgo_lista = list(estaciones_sesgo.values())
+        estaciones_sesgo = _estaciones_con_sesgo(conn)
         corregidas = 0
 
         corridas = {r[0]: snapshot._iso_local(r[1]) for r in conn.execute(
@@ -298,7 +294,8 @@ def snapshots(conn: psycopg.Connection) -> None:
                 run.warn(f"Sin pronóstico: {loc['slug']}")
                 continue
             corr = ({"franjas": {}, "estaciones": []} if loc["tipo"] != "comuna" else
-                    correccion.correccion(loc["lat"], loc["lon"], loc["es_costera"], estaciones_sesgo_lista))
+                    correccion.correccion(loc["lat"], loc["lon"], loc["elevacion_m"], loc["es_costera"],
+                                          estaciones_sesgo))
             corregidas += bool(corr["franjas"])
             payloads[loc["id"]] = snapshot.build(loc, correccion.aplicar(rows[loc["id"]], corr), marine.get(loc["id"]),
                                                  observations.get(loc["id"]), fetched.get(loc["id"]), now,
@@ -341,6 +338,8 @@ def _mediciones(conn: psycopg.Connection, locations: list[dict]) -> dict[int, di
         from observations o join stations s on s.id = o.station_id
         left join locations l on l.id = s.location_id
         where o.observed_at > now() - interval '3 hours' and o.temperatura is not null
+          and not exists (select 1 from station_residuals r where r.station_id = s.id
+                          and r.hora = date_trunc('hour', o.observed_at) and r.qc <> 'ok')
         order by s.id, o.observed_at desc""")]
     out = {}
     for loc in locations:
@@ -350,18 +349,6 @@ def _mediciones(conn: psycopg.Connection, locations: list[dict]) -> dict[int, di
         if m:
             out[loc["id"]] = m
     return out
-
-
-def publish_mediciones(conn: psycopg.Connection) -> int:
-    """Clave liviana `mediciones` ({slug: medición}) para que la web parta de lo medido cada hora,
-    sin regenerar los JSON de todas las comunas."""
-    locations = [dict(zip(("id", "slug", "tipo", "lat", "lon", "es_costera"), r)) for r in conn.execute(
-        "select id, slug, tipo, lat, lon, es_costera from locations")]
-    slugs = {l["id"]: l["slug"] for l in locations}
-    mediciones = {slugs[k]: v for k, v in _mediciones(conn, locations).items()}
-    redis.publish({"mediciones": {"generado": snapshot._iso_local(datetime.now(timezone.utc)),
-                                  "mediciones": mediciones}})
-    return len(mediciones)
 
 
 def _pasos_payload(locations: list[dict], payloads: dict[int, dict], now: datetime) -> dict:
@@ -410,17 +397,36 @@ def dmc_passes(conn: psycopg.Connection) -> None:
         log.info("pasos DMC: %d pasos, %d errores, redis=%d", len(datos), len(errores), published)
 
 
-def _upsert_dmc_stations(conn: psycopg.Connection, estaciones: list[dict]) -> None:
-    """Estaciones DMC en `stations` (id dmc-<código>), asociadas a la comuna más cercana."""
+def _ubicador(conn: psycopg.Connection):
+    """Función (lat, lon) → location_id de la comuna que contiene el punto (polígonos comunales); si el
+    punto cae fuera de todo polígono (mar, Antártica), la comuna de cabecera más cercana."""
+    comunas = [(r[0], r[1], r[2], r[3]) for r in conn.execute(
+        "select id, slug, lat, lon from locations where tipo = 'comuna'")]
+    por_slug = {slug: i for i, slug, _, _ in comunas}
+
+    def ubicar(lat: float, lon: float) -> int:
+        slug = geo.comuna_de(lat, lon)
+        if slug in por_slug:
+            return por_slug[slug]
+        return min(comunas, key=lambda c: correccion.km(lat, lon, c[2], c[3]))[0]
+    return ubicar
+
+
+def _upsert_stations(conn: psycopg.Connection, red: str, estaciones: list[dict]) -> None:
+    """Estaciones [{id, nombre, lat, lon}] en `stations`, asociadas a la comuna que las contiene."""
+    ubicar = _ubicador(conn)
     with conn.cursor() as cur:
         cur.executemany("""
             insert into stations (id, red, nombre, lat, lon, location_id)
-            values (%(id)s, 'dmc', %(nombre)s, %(lat)s, %(lon)s,
-                    (select id from locations where tipo = 'comuna'
-                     order by (lat - %(lat)s) ^ 2 + ((lon - %(lon)s) * cos(radians(%(lat)s))) ^ 2 limit 1))
+            values (%(id)s, %(red)s, %(nombre)s, %(lat)s, %(lon)s, %(loc)s)
             on conflict (id) do update set nombre = excluded.nombre, lat = excluded.lat, lon = excluded.lon,
                 location_id = excluded.location_id""",
-            [{"id": f"dmc-{e['codigo']}", "nombre": e["nombre"], "lat": e["lat"], "lon": e["lon"]} for e in estaciones])
+            [e | {"red": red, "loc": ubicar(e["lat"], e["lon"])} for e in estaciones])
+
+
+def _upsert_dmc_stations(conn: psycopg.Connection, estaciones: list[dict]) -> None:
+    _upsert_stations(conn, "dmc", [{"id": f"dmc-{e['codigo']}", "nombre": e["nombre"], "lat": e["lat"],
+                                    "lon": e["lon"]} for e in estaciones])
 
 
 def dmc_observations(conn: psycopg.Connection) -> None:
@@ -443,8 +449,6 @@ def dmc_observations(conn: psycopg.Connection) -> None:
                       e["viento_vel"], e["viento_dir"]) for e in frescas])
                 run.filas = max(cur.rowcount, 0)
         run.detalle.append(f"{len(estaciones)} estaciones, {len(frescas)} con lectura reciente")
-        comunas = publish_mediciones(conn)
-        log.info("DMC: %d comunas con medición cercana publicadas", comunas)
         log.info("DMC: %d estaciones, %d lecturas recientes, %d nuevas", len(estaciones), len(frescas), run.filas)
 
 
@@ -469,47 +473,230 @@ def dmc_history(conn: psycopg.Connection) -> None:
         log.info("DMC historial: %d estaciones, %d horas nuevas", len(estaciones), total)
 
 
-def corrections(conn: psycopg.Connection) -> None:
-    """Algoritmo ClimApp: sesgo de ICON por estación DMC y franja → station_bias (+ validación cruzada)."""
-    with track_run(conn, "correccion") as run:
-        estaciones = conn.execute("""
-            select s.id, s.nombre, s.lat, s.lon, coalesce(l.es_costera, false)
-            from stations s left join locations l on l.id = s.location_id
-            where s.red = 'dmc' and exists (select 1 from observations o where o.station_id = s.id
-                                            and o.observed_at > now() - interval '2 days')
-            order by s.id""").fetchall()
-        obs: dict[str, dict] = defaultdict(dict)
-        for sid, t, temp in conn.execute("""
-                select station_id, date_trunc('hour', observed_at), avg(temperatura) from observations
-                where station_id like 'dmc-%%' and temperatura is not null
-                  and observed_at > now() - make_interval(days => %s)
-                  and extract(minute from observed_at) <= 20
-                group by 1, 2""", (CORRECTION_DAYS,)):
-            obs[sid][t] = temp
-        # ICON en el punto de cada estación, días pasados (pronóstico más reciente para cada hora).
+def sinca_observations(conn: psycopg.Connection) -> None:
+    """Temperatura horaria de las estaciones SINCA con temperatura (catálogo) → stations + observations."""
+    with track_run(conn, "sinca_obs") as run:
+        catalogo = sinca.cargar_catalogo()
+        if not catalogo:
+            raise RuntimeError("Sin catálogo SINCA (scripts/build_sinca.py)")
+        now = datetime.now(timezone.utc)
+
+        def leer(est: sinca.Estacion):
+            try:
+                return est, sinca.fetch_temperaturas(est, now - timedelta(days=1), now), None
+            except Exception as exc:  # una estación caída no detiene a las demás
+                return est, {}, exc
+
+        with ThreadPoolExecutor(max_workers=6) as pool:
+            resultados = list(pool.map(leer, catalogo))
+        errores = [f"{e.nombre}: {exc}" for e, _, exc in resultados if exc]
+        with conn.transaction():
+            _upsert_stations(conn, "sinca", [{"id": e.id, "nombre": f"{e.nombre} (SINCA)", "lat": e.lat,
+                                              "lon": e.lon} for e in catalogo])
+            with conn.cursor() as cur:
+                cur.executemany("""insert into observations (station_id, observed_at, temperatura) values (%s, %s, %s)
+                                   on conflict (station_id, observed_at) do nothing""",
+                                [(e.id, t, v) for e, serie, _ in resultados for t, v in serie.items()])
+                run.filas = max(cur.rowcount, 0)
+        if errores:
+            run.warn(f"{len(errores)} estaciones sin datos: {'; '.join(errores[:5])}")
+        if len(errores) == len(catalogo):
+            raise RuntimeError("SINCA no respondió")
+        log.info("SINCA: %d estaciones, %d lecturas nuevas, %d con error", len(catalogo), run.filas, len(errores))
+
+
+def _completar_alturas(conn: psycopg.Connection, budget: open_meteo.MinuteBudget) -> None:
+    """Altura del terreno de estaciones y comunas que aún no la tienen (una vez por punto)."""
+    for tabla, columna, filtro in (("stations", "altura_m", "true"), ("locations", "elevacion_m", "tipo = 'comuna'")):
+        puntos = [open_meteo.Point(r[0], r[1], r[2]) for r in conn.execute(
+            f"select id, lat, lon from {tabla} where {columna} is null and {filtro}")]
+        if not puntos:
+            continue
+        try:
+            alturas = open_meteo.elevations(puntos, budget)
+        except Exception:  # auxiliar: sin altura, la interpolación solo usa la distancia
+            log.exception("alturas de %s", tabla)
+            continue
+        with conn.cursor() as cur:
+            cur.executemany(f"update {tabla} set {columna} = %s where id = %s", [(h, k) for k, h in alturas.items()])
+        log.info("alturas: %d puntos en %s", len(alturas), tabla)
+
+
+def _estaciones(conn: psycopg.Connection, where: str = "true", params: tuple = ()) -> list[dict]:
+    return [{"id": r[0], "nombre": r[1], "red": r[2], "lat": r[3], "lon": r[4], "altura": r[5], "costera": r[6]}
+            for r in conn.execute(f"""
+        select s.id, s.nombre, s.red, s.lat, s.lon, s.altura_m, coalesce(l.es_costera, false)
+        from stations s left join locations l on l.id = s.location_id
+        where s.red in ('dmc', 'sinca') and {where} order by s.id""", params)]
+
+
+def _estaciones_con_sesgo(conn: psycopg.Connection) -> list[dict]:
+    sesgos: dict[str, dict] = defaultdict(dict)
+    for sid, f, s in conn.execute("select station_id, franja, sesgo from station_bias"):
+        sesgos[sid][f] = s
+    return [e | {"sesgos": sesgos[e["id"]]} for e in _estaciones(conn) if e["id"] in sesgos]
+
+
+def _interpolar_icon(serie: dict[datetime, float], t: datetime) -> float | None:
+    """ICON (horario) interpolado linealmente al instante t."""
+    t0 = t.replace(minute=0, second=0, microsecond=0)
+    a, b = serie.get(t0), serie.get(t0 + timedelta(hours=1))
+    if a is None or b is None:
+        return a if t == t0 else None
+    return a + (b - a) * (t - t0).total_seconds() / 3600
+
+
+def residuals(conn: psycopg.Connection) -> None:
+    """Algoritmo ClimApp, paso 1: error de ICON por estación y hora (con control de calidad) →
+    station_residuals. Luego publica el ajuste del momento por comuna (clave `algoritmo`)."""
+    with track_run(conn, "residuos") as run:
+        budget = open_meteo.MinuteBudget()
+        _completar_alturas(conn, budget)
+        estaciones = {e["id"]: e for e in _estaciones(conn, f"""exists (select 1 from observations o
+            where o.station_id = s.id and o.observed_at > now() - interval '{RESIDUOS_HORAS} hours')""")}
+        lecturas: dict[str, list[tuple[datetime, float]]] = defaultdict(list)
+        for sid, t, v in conn.execute(f"""
+                select station_id, observed_at, temperatura from observations
+                where station_id = any(%s) and temperatura is not null
+                  and observed_at > now() - interval '{RESIDUOS_HORAS + 8} hours'
+                order by station_id, observed_at""", (list(estaciones),)):
+            lecturas[sid].append((t, v))
+        existentes = {(r[0], r[1]) for r in conn.execute(
+            f"select station_id, hora from station_residuals where hora > now() - interval '{RESIDUOS_HORAS + 1} hours'")}
+
         variables = {"temperature_2m": "temperatura"}
-        points = [open_meteo.Point(r[0], r[2], r[3]) for r in estaciones]
-        responses = open_meteo.fetch(points, variables, 1, past_days=CORRECTION_DAYS, models=["icon"])
-        icon = {p.key: {t: v["temperatura"] for _, t, v in open_meteo.rows(data, variables, models=["icon"])}
-                for p, data in responses}
-        filas, info = [], []
-        for sid, nombre, lat, lon, costera in estaciones:
-            s = correccion.sesgos(icon.get(sid, {}), obs.get(sid, {}))
-            if s:
-                info.append({"id": sid, "nombre": nombre, "lat": lat, "lon": lon, "costera": costera,
-                             "sesgos": {f: v["sesgo"] for f, v in s.items()}})
-                filas += [(sid, f, v["sesgo"], v["sesgo_bruto"], v["n"], v["error_antes"]) for f, v in s.items()]
+        puntos = [open_meteo.Point(e["id"], e["lat"], e["lon"]) for e in estaciones.values()]
+        icon = {p.key: {t: v["temperatura"] for _, t, v in open_meteo.rows(data, variables, models=["icon"])
+                        if v["temperatura"] is not None}
+                for p, data in open_meteo.fetch(puntos, variables, 1, past_days=3, budget=budget, models=["icon"])}
+
+        desde = datetime.now(timezone.utc) - timedelta(hours=RESIDUOS_HORAS)
+        nuevas: dict[datetime, list[dict]] = defaultdict(list)
+        for sid, serie in lecturas.items():
+            por_hora: dict[datetime, tuple[datetime, float]] = {}
+            for t, v in serie:   # la última lectura de cada hora
+                por_hora[t.replace(minute=0, second=0, microsecond=0)] = (t, v)
+            previas: list[tuple[datetime, float]] = []
+            for hora in sorted(por_hora):
+                t, v = por_hora[hora]
+                p = _interpolar_icon(icon.get(sid, {}), t)
+                if p is not None and hora >= desde and (sid, hora) not in existentes:
+                    e = estaciones[sid]
+                    nuevas[hora].append({"station_id": sid, "hora": hora, "observed_at": t, "medido": v, "icon": p,
+                                         "residuo": p - v, "qc": correccion.qc_lectura(v, p, previas, t),
+                                         "lat": e["lat"], "lon": e["lon"], "costera": e["costera"]})
+                previas.append((t, v))
+        for grupo in nuevas.values():
+            correccion.qc_vecinas(grupo)
+        filas = [f for grupo in nuevas.values() for f in grupo]
+        with conn.transaction():
+            with conn.cursor() as cur:
+                cur.executemany("""insert into station_residuals (station_id, hora, observed_at, medido, icon, qc)
+                                   values (%(station_id)s, %(hora)s, %(observed_at)s, %(medido)s, %(icon)s, %(qc)s)
+                                   on conflict do nothing""", filas)
+        rechazadas: dict[str, int] = defaultdict(int)
+        for f in filas:
+            if f["qc"] != "ok":
+                rechazadas[f["qc"]] += 1
+        run.filas = len(filas)
+        run.detalle.append(f"{len(estaciones)} estaciones; {len(filas)} horas nuevas; control de calidad: "
+                           f"{dict(rechazadas) or 'todo ok'}")
+        comunas = _publicar_algoritmo(conn)
+        log.info("residuos: %d estaciones, %d horas nuevas, qc %s; ajuste publicado para %d comunas",
+                 len(estaciones), len(filas), dict(rechazadas), comunas)
+
+
+def _ultima_validacion(conn: psycopg.Connection) -> tuple[datetime | None, dict]:
+    fila = conn.execute("select fecha, metricas from algoritmo_validacion order by fecha desc limit 1").fetchone()
+    return (fila[0], fila[1]) if fila else (None, {})
+
+
+def _publicar_algoritmo(conn: psycopg.Connection) -> int:
+    """Clave `algoritmo`: por comuna, la anomalía del momento interpolada (°C a sumar a la curva corregida),
+    su hora, las estaciones usadas y la medición más cercana para mostrar; además τ y la última validación."""
+    todas = {e["id"]: e for e in _estaciones(conn)}
+    sesgos = {e["id"]: e["sesgos"] for e in _estaciones_con_sesgo(conn)}
+    anomalias = []
+    for sid, t, medido, p in conn.execute("""
+            select distinct on (station_id) station_id, observed_at, medido, icon from station_residuals
+            where qc = 'ok' and observed_at > now() - %s order by station_id, hora desc""",
+            (correccion.ANOMALIA_MAX_EDAD,)):
+        if sid not in todas:
+            continue
+        sesgo = sesgos.get(sid, {}).get(correccion.franja(t), 0.0)
+        anomalias.append(todas[sid] | {"valor": medido - (p - sesgo), "t": t})
+
+    locations = [dict(zip(("id", "slug", "tipo", "lat", "lon", "es_costera", "elevacion_m"), r)) for r in conn.execute(
+        "select id, slug, tipo, lat, lon, es_costera, elevacion_m from locations where tipo = 'comuna'")]
+    mediciones = _mediciones(conn, locations)
+    _, validacion = _ultima_validacion(conn)
+    tau = validacion.get("tau_h") or correccion.TAU_H
+    instantes = {a["nombre"]: a["t"] for a in anomalias}
+    comunas = {}
+    for loc in locations:
+        r = correccion.interpolar(loc["lat"], loc["lon"], loc["elevacion_m"], loc["es_costera"], anomalias)
+        entrada = {}
+        if r:
+            t_medio = sum(instantes[x["nombre"]].timestamp() * x["peso"] for x in r["estaciones"]) \
+                / sum(x["peso"] for x in r["estaciones"])
+            entrada = {"anomalia": round(r["valor"], 2),
+                       "hora": snapshot._iso_local(datetime.fromtimestamp(t_medio, timezone.utc)),
+                       "estaciones": r["estaciones"]}
+        if loc["id"] in mediciones:
+            entrada["medicion"] = mediciones[loc["id"]]
+        if entrada:
+            comunas[loc["slug"]] = entrada
+    redis.publish({"algoritmo": {"generado": snapshot._iso_local(datetime.now(timezone.utc)), "tau_h": tau,
+                                 "validacion": validacion, "comunas": comunas}})
+    return sum(1 for c in comunas.values() if "anomalia" in c)
+
+
+def corrections(conn: psycopg.Connection) -> None:
+    """Algoritmo ClimApp, paso 2: sesgo de ICON por estación y franja desde el registro de errores
+    (olvido exponencial) → station_bias. Una vez al día, validación y ajuste de τ."""
+    with track_run(conn, "correccion") as run:
+        now = datetime.now(timezone.utc)
+        residuos: dict[str, list[tuple[datetime, float]]] = defaultdict(list)
+        for sid, t, r in conn.execute("""
+                select station_id, hora, icon - medido from station_residuals
+                where qc = 'ok' and hora > now() - make_interval(days => %s)""", (correccion.VENTANA_DIAS,)):
+            residuos[sid].append((t, r))
+        filas = []
+        for sid, serie in residuos.items():
+            filas += [(sid, f, v["sesgo"], v["sesgo_bruto"], v["n"], v["error_antes"])
+                      for f, v in correccion.sesgos(serie, now).items()]
         with conn.transaction():
             conn.execute("delete from station_bias")
             with conn.cursor() as cur:
                 cur.executemany("insert into station_bias (station_id, franja, sesgo, sesgo_bruto, n, error_antes)"
                                 " values (%s, %s, %s, %s, %s, %s)", filas)
-        cv = correccion.validacion_cruzada(info, icon, obs)
         run.filas = len(filas)
-        resumen = (f"{len(info)} estaciones con sesgo; validación cruzada ({cv['n']} horas): "
-                   f"error {cv['error_antes'] or 0:.2f} -> {cv['error_despues'] or 0:.2f} °C")
-        run.detalle.append(resumen)
-        log.info("corrección: %s", resumen)
+        run.detalle.append(f"{len(residuos)} estaciones con sesgo")
+
+        ultima, _ = _ultima_validacion(conn)
+        if ultima is None or now - ultima >= VALIDATION_EVERY - MARGIN:
+            metricas = _validar(conn, residuos, now)
+            conn.execute("insert into algoritmo_validacion (metricas) values (%s)", (Jsonb(metricas),))
+            resumen = (f"validación ({metricas['horas']} h): ICON {metricas['icon']} °C; sin estación "
+                       f"{metricas['sin_estacion']}; con estación {metricas['con_estacion']}; τ {metricas['tau_h']} h")
+            run.detalle.append(resumen)
+            log.info("corrección: %s", resumen)
+        log.info("corrección: %d estaciones con sesgo", len(residuos))
+
+
+def _validar(conn: psycopg.Connection, residuos: dict[str, list[tuple[datetime, float]]], now: datetime) -> dict:
+    """Validación de los últimos 7 días y ajuste de τ con la persistencia de la anomalía."""
+    estaciones = _estaciones_con_sesgo(conn)
+    desde = now - timedelta(days=7)
+    recientes = {sid: {t: r for t, r in serie if t >= desde} for sid, serie in residuos.items()}
+    por_id = {e["id"]: e for e in estaciones}
+    anomalias = {sid: {t: por_id[sid]["sesgos"].get(correccion.franja(t), 0.0) - r for t, r in serie.items()}
+                 for sid, serie in recientes.items() if sid in por_id}
+    tau, factores = correccion.ajustar_tau(anomalias)
+    metricas = correccion.validar(estaciones, recientes, tau)
+    metricas["persistencia"] = {str(k): round(v, 3) for k, v in factores.items()}
+    metricas["estaciones"] = len(estaciones)
+    return metricas
 
 
 def maintenance(conn: psycopg.Connection) -> None:
@@ -525,6 +712,9 @@ def maintenance(conn: psycopg.Connection) -> None:
                                  now - RETENTION["observations_raw"]),
             "ingestion_runs": ("delete from ingestion_runs where started_at < %s and id <> %s",
                                now - RETENTION["ingestion_runs"]),
+            "station_residuals": ("delete from station_residuals where hora < %s", now - RETENTION["station_residuals"]),
+            "algoritmo_validacion": ("delete from algoritmo_validacion where fecha < %s",
+                                     now - RETENTION["algoritmo_validacion"]),
         }
         counts = {}
         for name, (sql, cutoff) in statements.items():
@@ -549,6 +739,8 @@ def auto(conn: psycopg.Connection, with_observations: bool = True) -> None:
     jobs = [("open_meteo", forecast, "por_corrida"),
             ("open_meteo_archivo", archive, ARCHIVE_EVERY),
             ("dmc_obs", dmc_observations, None),
+            ("sinca_obs", sinca_observations, None),
+            ("residuos", residuals, None),
             ("correccion", corrections, CORRECTION_EVERY),
             ("armada_avisos", warnings, None),
             ("pasos_dmc", dmc_passes, PASOS_DMC_EVERY),

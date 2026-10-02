@@ -8,7 +8,7 @@ export async function GET(_request: NextRequest, ctx: RouteContext<"/api/forecas
   const { slug } = await ctx.params;
   if (!isValidSlug(slug)) return notFound("Ubicación no válida");
   try {
-    const pronostico = await getPronostico(slug);
+    const pronostico = await getPronostico(slug, { revalidate: 60 });
     return pronostico ? json(pronostico, CACHE.corto) : notFound(`No hay pronóstico para "${slug}"`);
   } catch (error) {
     return serverError(error);

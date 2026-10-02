@@ -86,7 +86,17 @@ export type Observacion = {
   km?: number;
 };
 
-type MedicionesPayload = { generado: string; mediciones: Record<string, Observacion> };
+/** Algoritmo ClimApp (clave `algoritmo`, se publica cada hora): ajuste del momento por comuna. */
+export type EstacionUsada = { nombre: string; km: number; peso: number };
+export type AjusteComuna = { anomalia?: number; hora?: string; estaciones?: EstacionUsada[]; medicion?: Observacion };
+export type Validacion = {
+  horas?: number; icon?: number; tau_h?: number;
+  sin_estacion?: { sesgo?: number; ahora_1h?: number }; con_estacion?: { sesgo?: number; ahora_1h?: number };
+};
+type AlgoritmoPayload = { generado: string; tau_h: number; validacion?: Validacion; comunas: Record<string, AjusteComuna> };
+
+/** Ancla del momento en la ubicación: anomalía (°C a sumar a la curva), su hora, τ y estaciones usadas. */
+export type AnclaUbicacion = { anomalia: number; hora: string; tau_h: number; estaciones: EstacionUsada[] };
 
 export type Pronostico = {
   version: number;
@@ -110,7 +120,7 @@ export type Pronostico = {
   correccion?: { aplicada: boolean; estaciones: { nombre: string; km: number }[]; franjas: Record<string, number> };
 };
 
-export type PronosticoConAvisos = Pronostico & { avisos: AvisoUbicacion[] };
+export type PronosticoConAvisos = Pronostico & { avisos: AvisoUbicacion[]; ancla?: AnclaUbicacion | null };
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -128,14 +138,18 @@ function avisosDe(avisos: AvisosPayload | null, slug: string): AvisoUbicacion[] 
 
 /** Pronóstico de una ubicación con sus avisos vigentes, o null si no existe. */
 export async function getPronostico(slug: string, options?: ReadOptions): Promise<PronosticoConAvisos | null> {
-  const [pronostico, avisos, mediciones] = await getJson<[Pronostico, AvisosPayload, MedicionesPayload]>(
-    [`loc:${slug}`, "avisos", "mediciones"], options);
+  const [pronostico, avisos, algoritmo] = await getJson<[Pronostico, AvisosPayload, AlgoritmoPayload]>(
+    [`loc:${slug}`, "avisos", "algoritmo"], options);
   if (!pronostico) return null;
-  return { ...pronostico, observacion: masReciente(pronostico.observacion, mediciones?.mediciones?.[slug]),
+  const ajuste = algoritmo?.comunas?.[slug];
+  const ancla = ajuste?.anomalia != null && ajuste.hora
+    ? { anomalia: ajuste.anomalia, hora: ajuste.hora, tau_h: algoritmo!.tau_h, estaciones: ajuste.estaciones ?? [] }
+    : null;
+  return { ...pronostico, observacion: masReciente(pronostico.observacion, ajuste?.medicion), ancla,
            avisos: avisosDe(avisos, slug) };
 }
 
-/** La medición más nueva: la del JSON de la comuna o la de `mediciones` (se publica cada hora). */
+/** La medición más nueva: la del JSON de la comuna o la de `algoritmo` (se publica cada hora). */
 function masReciente(a: Observacion | null, b: Observacion | undefined): Observacion | null {
   if (!b) return a;
   if (!a) return b;
