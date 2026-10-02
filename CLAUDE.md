@@ -242,6 +242,11 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 ### 2026-10-01 — rama `feature/buscador-pasos`
 - Pedido del usuario: **buscador de pasos fronterizos** en `/pasos` ([ListaPasos.tsx](ClimAppWeb/web/src/components/pasos/ListaPasos.tsx)): filtra por nombre o región sin importar tildes, opción "Solo pasos con alertas" y contador de resultados.
 
+### 2026-10-01 — rama `feature/temperatura-actual-continua`
+- Pedido del usuario: la temperatura actual debe seguir la curva del pronóstico, no quedar fija en el valor de la hora. [lib/ahora.ts](ClimAppWeb/web/src/lib/ahora.ts) (algoritmo ClimApp, en el navegador, cada minuto): interpolación lineal del pronóstico horario corregido + ajuste desde la última medición cercana (≤ 3 h) que se desvanece con τ = 3 h. Reloj con `useSyncExternalStore` (en el servidor muestra el valor horario; sin desajuste de hidratación).
+- `desdeAhora` conserva hasta 3 `horasPrevias` (no se muestran) para comparar la medición con la curva en su instante.
+- Verificado: Quintero 22:15 → 14,5° "desde la última medición" (medido 14,8° a las 21:15; curva 14,8° a las 22:00 y 14,4° a las 23:00). Pruebas web 18/18.
+
 ---
 
 ## 8. Pendientes
