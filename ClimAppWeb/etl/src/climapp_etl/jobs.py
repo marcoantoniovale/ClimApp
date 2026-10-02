@@ -548,7 +548,7 @@ def _interpolar_icon(serie: dict[datetime, float], t: datetime) -> float | None:
 
 def residuals(conn: psycopg.Connection) -> None:
     """Algoritmo ClimApp, paso 1: error de ICON por estación y hora (con control de calidad) →
-    station_residuals. Luego publica el ajuste del momento por comuna (clave `algoritmo`)."""
+    station_residuals (una fila por hora, con la lectura más reciente de esa hora). Luego publica el ajuste del momento por comuna (clave `algoritmo`)."""
     with track_run(conn, "residuos") as run:
         budget = open_meteo.MinuteBudget()
         _completar_alturas(conn, budget)
@@ -561,8 +561,8 @@ def residuals(conn: psycopg.Connection) -> None:
                   and observed_at > now() - interval '{RESIDUOS_HORAS + 8} hours'
                 order by station_id, observed_at""", (list(estaciones),)):
             lecturas[sid].append((t, v))
-        existentes = {(r[0], r[1]) for r in conn.execute(
-            f"select station_id, hora from station_residuals where hora > now() - interval '{RESIDUOS_HORAS + 1} hours'")}
+        existentes = {(r[0], r[1]): r[2] for r in conn.execute(f"""select station_id, hora, observed_at from station_residuals
+                                                                  where hora > now() - interval '{RESIDUOS_HORAS + 1} hours'""")}
 
         variables = {"temperature_2m": "temperatura"}
         puntos = [open_meteo.Point(e["id"], e["lat"], e["lon"]) for e in estaciones.values()]
@@ -580,7 +580,8 @@ def residuals(conn: psycopg.Connection) -> None:
             for hora in sorted(por_hora):
                 t, v = por_hora[hora]
                 p = _interpolar_icon(icon.get(sid, {}), t)
-                if p is not None and hora >= desde and (sid, hora) not in existentes:
+                # nueva hora, o una lectura más reciente dentro de una hora ya registrada
+                if p is not None and hora >= desde and existentes.get((sid, hora), t - timedelta(seconds=1)) < t:
                     e = estaciones[sid]
                     nuevas[hora].append({"station_id": sid, "hora": hora, "observed_at": t, "medido": v, "icon": p,
                                          "residuo": p - v, "qc": correccion.qc_lectura(v, p, previas, t),
@@ -593,7 +594,9 @@ def residuals(conn: psycopg.Connection) -> None:
             with conn.cursor() as cur:
                 cur.executemany("""insert into station_residuals (station_id, hora, observed_at, medido, icon, qc)
                                    values (%(station_id)s, %(hora)s, %(observed_at)s, %(medido)s, %(icon)s, %(qc)s)
-                                   on conflict do nothing""", filas)
+                                   on conflict (station_id, hora) do update set observed_at = excluded.observed_at,
+                                       medido = excluded.medido, icon = excluded.icon, qc = excluded.qc
+                                   where excluded.observed_at > station_residuals.observed_at""", filas)
         rechazadas: dict[str, int] = defaultdict(int)
         for f in filas:
             if f["qc"] != "ok":

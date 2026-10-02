@@ -10,7 +10,7 @@ alter table stations add column if not exists altura_m real;
 alter table locations add column if not exists elevacion_m real;
 
 -- Error de ICON por estación y hora: medido vs ICON en el punto de la estación, a la hora de la lectura.
--- Se registra una vez por hora (la primera vez que se calcula: no se reescribe con corridas posteriores).
+-- Una fila por hora: la lectura más reciente de esa hora.
 create table station_residuals (
     station_id   text not null references stations (id) on delete cascade,
     hora         timestamptz not null,            -- inicio de la hora (UTC)

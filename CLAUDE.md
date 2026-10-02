@@ -276,6 +276,7 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - INIA evaluada: 210 estaciones propias; sin servicio de datos público identificado (pendiente).
 - Corrección a un diagnóstico anterior: según sus coordenadas, la estación "Quinta Normal" está en la comuna de Estación Central y Torquemada en Concón (estaban bien); los errores reales eran Pudahuel (en Quilicura) y Rodelillo (en Viña del Mar).
 - Pruebas: ETL 84, web 20.
+- Ajuste posterior (rama `fix/residuo-lectura-reciente`): si llega una lectura más reciente dentro de una hora ya registrada, reemplaza a la anterior (el ancla usaba hasta ~1 h de atraso). Verificado en producción: SINCA responde desde GitHub Actions (61 estaciones, 0 errores).
 
 ---
 
