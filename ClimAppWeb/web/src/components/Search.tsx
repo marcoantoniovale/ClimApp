@@ -5,7 +5,7 @@ import { type KeyboardEvent, useId, useMemo, useRef, useState } from "react";
 
 import type { UbicacionIndice } from "@/lib/data";
 import { region } from "@/lib/format";
-import { ErrorUbicacion, cargarIndice, ubicarComuna } from "@/lib/ubicacion";
+import { ErrorUbicacion, cargarIndice, guardarUbicacion, ubicarComuna } from "@/lib/ubicacion";
 
 const normalize = (s: string) =>
   s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
@@ -63,6 +63,7 @@ export default function Search({ autoFocus = false, size = "lg" }: { autoFocus?:
     if (!entry) return;
     setOpen(false);
     setQuery(entry.nombre);
+    guardarUbicacion(entry.slug, entry.nombre, "busqueda");   // el inicio mostrará esta comuna hasta que se cambie
     router.push(`/comuna/${entry.slug}`);
   };
 
