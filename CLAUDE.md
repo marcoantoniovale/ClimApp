@@ -228,6 +228,10 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Pedido del usuario: la actualización se dispara al **minuto 59 de cada hora** (21:59, 22:59…). Migración [0010](ClimAppWeb/db/migrations/0010_disparador_minuto_59.sql) reprograma `climapp-ingesta` a `59 * * * *` (aplicada y verificada en `cron.job`); el cron de respaldo de GitHub también pasa al minuto 59 (si ambos corren, el segundo no descarga nada). Chile tiene desfase entero con UTC, así que el minuto coincide en hora local.
 - La corrida tarda ~30 s–2 min; la web toma los datos nuevos en ≤ 10 min (caché ISR/CDN).
 
+### 2026-10-01 — renovación instantánea (PR #18) y tamaño de la base
+- **Renovación instantánea**: al terminar una ingesta que publica (precálculo, avisos o pasos), el ETL deja una clave de un solo uso en Redis (`climapp:v1:revalidar`, 5 min) y llama a `POST /api/revalidate`; la web la valida y ejecuta `revalidateTag("climapp", { expire: 0 })` + `revalidatePath("/", "layout")`. Verificado en producción: clave falsa 401, sin cuerpo 400, página `REVALIDATED` ~2 s después del aviso. Caché CDN de la API: 10 → 1 min. Comando manual: `python -m climapp_etl revalidar`.
+- **Tamaño de la base** (Supabase Free, 500 MB): 67 MB hoy (13 %). Con 123 estaciones DMC activas y 184 estaciones en el archivo: observaciones +0,63 MB/día, archivo +2,32 MB/día → 330 MB a 90 días (66 %), ~505 MB al año (101 %) con la retención actual (archivo 90 d, observaciones 365 d).
+
 ---
 
 ## 8. Pendientes
@@ -258,6 +262,8 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Tamaño del JSON v2 (~49 KB × 346 por cada publicación): revisar consumo de ancho de banda de Upstash (plan gratuito) y, si hace falta, compactar (claves cortas, quitar `rango`).
 - [x] Ingerir observaciones DMC (2026-10-01).
 - [ ] Recalibrar el algoritmo ClimApp con 2–3 semanas de datos; pasar a `forecast_archive` (pronósticos reales) y considerar altura estación–comuna.
+
+- [ ] **Retención de la base (decidir)**: propuesta archivo de pronósticos 1 vez al día (en vez de 2) y observaciones 180 días (en vez de 365) → ~283 MB estables (57 %). Sin cambios se llega al límite de 500 MB en ~1 año.
 
 ### Investigación
 - [x] Datos de la Armada: observaciones por API JSON; avisos imagen/PDF. Ver [docs/spikes-semana1.md](docs/spikes-semana1.md).
