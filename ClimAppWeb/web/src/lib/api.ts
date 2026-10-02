@@ -4,8 +4,8 @@
 import { RedisNotConfigured } from "./redis";
 
 export const CACHE = {
-  /** Pronóstico y avisos: 10 min en CDN, sirve la copia anterior hasta 1 h mientras revalida. */
-  corto: "public, s-maxage=600, stale-while-revalidate=3600",
+  /** Pronóstico y avisos: 1 min en CDN (las páginas se renuevan al instante vía /api/revalidate). */
+  corto: "public, s-maxage=60, stale-while-revalidate=300",
   /** Índice de ubicaciones: cambia solo con el catálogo. */
   largo: "public, s-maxage=86400, stale-while-revalidate=604800",
   ninguno: "no-store",
