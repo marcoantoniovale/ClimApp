@@ -224,6 +224,10 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Pie: logo + "Marco (sin S)" (literal pedido por el usuario).
 - Pruebas: ETL 64/64, web 13/13.
 
+### 2026-10-01 — rama `chore/actualizacion-minuto-59`
+- Pedido del usuario: la actualización se dispara al **minuto 59 de cada hora** (21:59, 22:59…). Migración [0010](ClimAppWeb/db/migrations/0010_disparador_minuto_59.sql) reprograma `climapp-ingesta` a `59 * * * *` (aplicada y verificada en `cron.job`); el cron de respaldo de GitHub también pasa al minuto 59 (si ambos corren, el segundo no descarga nada). Chile tiene desfase entero con UTC, así que el minuto coincide en hora local.
+- La corrida tarda ~30 s–2 min; la web toma los datos nuevos en ≤ 10 min (caché ISR/CDN).
+
 ---
 
 ## 8. Pendientes
@@ -242,7 +246,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [x] Política de ramas: trabajo en ramas desde `main` y fusión por pull request. (Aprobado 2026-10-01)
 - [ ] Vincular el repo al proyecto de claude.ai "ClimApp" (https://claude.ai/project/01a0f79e-6e15-723a-a00e-5c252c791837) desde *Agregar contenido → GitHub* (usuario; resincronizar tras cada push).
 
-- [x] **Disparador de la ingesta** activo (2026-10-01): token guardado por el usuario en el Vault; prueba manual → GitHub 204 y corrida `workflow_dispatch` exitosa. Corre a las HH:05 UTC.
+- [x] **Disparador de la ingesta** activo (2026-10-01): token guardado por el usuario en el Vault; prueba manual → GitHub 204 y corrida `workflow_dispatch` exitosa. Desde 2026-10-01 corre al **minuto 59 de cada hora** (migración 0010; p. ej. 21:59); el cron de GitHub, de respaldo, también al 59.
 - [ ] **Renovar el token fine-grained `climapp-supabase-cron`** antes de su vencimiento (fecha elegida por el usuario al crearlo); luego `select vault.update_secret(...)` o borrar y volver a crear `github_actions_token`.
 
 - [ ] **RutaClimApp** — **en pausa por decisión del usuario (2026-10-01)**; retomar desde la propuesta (ver [§8 de la propuesta](docs/rutaclimapp-propuesta.md)): aprobación y prioridad frente a la Fase 2; cuenta y API key de openrouteservice; perfil camión en MVP; mapa en R1 o R2; horizonte.
