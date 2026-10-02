@@ -1,5 +1,5 @@
 import type { Dia, Hora, Observacion } from "@/lib/data";
-import { cardinal, cielo, esNoche, fechaHora, grados, hora, region as nombreRegion } from "@/lib/format";
+import { cardinal, cielo, esNoche, fechaHora, grados, grados1, hora, region as nombreRegion } from "@/lib/format";
 
 import WeatherIcon from "../WeatherIcon";
 import Flecha from "./Flecha";
@@ -42,7 +42,7 @@ export default function Ahora({
         <div className="mt-4 flex items-center gap-4">
           <WeatherIcon code={ahora.estado_cielo} night={esNoche(ahora.hora)} size={84} className="shrink-0" />
           <div className="min-w-0">
-            <p className="text-6xl font-extralight leading-none tracking-tighter">{grados(ahora.temperatura)}</p>
+            <p className="text-6xl font-extralight leading-none tracking-tighter">{grados1(ahora.temperatura)}</p>
             <p className="mt-1 text-lg font-medium text-slate-100">{estado.texto}</p>
             <p className="text-sm text-slate-400">Sensación {grados(ahora.sensacion_termica)}</p>
           </div>
@@ -76,7 +76,7 @@ export default function Ahora({
       {obsReciente && (
         <p className="mt-3 rounded-xl bg-climapp-bg/60 px-3 py-2 text-sm text-slate-300">
           Medido en <strong className="font-semibold text-slate-100">{obsReciente.estacion}</strong> a las {hora(obsReciente.hora)}:{" "}
-          {grados(obsReciente.temperatura)}
+          {grados1(obsReciente.temperatura)}
           {obsReciente.viento != null && `, viento ${obsReciente.viento} km/h`}
         </p>
       )}

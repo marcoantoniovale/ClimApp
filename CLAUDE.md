@@ -232,6 +232,9 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - **Renovación instantánea**: al terminar una ingesta que publica (precálculo, avisos o pasos), el ETL deja una clave de un solo uso en Redis (`climapp:v1:revalidar`, 5 min) y llama a `POST /api/revalidate`; la web la valida y ejecuta `revalidateTag("climapp", { expire: 0 })` + `revalidatePath("/", "layout")`. Verificado en producción: clave falsa 401, sin cuerpo 400, página `REVALIDATED` ~2 s después del aviso. Caché CDN de la API: 10 → 1 min. Comando manual: `python -m climapp_etl revalidar`.
 - **Tamaño de la base** (Supabase Free, 500 MB): 67 MB hoy (13 %). Con 123 estaciones DMC activas y 184 estaciones en el archivo: observaciones +0,63 MB/día, archivo +2,32 MB/día → 330 MB a 90 días (66 %), ~505 MB al año (101 %) con la retención actual (archivo 90 d, observaciones 365 d).
 
+### 2026-10-01 — rama `feature/temperatura-decimal`
+- Pedido del usuario: la **temperatura actual** (número grande y medición de la estación cercana) se muestra con **1 decimal** y coma decimal (`grados1`, p. ej. "14,8°"). Máximas, mínimas y horas siguen sin decimales. Prueba en `web/tests/format.test.mts`.
+
 ---
 
 ## 8. Pendientes
