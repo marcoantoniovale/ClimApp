@@ -89,11 +89,11 @@ def test_modelos_pendientes():
     assert set(pending_models(viejo, runs, now=h(22))) == {"gfs", "icon"}   # > 9 h sin renovar
 
 
-def test_dias_limitados_a_hoy_mas_cinco():
+def test_dias_limitados_a_hoy_mas_seis():
     p = snapshot.build(LOCATION, make_rows(24 * 8), marine=None, observation=None, fetched_at=NOW, now=NOW,
                        cercanas=[{"slug": "vina-del-mar", "nombre": "Viña del Mar", "km": 8}])
-    assert len(p["dias"]) == 6
-    assert p["horas"][-1]["hora"].startswith("2026-10-06T23:00")
+    assert len(p["dias"]) == 7
+    assert p["horas"][-1]["hora"].startswith("2026-10-07T23:00")
     assert p["cercanas"][0]["slug"] == "vina-del-mar" and p["version"] == 2
 
 

@@ -94,7 +94,7 @@ export default function Inicio() {
       <div className="rounded-3xl border border-climapp-line bg-climapp-card/70 p-6 sm:p-8">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">El tiempo donde estás</h1>
         <p className="mx-auto mt-2 max-w-md text-sm text-slate-300">
-          Pronóstico hora a hora para hoy y los próximos 5 días. Tu ubicación se usa solo en este dispositivo.
+          Pronóstico hora a hora para hoy y los próximos 6 días. Tu ubicación se usa solo en este dispositivo.
         </p>
         {estado.tipo === "buscando" ? (
           <p className="mt-6 flex items-center justify-center gap-2 text-climapp-teal" aria-live="polite">

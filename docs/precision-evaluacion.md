@@ -84,3 +84,22 @@ Pendiente: términos de uso de los productos de la DMC y si sus servidores respo
 | **P4** | Mostrar el **pronóstico oficial de la DMC** de la localidad más cercana como referencia, y usarlo para comparar el nuestro | Confianza del usuario; referencia de calidad | 1 día |
 
 La DMC resolvería además el bloqueo de la Fase 2: sus observaciones reemplazarían a las de la Armada, si sus servidores responden desde GitHub Actions.
+
+---
+
+## 6. Algoritmo ClimApp v1 (en producción desde el 2026-10-01)
+
+Implementa P2 y el comienzo de P3. Código: `etl/src/climapp_etl/correccion.py` y `dmc_obs.py`.
+
+**Mediciones:** mapa nacional de estaciones automáticas DMC (148 estaciones, una petición por hora) más carga inicial de 48 h por estación desde su visor. Las horas del visor se asignan por orden de serie: pasadas las 21:00 de Chile, la DMC rotula "hoy" con la fecha UTC (error encontrado y corregido el mismo día).
+
+**Corrección (solo temperatura y sensación térmica de ICON):**
+1. Sesgo por estación y franja del día (00–05, 06–11, 12–17, 18–23 h): promedio de ICON − medición en los últimos 14 días; atenuado con pocos datos (`n / (n + 12)`), limitado a ±5 °C; diferencias > 15 °C se descartan.
+2. Cada comuna usa las estaciones de su misma zona (costa/interior) a ≤ 25 km, con peso `exp(−d / 10 km)` y atenuación hacia cero si están lejos. Sin estaciones cercanas no se corrige y la página lo indica.
+3. Pasos fronterizos: sin corrección (las estaciones cercanas están a otra altura).
+
+**Resultados al partir (2 días de datos, 134 estaciones, 209 de 346 comunas corregidas):**
+- Validación cruzada (cada estación corregida solo con sus vecinas): error medio 1,20 → 1,17 °C (−2,2 %). La ganancia es modesta porque el sesgo es muy local y con 12 horas por franja la atenuación aplica ~50 %. Probadas variantes (K 3–12, radio 25–40 km): todas entre −1 % y −2,4 %.
+- En el punto de la estación el efecto es mayor (Quintero: sesgo de +1,8 °C de noche y de mañana).
+
+**Próximas mejoras:** usar `forecast_archive` (pronósticos reales a 24–72 h) en vez de los días pasados de Open-Meteo; considerar la diferencia de altura estación–comuna; sesgo según el horizonte; extender a viento y humedad; recalibrar con 2–3 semanas de datos.

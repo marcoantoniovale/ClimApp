@@ -19,7 +19,7 @@ from .units import ms_to_kmh
 CHILE = ZoneInfo("America/Santiago")
 SCHEMA_VERSION = 2
 HOURS_AHEAD = 48          # oleaje por hora
-DAYS_AHEAD = 6           # hoy + 5 días
+DAYS_AHEAD = 7           # hoy + 6 días
 FUENTES = [
     {"nombre": "Open-Meteo", "licencia": "CC BY 4.0", "url": "https://open-meteo.com"},
     {"nombre": "Armada de Chile — Servicio Meteorológico", "url": "https://meteoarmada.directemar.cl"},
@@ -160,7 +160,7 @@ def marine_summary(marine, now: datetime) -> dict | None:
 
 def build(location: dict, rows, marine, observation: dict | None, fetched_at: datetime | None,
           now: datetime | None = None, corridas: dict[str, str] | None = None,
-          cercanas: list[dict] | None = None) -> dict:
+          cercanas: list[dict] | None = None, correccion: dict | None = None) -> dict:
     """Arma el JSON de una ubicación. rows: (modelo, valid_time, valores) de forecast_current."""
     now = now or datetime.now(timezone.utc)
     current_hour = now.replace(minute=0, second=0, microsecond=0)
@@ -177,7 +177,7 @@ def build(location: dict, rows, marine, observation: dict | None, fetched_at: da
                       "altura_m": location.get("altura_m")},
         "generado": _iso_local(now),
         "actualizado": _iso_local(fetched_at) if fetched_at else None,
-        "provisional": True,          # sin corrección con observaciones hasta la Fase 2
+        "provisional": not (correccion and correccion["franjas"]),
         "fuente": {"modelo": "ICON (DWD)", "complementario": "GFS (índice UV y visibilidad)"},
         "modelos": models,
         "corridas": {m: corridas[m] for m in models if corridas and m in corridas},  # inicio de cada corrida
@@ -208,6 +208,11 @@ def build(location: dict, rows, marine, observation: dict | None, fetched_at: da
         "marino": marine_summary(marine, now) if location.get("es_costera") else None,
         "observacion": observation,
         "cercanas": cercanas or [],
+        "correccion": {  # algoritmo ClimApp: temperatura de ICON corregida con estaciones DMC cercanas
+            "aplicada": bool(correccion and correccion["franjas"]),
+            "estaciones": (correccion or {}).get("estaciones", []),
+            "franjas": {str(k): round(v, 2) for k, v in (correccion or {}).get("franjas", {}).items()},
+        },
         "fuentes": FUENTES,
     }
 
