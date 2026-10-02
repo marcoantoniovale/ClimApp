@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://climapp-chile.vercel.app"),
   title: { default: "ClimApp · Pronóstico para Chile", template: "%s · ClimApp" },
   description:
-    "El tiempo donde estás: pronóstico hora a hora y a 5 días para las 346 comunas de Chile (modelo ICON), con avisos marítimos y oleaje de la Armada de Chile.",
+    "El tiempo donde estás: pronóstico hora a hora y a 7 días para las 346 comunas de Chile (modelo ICON), con avisos marítimos y oleaje de la Armada de Chile.",
   applicationName: "ClimApp",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "ClimApp" },
   openGraph: { type: "website", locale: "es_CL", siteName: "ClimApp" },

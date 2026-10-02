@@ -215,6 +215,15 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Prueba real: 37/37 pasos con pronóstico DMC; ICON y DMC coinciden en la tendencia de Los Libertadores (isoterma ~2.500–2.900 m, nieve desde el fin de semana). Pruebas ETL 56/56, web 13/13.
 - Pie: "Creador: Marco" (pedido del usuario; antes "Grupo MSinS").
 
+### 2026-10-01 — rama `feature/7dias-correccion`
+- **7 días** (hoy + 6) en el JSON y en la web; las tarjetas de días ocupan todo el ancho (7 columnas iguales).
+- **Mediciones DMC** ([dmc_obs.py](ClimAppWeb/etl/src/climapp_etl/dmc_obs.py)): mapa nacional `menuTematicoEmas` (148 EMA en una página: coordenadas, hora, temperatura, humedad, viento grados/nudos, presión) cada hora → `stations` (id `dmc-<código>`, red `dmc`) y `observations`. Carga inicial de 48 h con el visor por estación (`dmc_historial`). Bug encontrado y corregido: el visor rotula las series con fecha UTC después de las 21:00 de Chile → fechas por orden de serie (prueba incluida). Migración 0009 (red `dmc`, tabla `station_bias`).
+- **Algoritmo ClimApp v1** ([correccion.py](ClimAppWeb/etl/src/climapp_etl/correccion.py), detalle en [docs/precision-evaluacion.md §6](docs/precision-evaluacion.md)): sesgo de ICON por estación y franja del día, atenuado según datos; aplicado a temperatura y sensación de comunas con estaciones de la misma zona a ≤ 25 km. Job `correccion` cada 3 h; el precálculo se rehace si hay corrección nueva. Validación cruzada inicial: 1,20 → 1,17 °C; 209/346 comunas corregidas.
+- El bloque "Ahora" muestra la medición DMC cercana (p. ej. "Medido en Quintero, Climatológica a las 21:15").
+- Texto de fuente (pedido del usuario): "Modelo ICON (DWD) · obtenida … · actualizado …. Índice UV y visibilidad: GFS. Pronóstico con corrección con mediciones (algoritmo ClimApp)." (se escribió "algoritmo" sin tilde). Sin estaciones cercanas: "Sin estaciones de medición cercanas: pronóstico sin corrección."
+- Pie: logo + "Marco (sin S)" (literal pedido por el usuario).
+- Pruebas: ETL 64/64, web 13/13.
+
 ---
 
 ## 8. Pendientes
@@ -238,12 +247,13 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 
 - [ ] **RutaClimApp** — **en pausa por decisión del usuario (2026-10-01)**; retomar desde la propuesta (ver [§8 de la propuesta](docs/rutaclimapp-propuesta.md)): aprobación y prioridad frente a la Fase 2; cuenta y API key de openrouteservice; perfil camión en MVP; mapa en R1 o R2; horizonte.
 
-- [ ] **Precisión** (decidir, ver [plan](docs/precision-evaluacion.md#5-plan-propuesto)): P1 celda `nearest` en comunas costeras; P2 observaciones DMC y "ahora" medido; P3 corrección de sesgo y pesos por modelo (Fase 2); P4 pronóstico oficial DMC como referencia. Verificar términos de uso de la DMC y acceso desde la nube.
+- [x] Precisión: P1 descartado para ICON (la celda por defecto es mejor); P2 y P3 v1 implementados (algoritmo ClimApp). Pendiente: términos de uso de la DMC.
 
 - [x] Alertas de pasos fronterizos (2026-10-01). Pendiente: estado abierto/cerrado estructurado y calibrar umbrales. Detalle original: pronóstico oficial DMC por paso (archivos `datos_pasos_fronterizos_*.js`; ignorar el encabezado con nombre e IP del autor) + alertas propias con ICON en cada paso (nieve, rachas, isoterma bajo la cota del paso). Estado abierto/cerrado: el sitio de la UPF solo publica noticias → enlace al sitio oficial e investigar.
 - [ ] Probar en un teléfono real el inicio por ubicación (permiso, ubicación automática, última comuna guardada).
 - [ ] Tamaño del JSON v2 (~49 KB × 346 por cada publicación): revisar consumo de ancho de banda de Upstash (plan gratuito) y, si hace falta, compactar (claves cortas, quitar `rango`).
-- [ ] Validar ICON con 2–3 semanas de datos contra estaciones DMC (requiere ingerir observaciones DMC).
+- [x] Ingerir observaciones DMC (2026-10-01).
+- [ ] Recalibrar el algoritmo ClimApp con 2–3 semanas de datos; pasar a `forecast_archive` (pronósticos reales) y considerar altura estación–comuna.
 
 ### Investigación
 - [x] Datos de la Armada: observaciones por API JSON; avisos imagen/PDF. Ver [docs/spikes-semana1.md](docs/spikes-semana1.md).

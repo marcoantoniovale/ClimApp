@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps<"/comuna/[slug]">):
   const hoy = p.dias[0];
   return {
     title: `El tiempo en ${p.ubicacion.nombre}`,
-    description: `Pronóstico para ${p.ubicacion.nombre} (${region(p.ubicacion.region)}): hoy máx. ${grados(hoy?.temperatura_max)}, mín. ${grados(hoy?.temperatura_min)}. Hora a hora y 5 días${p.ubicacion.es_costera ? ", oleaje" : ""} y avisos de la Armada.`,
+    description: `Pronóstico para ${p.ubicacion.nombre} (${region(p.ubicacion.region)}): hoy máx. ${grados(hoy?.temperatura_max)}, mín. ${grados(hoy?.temperatura_min)}. Hora a hora y 7 días${p.ubicacion.es_costera ? ", oleaje" : ""} y avisos de la Armada.`,
     alternates: { canonical: `/comuna/${slug}` },
   };
 }

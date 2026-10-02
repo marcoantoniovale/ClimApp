@@ -21,7 +21,7 @@ import Horas from "./Horas";
 export default function Pronostico({ p, etiqueta }: { p: PronosticoConAvisos; etiqueta?: string }) {
   const [dia, setDia] = useState(0);
   const panelId = useId();
-  const dias = p.dias.slice(0, 6);
+  const dias = p.dias.slice(0, 7);
   const elegido = dias[dia];
   const horasDelDia = elegido ? p.horas.filter((h) => fechaLocal(h.hora) === elegido.fecha) : [];
   const sol = elegido ? salidaPuesta(new Date(`${elegido.fecha}T12:00:00-03:00`), p.ubicacion.lat, p.ubicacion.lon) : null;
@@ -83,9 +83,15 @@ export default function Pronostico({ p, etiqueta }: { p: PronosticoConAvisos; et
 
       <p className="px-1 text-xs text-slate-400">
         Modelo {p.fuente?.modelo ?? "ICON (DWD)"}
-        {p.corridas?.icon && <> · corrida {fechaHora(p.corridas.icon)}</>}
-        {p.actualizado && <> · actualizado {fechaHora(p.actualizado)}</>}.{" "}
-        Índice UV y visibilidad: GFS. Pronóstico sin corrección con mediciones (en desarrollo).
+        {p.corridas?.icon && <> · obtenida {fechaHora(p.corridas.icon)}</>}
+        {p.actualizado && <> · actualizado {fechaHora(p.actualizado)}</>}. Índice UV y visibilidad: GFS.{" "}
+        {p.correccion?.aplicada ? (
+          <span title={`Estaciones DMC: ${p.correccion.estaciones.map((e) => `${e.nombre} (${e.km} km)`).join(", ")}`}>
+            Pronóstico con corrección con mediciones (algoritmo ClimApp).
+          </span>
+        ) : (
+          <>Sin estaciones de medición cercanas: pronóstico sin corrección.</>
+        )}
       </p>
     </div>
   );

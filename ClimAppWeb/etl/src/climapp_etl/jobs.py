@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 import psycopg
 from psycopg.types.json import Jsonb
 
-from . import armada, avisos, dmc_pasos, open_meteo, redis, snapshot
+from . import armada, avisos, correccion, dmc_obs, dmc_pasos, open_meteo, redis, snapshot
 from .db import last_success, track_run
 
 log = logging.getLogger("climapp_etl")
@@ -30,6 +30,9 @@ FORECAST_EVERY = timedelta(hours=6)
 MODEL_MAX_AGE = timedelta(hours=9)
 MARINE_EVERY = timedelta(hours=3)
 PASOS_DMC_EVERY = timedelta(hours=3)   # la DMC emite ~2 veces al día
+CORRECTION_EVERY = timedelta(hours=3)
+CORRECTION_DAYS = 14                   # ventana de mediciones para el sesgo
+DMC_MAX_AGE = timedelta(hours=3)       # lecturas más antiguas del mapa DMC no se guardan
 ARCHIVE_EVERY = timedelta(hours=12)
 MAINTENANCE_EVERY = timedelta(hours=24)
 MARGIN = timedelta(minutes=30)
@@ -282,6 +285,17 @@ def snapshots(conn: psycopg.Connection) -> None:
             where o.observed_at > now() - interval '3 hours'
             order by s.location_id, o.observed_at desc""")}
 
+        estaciones_sesgo: dict[str, dict] = {}
+        for sid, nombre, lat, lon, costera, f, sesgo in conn.execute("""
+                select s.id, s.nombre, s.lat, s.lon, coalesce(l.es_costera, false), b.franja, b.sesgo
+                from station_bias b join stations s on s.id = b.station_id
+                left join locations l on l.id = s.location_id"""):
+            e = estaciones_sesgo.setdefault(sid, {"id": sid, "nombre": nombre, "lat": lat, "lon": lon,
+                                                  "costera": costera, "sesgos": {}})
+            e["sesgos"][f] = sesgo
+        estaciones_sesgo_lista = list(estaciones_sesgo.values())
+        corregidas = 0
+
         corridas = {r[0]: snapshot._iso_local(r[1]) for r in conn.execute(
             "select modelo, run_init from model_runs where modelo = any(%s)", (list(open_meteo.MODELS),))}
         cercanas = _nearest_locations(locations, n=6)
@@ -291,9 +305,12 @@ def snapshots(conn: psycopg.Connection) -> None:
             if not rows.get(loc["id"]):
                 run.warn(f"Sin pronóstico: {loc['slug']}")
                 continue
-            payloads[loc["id"]] = snapshot.build(loc, rows[loc["id"]], marine.get(loc["id"]),
+            corr = ({"franjas": {}, "estaciones": []} if loc["tipo"] != "comuna" else
+                    correccion.correccion(loc["lat"], loc["lon"], loc["es_costera"], estaciones_sesgo_lista))
+            corregidas += bool(corr["franjas"])
+            payloads[loc["id"]] = snapshot.build(loc, correccion.aplicar(rows[loc["id"]], corr), marine.get(loc["id"]),
                                                  observations.get(loc["id"]), fetched.get(loc["id"]), now,
-                                                 corridas=corridas, cercanas=cercanas[loc["id"]])
+                                                 corridas=corridas, cercanas=cercanas[loc["id"]], correccion=corr)
 
         with conn.transaction():
             with conn.cursor() as cur:
@@ -317,7 +334,8 @@ def snapshots(conn: psycopg.Connection) -> None:
         if not redis.configured():
             run.detalle.append("Redis no configurado: solo location_snapshots")
         run.filas = len(payloads)
-        log.info("snapshots: %d ubicaciones, redis=%d claves", len(payloads), published)
+        run.detalle.append(f"{corregidas} comunas con corrección de temperatura")
+        log.info("snapshots: %d ubicaciones (%d corregidas), redis=%d claves", len(payloads), corregidas, published)
 
 
 def _pasos_payload(locations: list[dict], payloads: dict[int, dict], now: datetime) -> dict:
@@ -366,6 +384,106 @@ def dmc_passes(conn: psycopg.Connection) -> None:
         log.info("pasos DMC: %d pasos, %d errores, redis=%d", len(datos), len(errores), published)
 
 
+def _upsert_dmc_stations(conn: psycopg.Connection, estaciones: list[dict]) -> None:
+    """Estaciones DMC en `stations` (id dmc-<código>), asociadas a la comuna más cercana."""
+    with conn.cursor() as cur:
+        cur.executemany("""
+            insert into stations (id, red, nombre, lat, lon, location_id)
+            values (%(id)s, 'dmc', %(nombre)s, %(lat)s, %(lon)s,
+                    (select id from locations where tipo = 'comuna'
+                     order by (lat - %(lat)s) ^ 2 + ((lon - %(lon)s) * cos(radians(%(lat)s))) ^ 2 limit 1))
+            on conflict (id) do update set nombre = excluded.nombre, lat = excluded.lat, lon = excluded.lon,
+                location_id = excluded.location_id""",
+            [{"id": f"dmc-{e['codigo']}", "nombre": e["nombre"], "lat": e["lat"], "lon": e["lon"]} for e in estaciones])
+
+
+def dmc_observations(conn: psycopg.Connection) -> None:
+    """Última medición de todas las estaciones automáticas DMC (una página) → stations + observations."""
+    with track_run(conn, "dmc_obs") as run:
+        now = datetime.now(timezone.utc)
+        estaciones = dmc_obs.fetch_mapa()
+        if not estaciones:
+            raise RuntimeError("El mapa de la DMC no trajo estaciones (¿cambió el formato?)")
+        frescas = [e for e in estaciones
+                   if e["observed_at"] and now - DMC_MAX_AGE <= e["observed_at"] <= now + timedelta(hours=1)
+                   and e["temperatura"] is not None]
+        with conn.transaction():
+            _upsert_dmc_stations(conn, estaciones)
+            with conn.cursor() as cur:
+                cur.executemany("""
+                    insert into observations (station_id, observed_at, temperatura, humedad, presion, viento_vel, viento_dir)
+                    values (%s, %s, %s, %s, %s, %s, %s) on conflict (station_id, observed_at) do nothing""",
+                    [(f"dmc-{e['codigo']}", e["observed_at"], e["temperatura"], e["humedad"], e["presion"],
+                      e["viento_vel"], e["viento_dir"]) for e in frescas])
+                run.filas = max(cur.rowcount, 0)
+        run.detalle.append(f"{len(estaciones)} estaciones, {len(frescas)} con lectura reciente")
+        log.info("DMC: %d estaciones, %d lecturas recientes, %d nuevas", len(estaciones), len(frescas), run.filas)
+
+
+def dmc_history(conn: psycopg.Connection) -> None:
+    """Carga inicial: temperatura horaria de hoy y ayer de cada estación DMC (visor por estación)."""
+    with track_run(conn, "dmc_historial") as run:
+        estaciones = dmc_obs.fetch_mapa()
+        _upsert_dmc_stations(conn, estaciones)
+        total = 0
+        for e in estaciones:
+            try:
+                serie = dmc_obs.fetch_historial(e["codigo"])
+            except Exception as exc:
+                run.warn(f"{e['codigo']}: {exc}")
+                continue
+            with conn.cursor() as cur:
+                cur.executemany("""insert into observations (station_id, observed_at, temperatura) values (%s, %s, %s)
+                                   on conflict (station_id, observed_at) do nothing""",
+                                [(f"dmc-{e['codigo']}", t, v) for t, v in serie.items()])
+                total += max(cur.rowcount, 0)
+        run.filas = total
+        log.info("DMC historial: %d estaciones, %d horas nuevas", len(estaciones), total)
+
+
+def corrections(conn: psycopg.Connection) -> None:
+    """Algoritmo ClimApp: sesgo de ICON por estación DMC y franja → station_bias (+ validación cruzada)."""
+    with track_run(conn, "correccion") as run:
+        estaciones = conn.execute("""
+            select s.id, s.nombre, s.lat, s.lon, coalesce(l.es_costera, false)
+            from stations s left join locations l on l.id = s.location_id
+            where s.red = 'dmc' and exists (select 1 from observations o where o.station_id = s.id
+                                            and o.observed_at > now() - interval '2 days')
+            order by s.id""").fetchall()
+        obs: dict[str, dict] = defaultdict(dict)
+        for sid, t, temp in conn.execute("""
+                select station_id, date_trunc('hour', observed_at), avg(temperatura) from observations
+                where station_id like 'dmc-%%' and temperatura is not null
+                  and observed_at > now() - make_interval(days => %s)
+                  and extract(minute from observed_at) <= 20
+                group by 1, 2""", (CORRECTION_DAYS,)):
+            obs[sid][t] = temp
+        # ICON en el punto de cada estación, días pasados (pronóstico más reciente para cada hora).
+        variables = {"temperature_2m": "temperatura"}
+        points = [open_meteo.Point(r[0], r[2], r[3]) for r in estaciones]
+        responses = open_meteo.fetch(points, variables, 1, past_days=CORRECTION_DAYS, models=["icon"])
+        icon = {p.key: {t: v["temperatura"] for _, t, v in open_meteo.rows(data, variables, models=["icon"])}
+                for p, data in responses}
+        filas, info = [], []
+        for sid, nombre, lat, lon, costera in estaciones:
+            s = correccion.sesgos(icon.get(sid, {}), obs.get(sid, {}))
+            if s:
+                info.append({"id": sid, "nombre": nombre, "lat": lat, "lon": lon, "costera": costera,
+                             "sesgos": {f: v["sesgo"] for f, v in s.items()}})
+                filas += [(sid, f, v["sesgo"], v["sesgo_bruto"], v["n"], v["error_antes"]) for f, v in s.items()]
+        with conn.transaction():
+            conn.execute("delete from station_bias")
+            with conn.cursor() as cur:
+                cur.executemany("insert into station_bias (station_id, franja, sesgo, sesgo_bruto, n, error_antes)"
+                                " values (%s, %s, %s, %s, %s, %s)", filas)
+        cv = correccion.validacion_cruzada(info, icon, obs)
+        run.filas = len(filas)
+        resumen = (f"{len(info)} estaciones con sesgo; validación cruzada ({cv['n']} horas): "
+                   f"error {cv['error_antes'] or 0:.2f} -> {cv['error_despues'] or 0:.2f} °C")
+        run.detalle.append(resumen)
+        log.info("corrección: %s", resumen)
+
+
 def maintenance(conn: psycopg.Connection) -> None:
     """Aplica la retención: borra datos antiguos y el JSON original de observaciones viejas."""
     with track_run(conn, "mantencion") as run:
@@ -401,6 +519,8 @@ def auto(conn: psycopg.Connection, with_observations: bool = True) -> None:
     failures = []
     jobs = [("open_meteo", forecast, "por_corrida"),
             ("open_meteo_archivo", archive, ARCHIVE_EVERY),
+            ("dmc_obs", dmc_observations, None),
+            ("correccion", corrections, CORRECTION_EVERY),
             ("armada_avisos", warnings, None),
             ("pasos_dmc", dmc_passes, PASOS_DMC_EVERY),
             ("snapshots", snapshots, "tras_pronostico"),
@@ -416,8 +536,9 @@ def auto(conn: psycopg.Connection, with_observations: bool = True) -> None:
                 continue
             log.info("%s: corridas nuevas de %s", name, ", ".join(models))
             job = functools.partial(forecast, models=models, runs=runs or None)
-        elif every == "tras_pronostico":   # solo si hay un pronóstico más nuevo que el último precálculo
-            forecast_at = last_success(conn, "open_meteo")
+        elif every == "tras_pronostico":   # solo si hay un pronóstico o una corrección más nuevos
+            forecast_at = max(filter(None, [last_success(conn, "open_meteo"), last_success(conn, "correccion")]),
+                              default=None)
             if last and forecast_at and last > forecast_at:
                 log.info("%s: no corresponde (sin pronóstico nuevo)", name)
                 continue

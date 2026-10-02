@@ -102,6 +102,8 @@ export type Pronostico = {
   fuentes: { nombre: string; licencia?: string; url: string }[];
   fuente?: { modelo: string; complementario: string };
   cercanas?: { slug: string; nombre: string; km: number }[];
+  /** Algoritmo ClimApp: temperatura de ICON corregida con estaciones DMC cercanas. */
+  correccion?: { aplicada: boolean; estaciones: { nombre: string; km: number }[]; franjas: Record<string, number> };
 };
 
 export type PronosticoConAvisos = Pronostico & { avisos: AvisoUbicacion[] };
