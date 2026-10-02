@@ -33,7 +33,7 @@ PASOS_DMC_EVERY = timedelta(hours=3)   # la DMC emite ~2 veces al día
 CORRECTION_EVERY = timedelta(hours=3)
 CORRECTION_DAYS = 14                   # ventana de mediciones para el sesgo
 DMC_MAX_AGE = timedelta(hours=3)       # lecturas más antiguas del mapa DMC no se guardan
-PUBLICA_EN_WEB = {"snapshots", "armada_avisos", "pasos_dmc"}   # tras ellos, renovar la web
+PUBLICA_EN_WEB = {"snapshots", "armada_avisos", "pasos_dmc", "dmc_obs"}   # tras ellos, renovar la web
 ARCHIVE_EVERY = timedelta(hours=12)
 MAINTENANCE_EVERY = timedelta(hours=24)
 MARGIN = timedelta(minutes=30)
@@ -275,16 +275,7 @@ def snapshots(conn: psycopg.Connection) -> None:
         for r in conn.execute(f"""select location_id, valid_time, {', '.join(mcols)} from forecast_marine
                                   where valid_time >= now() - interval '1 hour'"""):
             marine[r[0]].append((r[1], dict(zip(mcols, r[2:]))))
-        observations = {r[0]: {"estacion": r[1], "red": r[2], "hora": snapshot._iso_local(r[3]),
-                               "temperatura": r[4], "humedad": r[5], "presion": r[6],
-                               "viento": None if r[7] is None else round(r[7] * 3.6),
-                               "viento_dir": r[8]}
-                        for r in conn.execute("""
-            select distinct on (s.location_id) s.location_id, s.nombre, s.red, o.observed_at,
-                   o.temperatura, o.humedad, o.presion, o.viento_vel, o.viento_dir
-            from observations o join stations s on s.id = o.station_id
-            where o.observed_at > now() - interval '3 hours'
-            order by s.location_id, o.observed_at desc""")}
+        observations = _mediciones(conn, locations)
 
         estaciones_sesgo: dict[str, dict] = {}
         for sid, nombre, lat, lon, costera, f, sesgo in conn.execute("""
@@ -337,6 +328,40 @@ def snapshots(conn: psycopg.Connection) -> None:
         run.filas = len(payloads)
         run.detalle.append(f"{corregidas} comunas con corrección de temperatura")
         log.info("snapshots: %d ubicaciones (%d corregidas), redis=%d claves", len(payloads), corregidas, published)
+
+
+def _mediciones(conn: psycopg.Connection, locations: list[dict]) -> dict[int, dict]:
+    """Por comuna, la última medición (≤ 3 h) de la estación más cercana de la misma zona (algoritmo ClimApp)."""
+    lecturas = [{"estacion": r[0], "red": r[1], "hora": snapshot._iso_local(r[2]), "temperatura": r[3],
+                 "humedad": r[4], "presion": r[5], "viento": None if r[6] is None else round(r[6] * 3.6),
+                 "viento_dir": r[7], "lat": r[8], "lon": r[9], "costera": r[10]}
+                for r in conn.execute("""
+        select distinct on (s.id) s.nombre, s.red, o.observed_at, o.temperatura, o.humedad, o.presion,
+               o.viento_vel, o.viento_dir, s.lat, s.lon, coalesce(l.es_costera, false)
+        from observations o join stations s on s.id = o.station_id
+        left join locations l on l.id = s.location_id
+        where o.observed_at > now() - interval '3 hours' and o.temperatura is not null
+        order by s.id, o.observed_at desc""")]
+    out = {}
+    for loc in locations:
+        if loc["tipo"] != "comuna":
+            continue
+        m = correccion.medicion_cercana(loc["lat"], loc["lon"], loc["es_costera"], lecturas)
+        if m:
+            out[loc["id"]] = m
+    return out
+
+
+def publish_mediciones(conn: psycopg.Connection) -> int:
+    """Clave liviana `mediciones` ({slug: medición}) para que la web parta de lo medido cada hora,
+    sin regenerar los JSON de todas las comunas."""
+    locations = [dict(zip(("id", "slug", "tipo", "lat", "lon", "es_costera"), r)) for r in conn.execute(
+        "select id, slug, tipo, lat, lon, es_costera from locations")]
+    slugs = {l["id"]: l["slug"] for l in locations}
+    mediciones = {slugs[k]: v for k, v in _mediciones(conn, locations).items()}
+    redis.publish({"mediciones": {"generado": snapshot._iso_local(datetime.now(timezone.utc)),
+                                  "mediciones": mediciones}})
+    return len(mediciones)
 
 
 def _pasos_payload(locations: list[dict], payloads: dict[int, dict], now: datetime) -> dict:
@@ -418,6 +443,8 @@ def dmc_observations(conn: psycopg.Connection) -> None:
                       e["viento_vel"], e["viento_dir"]) for e in frescas])
                 run.filas = max(cur.rowcount, 0)
         run.detalle.append(f"{len(estaciones)} estaciones, {len(frescas)} con lectura reciente")
+        comunas = publish_mediciones(conn)
+        log.info("DMC: %d comunas con medición cercana publicadas", comunas)
         log.info("DMC: %d estaciones, %d lecturas recientes, %d nuevas", len(estaciones), len(frescas), run.filas)
 
 

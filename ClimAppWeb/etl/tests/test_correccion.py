@@ -58,3 +58,15 @@ def test_validacion_cruzada_no_usa_la_propia_estacion():
     assert r["error_antes"] == pytest.approx(2.0) and r["error_despues"] < 2.0
     sola = c.validacion_cruzada(estaciones[:1], icon, obs)
     assert sola["n"] == 0                                            # sin vecinas no se evalúa
+
+
+def test_medicion_cercana_usa_la_estacion_mas_proxima_de_la_misma_zona():
+    mediciones = [
+        {"estacion": "Costa", "temperatura": 14.0, "lat": -33.44, "lon": -70.66, "costera": True},
+        {"estacion": "Lejos", "temperatura": 15.0, "lat": -33.60, "lon": -70.66, "costera": False},
+        {"estacion": "Quinta Normal", "temperatura": 16.6, "lat": -33.445, "lon": -70.683, "costera": False},
+    ]
+    m = c.medicion_cercana(-33.437, -70.665, False, mediciones)
+    assert m["estacion"] == "Quinta Normal" and m["temperatura"] == 16.6
+    assert 1 < m["km"] < 3 and "lat" not in m and "costera" not in m
+    assert c.medicion_cercana(-34.5, -70.66, False, mediciones) is None   # nada a ≤ 15 km

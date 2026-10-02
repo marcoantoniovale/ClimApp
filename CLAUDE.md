@@ -254,6 +254,16 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Inicio más rápido: muestra al instante la última comuna guardada en el dispositivo (localStorage `climapp:ubicacion`, con `origen` gps/busqueda) sin pedir el GPS. Solo si no hay nada guardado se ubica automáticamente al abrir.
 - La comuna elegida en el buscador también se guarda; queda como inicio hasta que se cambie (buscador o botón "Mi ubicación"). Se eliminó `permisoConcedido` (ya no se ubica en cada visita).
 
+### 2026-10-01 — evaluación: búsqueda por localidades (sin cambios de código)
+- Pedido del usuario: buscar "Loncura" → Quintero, "Horcón" → Puchuncaví (solo búsqueda, sin datos nuevos). OSM tiene 27.858 lugares con nombre en Chile; asignados a comuna con los polígonos de `public/geo` (27.710; 148 en el mar/frontera). Loncura (suburb) → Quintero, Ritoque → Quintero, Horcón (neighbourhood) → Puchuncaví, Maitencillo/Ventanas (town) → Puchuncaví.
+- Tamaño del índice: pueblos 1.093 (9 KB gzip); + sectores 2.620 (21 KB); + caseríos 16.951 (114 KB); + barrios 25.534 (176 KB). Base de datos: ~4–6 MB (≈1 %), o nada si se publica como archivo estático. Problemas: nombres repetidos (~1.500–2.300), Horcón es "barrio" en OSM, licencia ODbL (atribución y misma licencia para el índice). Alternativa oficial: entidades pobladas del Censo 2017 (INE).
+
+### 2026-10-01 — rama `feature/ancla-mediciones`
+- Reclamo del usuario: Santiago 18,5° en ClimApp vs 16,6° de la DMC a las 22:30. Causas: (1) la medición solo se asociaba a la comuna donde está la estación (Quinta Normal no es la comuna de Santiago) → Santiago sin medición; (2) el JSON solo se regenera con pronóstico/corrección nuevos, no con cada medición; (3) ICON va 1–2 °C sobre Quinta Normal en la tarde/noche y la corrección por franjas aún tiene pocos datos.
+- Medido en 134 estaciones DMC (30 h): el error de ICON persiste (factor 0,95 a 1 h, 0,86 a 3 h, 0,73 a 6 h ≈ τ 20 h). Error a 1 h: 1,84 °C sin medición, 0,83 con τ = 3 h, ~0,7 con τ = 20 h.
+- ETL: `correccion.medicion_cercana` (estación más cercana de la misma zona, ≤ 15 km) usada en los JSON; nueva clave Redis `mediciones` ({slug: medición, km}) publicada en cada `dmc_obs` (cada hora) y `dmc_obs` renueva la web. 159 comunas con medición cercana (Santiago → Quinta Normal, 1,6 km).
+- Web: `getPronostico` usa la medición más nueva (JSON o `mediciones`); `lib/ahora.ts` τ 3 → 20 h, medición válida hasta 6 h; `ajustarHoras` aplica el mismo ajuste al hora a hora; "Medido en … (a X km)". Pruebas: ETL 68, web 20.
+
 ---
 
 ## 8. Pendientes
@@ -284,6 +294,9 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Tamaño del JSON v2 (~49 KB × 346 por cada publicación): revisar consumo de ancho de banda de Upstash (plan gratuito) y, si hace falta, compactar (claves cortas, quitar `rango`).
 - [x] Ingerir observaciones DMC (2026-10-01).
 - [ ] Recalibrar el algoritmo ClimApp con 2–3 semanas de datos; pasar a `forecast_archive` (pronósticos reales) y considerar altura estación–comuna.
+- [ ] Algoritmo ClimApp, ancla por medición: considerar la altura (p. ej. Valparaíso usa Rodelillo, ~350 m; Lo Barnechea usa Tobalaba a 12 km) y promediar varias estaciones; validar τ = 20 h con más días.
+- [ ] Mediciones cada 15 min (hoy cada hora, al minuto 59): GitHub Actions privado tiene 2.000 min/mes y ya se usan ~720–1.400; evaluar otro ejecutor (repo público, Supabase Edge Function, Cloudflare Worker).
+- [ ] **Búsqueda por localidades** (evaluada 2026-10-01, ver bitácora): índice estático de localidades OSM → comuna (nivel caseríos + barrios de comunas no urbanas, ~114–176 KB gzip, carga diferida al escribir), mostrar "Loncura · pronóstico de Quintero", desambiguar nombres repetidos, atribución ODbL. Validar contra entidades pobladas INE 2017.
 
 - [x] Retención de observaciones: **180 días** (decisión del usuario, 2026-10-01). Con el archivo de pronósticos 2 veces al día por 90 días, la base se estabiliza en ~387 MB (77 % de 500 MB).
 - [ ] Opcional: archivo de pronósticos 1 vez al día → ~283 MB (57 %), si hace falta más margen.
