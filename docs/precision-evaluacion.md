@@ -141,3 +141,24 @@ Persistencia de la anomalía (después de quitar el sesgo): 0,80 a 1 h, 0,59 a 2
 Cobertura: ajuste del momento en 303 de 346 comunas (v1: 159); sesgo en 304 (v1: 209).
 
 **Limitaciones y próximos pasos:** con solo ~4 días el sesgo se estima dentro de la muestra; recalibrar con 2–3 semanas. El sesgo usa ICON de la corrida más reciente (horizonte corto); evaluar con `forecast_archive` a 24–72 h. Mediciones cada 15 min requieren otro ejecutor (minutos de GitHub Actions). Sumar INIA si sus términos lo permiten.
+
+## 8. Mezcla ICON + ECMWF IFS (desde el 2026-10-02)
+
+El usuario consideró Yr (MET Norway) el pronóstico más exacto. Fuera de los países nórdicos Yr usa ECMWF IFS 9 km con ajuste por altura. Comparación con Open-Meteo en 197 estaciones DMC/SINCA, 13.322 horas (29 sep – 2 oct). "Con algoritmo": sesgo aprendido en la 1ª mitad del período, evaluado en la 2ª.
+
+| Modelo | Crudo | Con algoritmo | Costa | Interior |
+|---|---|---|---|---|
+| ICON | 1,31 | 1,15 | 1,26 | 1,55 |
+| ECMWF IFS 9 km | 1,38 | 1,23 | 1,46 | 1,53 |
+| ECMWF IFS 0,25° | 1,51 | 1,26 | 1,57 | 1,58 |
+| GFS | 1,82 | 1,31 | 1,72 | 1,75 |
+| ECMWF AIFS | 1,62 | 1,38 | 1,47 | 1,97 |
+| **Mezcla ICON + ECMWF IFS (50/50)** | **1,23** | **1,10** | 1,24 | **1,44** |
+
+Decisión del usuario: mezcla. Temperatura y sensación térmica = promedio de ambos; máximas y mínimas = promedio de las de cada modelo (el rango entre modelos queda en `rango_max`/`rango_min`). Lluvia, viento, cielo, isoterma y nieve siguen de ICON. El registro del error y el sesgo se recalcularon con la mezcla (5 días).
+
+Validación con la mezcla (14.876 h): base 1,24 °C → sin estación 1,04 °C; con estación 0,56 °C (1 h después de la medición). τ = 3,5 h.
+
+**Comparación con Yr:** el pronóstico real de Yr (API Locationforecast de MET Norway, CC BY 4.0) se guarda dos veces al día en las estaciones (`forecast_archive`, modelo `yr`), junto con ICON y ECMWF, a 0–72 h. Con 2–3 semanas se compara temperatura, lluvia y viento.
+
+Corregido además: la lluvia diaria promediaba como 0 mm los modelos que no la pronostican (GFS), y mostraba la mitad (Santiago, 2 oct: 2,3 en vez de 4,6 mm).

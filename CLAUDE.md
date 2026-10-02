@@ -285,6 +285,13 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 ### 2026-10-02 — rama `fix/pasos-volver`
 - Reclamo del usuario: al volver desde un paso, `/pasos` perdía el filtro y la posición. [ListaPasos.tsx](ClimAppWeb/web/src/components/pasos/ListaPasos.tsx) guarda filtro y último paso abierto en `sessionStorage` (`climapp:pasos:lista`); al volver recupera el filtro y centra el paso abierto (una vez). Probado en Chrome sin interfaz (CDP) con `next start`: filtro "Los", paso Dos Lagunas → vuelve con el mismo filtro y en la misma posición.
 
+### 2026-10-02 — rama `feature/mezcla-icon-ecmwf`
+- Pedido del usuario: ajustar el pronóstico a Yr (ECMWF IFS 9 km). Medido en 197 estaciones: ECMWF solo es algo peor que ICON (1,23 vs 1,15 °C con algoritmo); la **mezcla 50/50** es la mejor (1,10). Decisión del usuario: mezcla. Detalle en [docs/precision-evaluacion.md §8](docs/precision-evaluacion.md).
+- ETL: modelo `ecmwf` (`ecmwf_ifs`, temperatura y sensación) con descarga por corrida; el precálculo promedia por hora; `correccion.MODELOS_BASE` (el sesgo se resta a ambos); el registro del error usa la mezcla (`python -m climapp_etl residuos_reconstruir` recalculó 5 días). Validación: 1,24 → sin estación 1,04, con estación 0,56 °C.
+- Comparación con Yr: [metno.py](ClimAppWeb/etl/src/climapp_etl/metno.py) (MET Norway Locationforecast, User-Agent con la URL del sitio); el job de archivo guarda ICON, ECMWF y Yr en las estaciones (migración 0012, modelo `yr`).
+- Corregido: la lluvia diaria contaba GFS como 0 mm y mostraba la mitad.
+- Pie: "Pronóstico de los modelos ICON … y ECMWF IFS …". Base: 68 MB. Pruebas ETL 87.
+
 ---
 
 ## 8. Pendientes
@@ -327,6 +334,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Opcional: archivo de pronósticos 1 vez al día → ~283 MB (57 %), si hace falta más margen.
 
 - [ ] **Publicidad** (evaluada 2026-10-02): decidir paso a uso comercial (plan comercial de Open-Meteo, Vercel Pro, términos DMC/SINCA); luego componente de patrocinios con interruptor.
+- [ ] Comparar Yr vs mezcla vs ICON con 2–3 semanas de `forecast_archive` (temperatura, lluvia, viento) y decidir si Yr entra a la mezcla.
 - [ ] Opcional: Vercel Speed Insights (velocidad real en celulares).
 
 ### Investigación

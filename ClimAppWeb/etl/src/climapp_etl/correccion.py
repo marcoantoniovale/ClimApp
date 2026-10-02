@@ -2,6 +2,8 @@
 
 Detalle y resultados en docs/precision-evaluacion.md §7.
 
+Pronóstico base: mezcla de ICON y ECMWF IFS 9 km (promedio). En lo que sigue, "ICON" es esa mezcla.
+
 1. Registro del error. Cada hora, por estación: r = ICON − medido, con ICON interpolado al instante de
    la lectura en el punto de la estación. Control de calidad (qc): rango, error absurdo, salto brusco,
    sensor pegado y discrepancia con las estaciones vecinas. Solo las horas "ok" se usan.
@@ -28,6 +30,10 @@ from statistics import median
 from zoneinfo import ZoneInfo
 
 CHILE = ZoneInfo("America/Santiago")
+
+# Modelos de la mezcla de temperatura (pronóstico base): el sesgo se aprende sobre su promedio y se
+# resta a cada uno, así el promedio queda corregido.
+MODELOS_BASE = ("icon", "ecmwf")
 
 # Sesgo sistemático
 K = 12.0                 # horas (ponderadas) para que el sesgo pese la mitad
@@ -177,13 +183,13 @@ def correccion(lat: float, lon: float, altura: float | None, costera: bool, esta
 
 
 def aplicar(rows: list[tuple], corr: dict) -> list[tuple]:
-    """Resta la corrección a temperatura y sensación térmica de ICON en filas (modelo, hora, valores)."""
+    """Resta la corrección a temperatura y sensación térmica de los modelos base en filas (modelo, hora, valores)."""
     if not corr["franjas"]:
         return rows
     out = []
     for modelo, t, valores in rows:
         delta = corr["franjas"].get(franja(t))
-        if modelo == "icon" and delta:
+        if modelo in MODELOS_BASE and delta:
             valores = dict(valores)
             for col in ("temperatura", "sensacion_termica"):
                 if valores.get(col) is not None:

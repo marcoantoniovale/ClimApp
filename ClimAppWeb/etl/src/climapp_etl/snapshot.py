@@ -1,8 +1,9 @@
 """Precálculo: JSON por ubicación listo para la API (docs/fase1-mapeo-requisitos.md §4.6).
 
-Modelo único ICON; GFS aporta solo índice UV y visibilidad (docs/precision-evaluacion.md). Las
-funciones combinan los valores por hora de los modelos presentes: como cada variable viene de un
-solo modelo, el "promedio" es ese valor.
+Temperatura y sensación térmica: mezcla de ICON y ECMWF IFS (promedio por hora; máximas y mínimas:
+promedio de las de cada modelo). El resto de las variables vienen de ICON y GFS aporta índice UV y
+visibilidad (docs/precision-evaluacion.md). Las funciones promedian por hora los modelos que traen
+cada variable.
 Unidades de salida: °C, %, mm, hPa, viento en km/h, oleaje en m. Horas en ISO 8601 con zona de Chile.
 """
 
@@ -114,7 +115,9 @@ def daily(rows, start_day, days: int) -> list[dict]:
             if len(temps) >= 18:          # día casi completo para ese modelo
                 tmax.append(max(temps))
                 tmin.append(min(temps))
-            rain.append(sum(v.get("precipitacion") or 0 for v in values))
+            lluvias = [v["precipitacion"] for v in values if v.get("precipitacion") is not None]
+            if lluvias:   # solo modelos que pronostican lluvia (GFS y ECMWF no la aportan: no cuentan como 0)
+                rain.append(sum(lluvias))
         hs = hours_by_day.get(day, [])
         if not hs:
             continue
@@ -178,7 +181,7 @@ def build(location: dict, rows, marine, observation: dict | None, fetched_at: da
         "generado": _iso_local(now),
         "actualizado": _iso_local(fetched_at) if fetched_at else None,
         "provisional": not (correccion and correccion["franjas"]),
-        "fuente": {"modelo": "ICON (DWD)", "complementario": "GFS (índice UV y visibilidad)"},
+        "fuente": {"modelo": "ICON (DWD) + ECMWF IFS (temperatura)", "complementario": "GFS (índice UV y visibilidad)"},
         "modelos": models,
         "corridas": {m: corridas[m] for m in models if corridas and m in corridas},  # inicio de cada corrida
         "unidades": {"temperatura": "°C", "precipitacion": "mm", "viento": "km/h", "presion": "hPa",

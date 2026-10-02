@@ -4,7 +4,8 @@ export default function Footer() {
   return (
     <footer className="mx-auto w-full max-w-4xl px-4 pb-28 pt-10 text-xs leading-relaxed text-slate-400 md:pb-10">
       <p>
-        Pronóstico del modelo ICON (Servicio Meteorológico Alemán, DWD), procesado por el algoritmo ClimApp con mediciones
+        Pronóstico de los modelos ICON (Servicio Meteorológico Alemán, DWD) y ECMWF IFS (Centro Europeo de Previsiones
+        Meteorológicas a Plazo Medio), procesado por el algoritmo ClimApp con mediciones
         de la{" "}
         <a href="https://climatologia.meteochile.gob.cl" className="underline hover:text-white" rel="noopener">
           Dirección Meteorológica de Chile

@@ -135,3 +135,10 @@ def test_medicion_cercana_usa_la_estacion_mas_proxima_de_la_misma_zona():
     assert m["estacion"] == "Quinta Normal" and m["temperatura"] == 16.6
     assert 1 < m["km"] < 3 and "lat" not in m and "costera" not in m
     assert c.medicion_cercana(-34.5, -70.66, False, mediciones) is None
+
+
+def test_aplicar_corrige_toda_la_mezcla():
+    t = T0 + timedelta(hours=15)
+    rows = [("icon", t, {"temperatura": 20.0}), ("ecmwf", t, {"temperatura": 18.0})]
+    out = c.aplicar(rows, {"franjas": {2: 1.0}, "estaciones": []})
+    assert [r[2]["temperatura"] for r in out] == [19.0, 17.0]   # el promedio baja 1 °C

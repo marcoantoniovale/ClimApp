@@ -39,6 +39,7 @@ COMMANDS = {
     "dmc_historial": jobs.dmc_history,
     "sinca": jobs.sinca_observations,
     "residuos": jobs.residuals,
+    "residuos_reconstruir": lambda conn: jobs.residuals(conn, reconstruir_dias=5),
     "correccion": jobs.corrections,
     "revalidar": lambda conn: print("web renovada" if web.revalidar() else "la web no respondió"),
     "mantencion": jobs.maintenance,

@@ -88,12 +88,13 @@ def test_ultima_corrida_por_modelo():
     meta = {
         "ncep_gfs013": {"last_run_initialisation_time": ts(12), "last_run_availability_time": ts(17)},
         "ncep_gfs025": {"last_run_initialisation_time": ts(6), "last_run_availability_time": ts(19)},
-        "ecmwf_ifs025": {"last_run_initialisation_time": ts(12), "last_run_availability_time": ts(20)},
+        "ecmwf_ifs": {"last_run_initialisation_time": ts(12), "last_run_availability_time": ts(20)},
         "dwd_icon": {"last_run_initialisation_time": ts(18), "last_run_availability_time": ts(21)},
     }
     runs = open_meteo.latest_runs(get_json=lambda url, **kw: meta[url.split("/data/")[1].split("/")[0]])
     assert runs["gfs"].init.hour == 12          # la más nueva entre GFS 0.13° y 0.25°
     assert runs["icon"].init.hour == 18 and runs["icon"].available.hour == 21
+    assert runs["ecmwf"].init.hour == 12
 
 
 def test_fetch_solo_los_modelos_pedidos():
