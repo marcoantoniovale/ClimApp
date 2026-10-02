@@ -1,3 +1,8 @@
+"use client";
+
+import { useSyncExternalStore } from "react";
+
+import { estimacionActual, minutoActual, minutoServidor, suscribirMinuto } from "@/lib/ahora";
 import type { Dia, Hora, Observacion } from "@/lib/data";
 import { cardinal, cielo, esNoche, fechaHora, grados, grados1, hora, region as nombreRegion } from "@/lib/format";
 
@@ -12,6 +17,7 @@ export default function Ahora({
   region,
   etiqueta,
   ahora,
+  horas,
   hoy,
   observacion,
 }: {
@@ -19,10 +25,16 @@ export default function Ahora({
   region: string;
   etiqueta?: string;
   ahora: Hora | undefined;
+  horas: Hora[];
   hoy: Dia | undefined;
   observacion: Observacion | null;
 }) {
   const estado = cielo(ahora?.estado_cielo);
+  // Temperatura actual minuto a minuto (algoritmo ClimApp, lib/ahora.ts); en el servidor, el valor horario.
+  const minuto = useSyncExternalStore(suscribirMinuto, minutoActual, minutoServidor);
+  const estimada = minuto != null ? estimacionActual(horas, observacion, minuto) : null;
+  const temperatura = estimada?.temperatura ?? ahora?.temperatura;
+  const sensacion = estimada?.sensacion_termica ?? ahora?.sensacion_termica;
   // Antigüedad de la medición respecto de la hora mostrada (no de Date.now(): el render debe ser puro).
   const obsReciente =
     observacion && ahora &&
@@ -42,9 +54,9 @@ export default function Ahora({
         <div className="mt-4 flex items-center gap-4">
           <WeatherIcon code={ahora.estado_cielo} night={esNoche(ahora.hora)} size={84} className="shrink-0" />
           <div className="min-w-0">
-            <p className="text-6xl font-extralight leading-none tracking-tighter">{grados1(ahora.temperatura)}</p>
+            <p className="text-6xl font-extralight leading-none tracking-tighter">{grados1(temperatura)}</p>
             <p className="mt-1 text-lg font-medium text-slate-100">{estado.texto}</p>
-            <p className="text-sm text-slate-400">Sensación {grados(ahora.sensacion_termica)}</p>
+            <p className="text-sm text-slate-400">Sensación {grados(sensacion)}</p>
           </div>
         </div>
       ) : (
@@ -82,7 +94,11 @@ export default function Ahora({
       )}
 
       {ahora && (
-        <p className="mt-3 text-xs text-slate-400">Pronóstico para las {hora(ahora.hora)} · {fechaHora(ahora.hora).split(",")[0]}</p>
+        <p className="mt-3 text-xs text-slate-400">
+          {minuto != null
+            ? <>Estimación ClimApp para las {hora(new Date(minuto).toISOString())}{estimada?.ajustada ? ", desde la última medición" : ""} · se actualiza cada minuto</>
+            : <>Pronóstico para las {hora(ahora.hora)} · {fechaHora(ahora.hora).split(",")[0]}</>}
+        </p>
       )}
     </section>
   );

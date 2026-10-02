@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useId, useState } from "react";
 
-import type { PronosticoConAvisos } from "@/lib/data";
+import type { Hora, PronosticoConAvisos } from "@/lib/data";
 import { diaLargo, duracion, fechaHora, fechaLocal, grados, hora, oracion } from "@/lib/format";
 import { salidaPuesta } from "@/lib/sol";
 
@@ -18,7 +18,7 @@ import Horas from "./Horas";
  * pronóstico hora a hora, sol, oleaje y comunas cercanas. La usan el inicio (ubicación del usuario) y
  * la página de cada comuna. `p.horas` debe venir desde la hora actual.
  */
-export default function Pronostico({ p, etiqueta }: { p: PronosticoConAvisos; etiqueta?: string }) {
+export default function Pronostico({ p, etiqueta }: { p: PronosticoConAvisos & { horasPrevias?: Hora[] }; etiqueta?: string }) {
   const [dia, setDia] = useState(0);
   const panelId = useId();
   const dias = p.dias.slice(0, 7);
@@ -31,7 +31,7 @@ export default function Pronostico({ p, etiqueta }: { p: PronosticoConAvisos; et
   return (
     <div className="space-y-4">
       <Ahora nombre={p.ubicacion.nombre} region={p.ubicacion.region} etiqueta={etiqueta}
-        ahora={ahora} hoy={hoy} observacion={p.observacion} />
+        ahora={ahora} horas={[...(p.horasPrevias ?? []), ...p.horas]} hoy={hoy} observacion={p.observacion} />
 
       <WarningList avisos={p.avisos} />
 
