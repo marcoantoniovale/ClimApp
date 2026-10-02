@@ -4,7 +4,12 @@ export default function Footer() {
   return (
     <footer className="mx-auto w-full max-w-4xl px-4 pb-28 pt-10 text-xs leading-relaxed text-slate-400 md:pb-10">
       <p>
-        Pronóstico del modelo ICON (Servicio Meteorológico Alemán, DWD); índice UV y visibilidad del modelo GFS. Datos meteorológicos de{" "}
+        Pronóstico del modelo ICON (Servicio Meteorológico Alemán, DWD), procesado por el algoritmo ClimApp con mediciones
+        de la{" "}
+        <a href="https://climatologia.meteochile.gob.cl" className="underline hover:text-white" rel="noopener">
+          Dirección Meteorológica de Chile
+        </a>
+        ; índice UV y visibilidad del modelo GFS. Datos meteorológicos de{" "}
         <a href="https://open-meteo.com" className="underline hover:text-white" rel="noopener">Open-Meteo</a>{" "}
         (<a href="https://creativecommons.org/licenses/by/4.0/deed.es" className="underline hover:text-white" rel="noopener">CC BY 4.0</a>);
         observaciones y avisos del{" "}

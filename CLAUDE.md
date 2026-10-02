@@ -235,6 +235,10 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 ### 2026-10-01 — rama `feature/temperatura-decimal`
 - Pedido del usuario: la **temperatura actual** (número grande y medición de la estación cercana) se muestra con **1 decimal** y coma decimal (`grados1`, p. ej. "14,8°"). Máximas, mínimas y horas siguen sin decimales. Prueba en `web/tests/format.test.mts`.
 
+### 2026-10-01 — rama `chore/retencion-180-pie`
+- Retención de `observations`: 365 → 180 días (job `mantencion`). Proyección estable ~387 MB (77 %).
+- Pie de página: "Pronóstico del modelo ICON (Servicio Meteorológico Alemán, DWD), procesado por el algoritmo ClimApp con mediciones de la Dirección Meteorológica de Chile; índice UV y visibilidad del modelo GFS. …" (se agregó la DMC como fuente de las mediciones).
+
 ---
 
 ## 8. Pendientes
@@ -266,7 +270,8 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [x] Ingerir observaciones DMC (2026-10-01).
 - [ ] Recalibrar el algoritmo ClimApp con 2–3 semanas de datos; pasar a `forecast_archive` (pronósticos reales) y considerar altura estación–comuna.
 
-- [ ] **Retención de la base (decidir)**: propuesta archivo de pronósticos 1 vez al día (en vez de 2) y observaciones 180 días (en vez de 365) → ~283 MB estables (57 %). Sin cambios se llega al límite de 500 MB en ~1 año.
+- [x] Retención de observaciones: **180 días** (decisión del usuario, 2026-10-01). Con el archivo de pronósticos 2 veces al día por 90 días, la base se estabiliza en ~387 MB (77 % de 500 MB).
+- [ ] Opcional: archivo de pronósticos 1 vez al día → ~283 MB (57 %), si hace falta más margen.
 
 ### Investigación
 - [x] Datos de la Armada: observaciones por API JSON; avisos imagen/PDF. Ver [docs/spikes-semana1.md](docs/spikes-semana1.md).
