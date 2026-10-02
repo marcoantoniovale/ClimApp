@@ -11,6 +11,7 @@ Uso:
   python -m climapp_etl dmc                         # mediciones DMC (todas las estaciones)
   python -m climapp_etl dmc_historial               # carga inicial: 48 h por estación DMC
   python -m climapp_etl correccion                  # sesgos de ICON por estación (algoritmo ClimApp)
+  python -m climapp_etl revalidar                   # pedir a la web que renueve sus páginas
   python -m climapp_etl mantencion                  # retención de datos
 
 Opción --log ARCHIVO: escribe el registro en un archivo (para pythonw.exe, que no tiene consola).
@@ -23,7 +24,7 @@ import functools
 import logging
 import sys
 
-from . import jobs
+from . import jobs, web
 from .db import connect
 
 COMMANDS = {
@@ -37,6 +38,7 @@ COMMANDS = {
     "dmc": jobs.dmc_observations,
     "dmc_historial": jobs.dmc_history,
     "correccion": jobs.corrections,
+    "revalidar": lambda conn: print("web renovada" if web.revalidar() else "la web no respondió"),
     "mantencion": jobs.maintenance,
 }
 

@@ -6,6 +6,9 @@
 
 const PREFIX = "climapp:v1";
 
+/** Etiqueta de la caché de datos de Next.js; /api/revalidate la expira cuando el ETL publica. */
+export const CACHE_TAG = "climapp";
+
 export class RedisNotConfigured extends Error {}
 
 export type ReadOptions = {
@@ -28,7 +31,7 @@ export async function getJson<T extends unknown[]>(
   const { url, token } = config();
   const caching: RequestInit =
     options.revalidate !== undefined
-      ? { cache: "force-cache", next: { revalidate: options.revalidate } }
+      ? { cache: "force-cache", next: { revalidate: options.revalidate, tags: [CACHE_TAG] } }
       : { cache: "no-store" };
   const response = await fetch(`${url}/pipeline`, {
     method: "POST",

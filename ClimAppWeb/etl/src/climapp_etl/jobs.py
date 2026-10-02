@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 import psycopg
 from psycopg.types.json import Jsonb
 
-from . import armada, avisos, correccion, dmc_obs, dmc_pasos, open_meteo, redis, snapshot
+from . import armada, avisos, correccion, dmc_obs, dmc_pasos, open_meteo, redis, snapshot, web
 from .db import last_success, track_run
 
 log = logging.getLogger("climapp_etl")
@@ -33,6 +33,7 @@ PASOS_DMC_EVERY = timedelta(hours=3)   # la DMC emite ~2 veces al día
 CORRECTION_EVERY = timedelta(hours=3)
 CORRECTION_DAYS = 14                   # ventana de mediciones para el sesgo
 DMC_MAX_AGE = timedelta(hours=3)       # lecturas más antiguas del mapa DMC no se guardan
+PUBLICA_EN_WEB = {"snapshots", "armada_avisos", "pasos_dmc"}   # tras ellos, renovar la web
 ARCHIVE_EVERY = timedelta(hours=12)
 MAINTENANCE_EVERY = timedelta(hours=24)
 MARGIN = timedelta(minutes=30)
@@ -517,6 +518,7 @@ def auto(conn: psycopg.Connection, with_observations: bool = True) -> None:
     (GitHub Actions/Azure, AWS); ahí las observaciones se recolectan desde un equipo en Chile."""
     now = datetime.now(timezone.utc)
     failures = []
+    publicado = False
     jobs = [("open_meteo", forecast, "por_corrida"),
             ("open_meteo_archivo", archive, ARCHIVE_EVERY),
             ("dmc_obs", dmc_observations, None),
@@ -547,9 +549,13 @@ def auto(conn: psycopg.Connection, with_observations: bool = True) -> None:
             continue
         try:
             job(conn)
+            if name in PUBLICA_EN_WEB:
+                publicado = True
         except Exception as exc:  # un conector caído no detiene a los demás
             log.exception("%s falló", name)
             failures.append(f"{name}: {exc}")
+    if publicado:  # la web renueva sus páginas al instante (ver web.py)
+        log.info("web: renovación %s", "ok" if web.revalidar() else "no disponible")
     if failures:
         raise RuntimeError("; ".join(failures))
 
