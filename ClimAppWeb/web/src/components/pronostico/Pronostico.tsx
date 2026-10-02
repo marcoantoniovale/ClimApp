@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useId, useState } from "react";
 
 import type { Hora, PronosticoConAvisos } from "@/lib/data";
-import { diaLargo, duracion, fechaHora, fechaLocal, grados, hora, oracion } from "@/lib/format";
+import { diaLargo, duracion, fechaLocal, grados, hora, oracion } from "@/lib/format";
 import { salidaPuesta } from "@/lib/sol";
 
 import MarineForecast from "../weather/MarineForecast";
@@ -81,18 +81,6 @@ export default function Pronostico({ p, etiqueta }: { p: PronosticoConAvisos & {
         </section>
       )}
 
-      <p className="px-1 text-xs text-slate-400">
-        Modelo {p.fuente?.modelo ?? "ICON (DWD)"}
-        {p.corridas?.icon && <> · obtenida {fechaHora(p.corridas.icon)}</>}
-        {p.actualizado && <> · actualizado {fechaHora(p.actualizado)}</>}. Índice UV y visibilidad: GFS.{" "}
-        {p.correccion?.aplicada ? (
-          <span title={`Estaciones DMC: ${p.correccion.estaciones.map((e) => `${e.nombre} (${e.km} km)`).join(", ")}`}>
-            Pronóstico con corrección con mediciones (algoritmo ClimApp).
-          </span>
-        ) : (
-          <>Sin estaciones de medición cercanas: pronóstico sin corrección.</>
-        )}
-      </p>
     </div>
   );
 }

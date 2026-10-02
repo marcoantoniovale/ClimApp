@@ -247,6 +247,9 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - `desdeAhora` conserva hasta 3 `horasPrevias` (no se muestran) para comparar la medición con la curva en su instante.
 - Verificado: Quintero 22:15 → 14,5° "desde la última medición" (medido 14,8° a las 21:15; curva 14,8° a las 22:00 y 14,4° a las 23:00). Pruebas web 18/18.
 
+### 2026-10-01 — rama `chore/quitar-nota-fuente`
+- Pedido del usuario: se quitó la nota bajo el pronóstico ("Modelo ICON (DWD) · obtenida … · actualizado …. Índice UV y visibilidad: GFS. Pronóstico con corrección…") por redundante con el pie de página. Los datos `fuente`, `corridas` y `correccion` siguen en el JSON.
+
 ---
 
 ## 8. Pendientes
