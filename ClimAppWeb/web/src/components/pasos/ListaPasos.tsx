@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 import type { PasoDmc, PasoResumen } from "@/lib/data";
 import { rutaPaso } from "@/lib/data";
@@ -13,11 +13,55 @@ import Alertas from "./Alertas";
 const normalizar = (s: string) =>
   s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 
+// El filtro y el último paso abierto se guardan en la sesión del navegador: al volver desde un paso
+// se recupera el filtro y la página vuelve a ese paso (si no, la lista cambia de largo y se pierde la posición).
+const CLAVE = "climapp:pasos:lista";
+type Guardado = { texto?: string; soloAlertas?: boolean; abierto?: string };
+
+function leer(): Guardado {
+  try {
+    return JSON.parse(sessionStorage.getItem(CLAVE) ?? "{}") as Guardado;
+  } catch {
+    return {};
+  }
+}
+
+function guardar(cambios: Guardado) {
+  try {
+    sessionStorage.setItem(CLAVE, JSON.stringify({ ...leer(), ...cambios }));
+  } catch {
+    // sin almacenamiento (modo privado): solo se pierde la comodidad
+  }
+}
+
 /** Lista de pasos por región con buscador (nombre, región o "con alerta"). */
 export default function ListaPasos({ pasos, dmc }: { pasos: PasoResumen[]; dmc: Record<string, PasoDmc> }) {
   const [texto, setTexto] = useState("");
   const [soloAlertas, setSoloAlertas] = useState(false);
   const id = useId();
+  const [restaurado, setRestaurado] = useState(false);
+  const volverA = useRef<string | null>(null);
+
+  // Al montar: recuperar el filtro y recordar a qué paso volver.
+  useEffect(() => {
+    let cancelado = false;
+    queueMicrotask(() => {
+      if (cancelado) return;
+      const g = leer();
+      volverA.current = g.abierto ?? null;
+      if (g.texto) setTexto(g.texto);
+      if (g.soloAlertas) setSoloAlertas(true);
+      setRestaurado(true);
+    });
+    return () => {
+      cancelado = true;
+    };
+  }, []);
+
+  // Guardar el filtro (después de recuperarlo, para no pisarlo con el estado inicial).
+  useEffect(() => {
+    if (restaurado) guardar({ texto, soloAlertas });
+  }, [restaurado, texto, soloAlertas]);
 
   const filtrados = useMemo(() => {
     const q = normalizar(texto);
@@ -25,6 +69,15 @@ export default function ListaPasos({ pasos, dmc }: { pasos: PasoResumen[]; dmc: 
       (!soloAlertas || p.alertas.length > 0) &&
       (!q || normalizar(`${p.nombre} ${region(p.region)} ${p.region}`).includes(q)));
   }, [pasos, texto, soloAlertas]);
+
+  // Con la lista ya filtrada, volver al paso que se abrió (una sola vez).
+  useEffect(() => {
+    const slug = volverA.current;
+    if (!restaurado || !slug) return;
+    volverA.current = null;
+    guardar({ abierto: undefined });
+    requestAnimationFrame(() => document.getElementById(`paso-${slug}`)?.scrollIntoView({ block: "center" }));
+  }, [restaurado, filtrados]);
 
   const regiones = new Map<string, PasoResumen[]>();
   for (const p of filtrados) regiones.set(p.region, [...(regiones.get(p.region) ?? []), p]);
@@ -71,8 +124,8 @@ export default function ListaPasos({ pasos, dmc }: { pasos: PasoResumen[]; dmc: 
           <h2 id={`r-${reg}`} className="text-sm font-semibold uppercase tracking-wide text-slate-400">{region(reg)}</h2>
           <ul className="space-y-2">
             {lista.map((p) => (
-              <li key={p.slug}>
-                <Link href={`/paso/${rutaPaso(p.slug)}`}
+              <li key={p.slug} id={`paso-${p.slug}`} className="scroll-mt-24">
+                <Link href={`/paso/${rutaPaso(p.slug)}`} onClick={() => guardar({ abierto: p.slug })}
                   className="block rounded-2xl border border-climapp-line bg-climapp-card/70 p-4 hover:border-climapp-teal">
                   <div className="flex items-center gap-3">
                     <WeatherIcon code={p.hoy.estado_cielo} size={36} className="shrink-0" />
