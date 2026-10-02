@@ -17,9 +17,10 @@ def response():
 
 
 def test_filas_por_modelo_y_hora(response):
+    # El fixture trae GFS, ECMWF e ICON; ClimApp usa solo ICON y GFS (complementario).
     rows = list(open_meteo.rows(response[0], open_meteo.VARIABLES))
-    assert len(rows) == 3 * 168
-    assert {m for m, _, _ in rows} == {"gfs", "ecmwf", "icon"}
+    assert len(rows) == 2 * 168
+    assert {m for m, _, _ in rows} == {"gfs", "icon"}
     model, valid_time, values = rows[0]
     assert valid_time == datetime(2026, 10, 1, 0, tzinfo=timezone.utc)
     assert set(values) == set(open_meteo.VARIABLES.values())
@@ -105,3 +106,11 @@ def test_fetch_solo_los_modelos_pedidos():
     open_meteo.fetch([Point(1, -33, -71)], open_meteo.VARIABLES, 7, models=["icon"],
                      budget=MinuteBudget(per_minute=10_000), get_json=fake)
     assert params["models"] == "icon_seamless"
+
+
+def test_respuesta_de_un_solo_modelo_sin_sufijo():
+    data = {"hourly": {"time": ["2026-10-01T00:00"], "temperature_2m": [12.5], "freezing_level_height": [3800.0]}}
+    rows = list(open_meteo.rows(data, open_meteo.MODEL_VARIABLES["icon"], models=["icon"]))
+    assert len(rows) == 1
+    model, _, values = rows[0]
+    assert model == "icon" and values["temperatura"] == 12.5 and values["isoterma_0"] == 3800.0

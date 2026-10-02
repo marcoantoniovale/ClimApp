@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import functools
 import logging
+import math
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
@@ -40,7 +41,7 @@ RETENTION = {
     "ingestion_runs": timedelta(days=90),
 }
 
-CURRENT_COLUMNS = ["location_id", "modelo", "valid_time", "fetched_at", *open_meteo.VARIABLES.values()]
+CURRENT_COLUMNS = ["location_id", "modelo", "valid_time", "fetched_at", *open_meteo.COLUMNS]
 ARCHIVE_COLUMNS = ["station_id", "modelo", "issued_at", "valid_time", *open_meteo.ARCHIVE_VARIABLES.values()]
 MARINE_COLUMNS = ["location_id", "valid_time", "fetched_at", *open_meteo.MARINE_VARIABLES.values()]
 OBS_COLUMNS = ["temperatura", "punto_rocio", "humedad", "presion", "viento_vel", "viento_dir",
@@ -62,18 +63,23 @@ def forecast(conn: psycopg.Connection, models: list[str] | None = None,
         points = [open_meteo.Point(*r) for r in conn.execute(
             "select id, lat, lon from locations where tipo = 'comuna' order by id")]
         fetched_at = datetime.now(timezone.utc)
-        responses = open_meteo.fetch(points, open_meteo.VARIABLES, FORECAST_DAYS, past_days=1, models=models)
-
-        records = [
-            (point.key, model, valid_time, fetched_at, *values.values())
-            for point, data in responses
-            for model, valid_time, values in open_meteo.rows(data, open_meteo.VARIABLES)
-        ]
+        budget = open_meteo.MinuteBudget()
+        records = []
+        location_ids: list = []
+        for model in models:  # una petición por modelo, cada uno con sus variables
+            variables = open_meteo.MODEL_VARIABLES[model]
+            responses = open_meteo.fetch(points, variables, FORECAST_DAYS, past_days=1, models=[model],
+                                         budget=budget)
+            location_ids = [p.key for p, _ in responses]
+            records += [
+                (point.key, m, valid_time, fetched_at, *(values.get(c) for c in open_meteo.COLUMNS))
+                for point, data in responses
+                for m, valid_time, values in open_meteo.rows(data, variables, models=[model])
+            ]
         received = {r[1] for r in records}
         if set(models) - received:
             run.warn(f"Sin datos de: {', '.join(sorted(set(models) - received))}")
 
-        location_ids = [p.key for p, _ in responses]
         with conn.transaction():
             conn.execute("delete from forecast_current where location_id = any(%s) and modelo = any(%s)",
                          (location_ids, sorted(received)))
@@ -144,12 +150,12 @@ def archive(conn: psycopg.Connection) -> None:
                 where o.station_id = s.id and o.observed_at > now() - interval '7 days'))
             order by s.id""")]
         issued_at = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0)
-        responses = open_meteo.fetch(points, open_meteo.ARCHIVE_VARIABLES, ARCHIVE_DAYS)
+        responses = open_meteo.fetch(points, open_meteo.ARCHIVE_VARIABLES, ARCHIVE_DAYS, models=["icon"])
 
         records = [
             (point.key, model, issued_at, valid_time, *values.values())
             for point, data in responses
-            for model, valid_time, values in open_meteo.rows(data, open_meteo.ARCHIVE_VARIABLES)
+            for model, valid_time, values in open_meteo.rows(data, open_meteo.ARCHIVE_VARIABLES, models=["icon"])
             if issued_at <= valid_time <= issued_at + ARCHIVE_HORIZON
             and valid_time.hour % ARCHIVE_STEP_HOURS == 0
         ]
@@ -244,7 +250,7 @@ def snapshots(conn: psycopg.Connection) -> None:
     """JSON por ubicación → location_snapshots y Redis (claves loc:<slug>, indice y meta)."""
     with track_run(conn, "snapshots") as run:
         now = datetime.now(timezone.utc)
-        cols = list(open_meteo.VARIABLES.values())
+        cols = list(open_meteo.COLUMNS)
         locations = [dict(zip(("id", "slug", "nombre", "alias", "region", "tipo", "lat", "lon", "es_costera"), r))
                      for r in conn.execute("""select id, slug, nombre, alias, region, tipo, lat, lon, es_costera
                                               from locations order by id""")]
@@ -269,7 +275,9 @@ def snapshots(conn: psycopg.Connection) -> None:
             where o.observed_at > now() - interval '3 hours'
             order by s.location_id, o.observed_at desc""")}
 
-        corridas = {r[0]: snapshot._iso_local(r[1]) for r in conn.execute("select modelo, run_init from model_runs")}
+        corridas = {r[0]: snapshot._iso_local(r[1]) for r in conn.execute(
+            "select modelo, run_init from model_runs where modelo = any(%s)", (list(open_meteo.MODELS),))}
+        cercanas = _nearest_locations(locations, n=6)
 
         payloads = {}
         for loc in locations:
@@ -278,7 +286,7 @@ def snapshots(conn: psycopg.Connection) -> None:
                 continue
             payloads[loc["id"]] = snapshot.build(loc, rows[loc["id"]], marine.get(loc["id"]),
                                                  observations.get(loc["id"]), fetched.get(loc["id"]), now,
-                                                 corridas=corridas)
+                                                 corridas=corridas, cercanas=cercanas[loc["id"]])
 
         with conn.transaction():
             with conn.cursor() as cur:
@@ -301,6 +309,18 @@ def snapshots(conn: psycopg.Connection) -> None:
             run.detalle.append("Redis no configurado: solo location_snapshots")
         run.filas = len(payloads)
         log.info("snapshots: %d ubicaciones, redis=%d claves", len(payloads), published)
+
+
+def _nearest_locations(locations: list[dict], n: int) -> dict[int, list[dict]]:
+    """Para cada ubicación, las n más cercanas (para el módulo "comunas cercanas" de la web)."""
+    def km(a, b):
+        return math.dist((a["lat"], a["lon"] * math.cos(math.radians(a["lat"]))),
+                         (b["lat"], b["lon"] * math.cos(math.radians(a["lat"])))) * 111.2
+    result = {}
+    for loc in locations:
+        near = sorted(((km(loc, o), o) for o in locations if o["id"] != loc["id"]), key=lambda x: x[0])[:n]
+        result[loc["id"]] = [{"slug": o["slug"], "nombre": o["nombre"], "km": round(d)} for d, o in near]
+    return result
 
 
 def maintenance(conn: psycopg.Connection) -> None:

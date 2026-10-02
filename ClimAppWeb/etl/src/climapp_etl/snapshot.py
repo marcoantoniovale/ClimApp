@@ -1,7 +1,8 @@
 """Precálculo: JSON por ubicación listo para la API (docs/fase1-mapeo-requisitos.md §4.6).
 
-Pronóstico provisional de la Fase 1 = promedio simple de los modelos disponibles; se incluye el
-rango (mínimo y máximo entre modelos) como base de la vista de fiabilidad (RF05.3).
+Modelo único ICON; GFS aporta solo índice UV y visibilidad (docs/precision-evaluacion.md). Las
+funciones combinan los valores por hora de los modelos presentes: como cada variable viene de un
+solo modelo, el "promedio" es ese valor.
 Unidades de salida: °C, %, mm, hPa, viento en km/h, oleaje en m. Horas en ISO 8601 con zona de Chile.
 """
 
@@ -16,9 +17,9 @@ from zoneinfo import ZoneInfo
 from .units import ms_to_kmh
 
 CHILE = ZoneInfo("America/Santiago")
-SCHEMA_VERSION = 1
-HOURS_AHEAD = 48
-DAYS_AHEAD = 7
+SCHEMA_VERSION = 2
+HOURS_AHEAD = 48          # oleaje por hora
+DAYS_AHEAD = 6           # hoy + 5 días
 FUENTES = [
     {"nombre": "Open-Meteo", "licencia": "CC BY 4.0", "url": "https://open-meteo.com"},
     {"nombre": "Armada de Chile — Servicio Meteorológico", "url": "https://meteoarmada.directemar.cl"},
@@ -82,6 +83,11 @@ def consensus_hours(rows) -> dict[datetime, dict]:
             "viento_dir": _circular_mean(m.get("viento_dir") for m in models),
             "viento_rafaga": _avg(m.get("viento_rafaga") for m in models),
             "presion": _avg(m.get("presion") for m in models),
+            "punto_rocio": _avg(m.get("punto_rocio") for m in models),
+            "nubosidad": _avg(m.get("nubosidad") for m in models),
+            "visibilidad": _avg(m.get("visibilidad") for m in models),
+            "isoterma_0": _avg(m.get("isoterma_0") for m in models),
+            "nieve": _avg(m.get("nieve") for m in models),
             "modelos": len(models),
         }
     return hours
@@ -125,6 +131,9 @@ def daily(rows, start_day, days: int) -> list[dict]:
             "viento_max": _kmh(max((h["viento_vel"] for h in hs if h["viento_vel"] is not None), default=None)),
             "rafaga_max": _kmh(max((h["viento_rafaga"] for h in hs if h["viento_rafaga"] is not None), default=None)),
             "indice_uv_max": _r(max((h["indice_uv"] for h in hs if h["indice_uv"] is not None), default=None)),
+            "viento_dir": _r(_circular_mean(h["viento_dir"] for h in hs), 0),
+            "nieve": _r(sum(h["nieve"] or 0 for h in hs)),
+            "isoterma_0_min": _r(min((h["isoterma_0"] for h in hs if h["isoterma_0"] is not None), default=None), 0),
             "horas": len(hs),
         })
     return result
@@ -150,12 +159,15 @@ def marine_summary(marine, now: datetime) -> dict | None:
 
 
 def build(location: dict, rows, marine, observation: dict | None, fetched_at: datetime | None,
-          now: datetime | None = None, corridas: dict[str, str] | None = None) -> dict:
+          now: datetime | None = None, corridas: dict[str, str] | None = None,
+          cercanas: list[dict] | None = None) -> dict:
     """Arma el JSON de una ubicación. rows: (modelo, valid_time, valores) de forecast_current."""
     now = now or datetime.now(timezone.utc)
     current_hour = now.replace(minute=0, second=0, microsecond=0)
     hours = consensus_hours(rows)
-    upcoming = [(t, h) for t, h in hours.items() if t >= current_hour][:HOURS_AHEAD]
+    last_day = now.astimezone(CHILE).date() + timedelta(days=DAYS_AHEAD - 1)
+    upcoming = [(t, h) for t, h in hours.items()
+                if t >= current_hour and t.astimezone(CHILE).date() <= last_day]
     models = sorted({m for m, _, _ in rows})
 
     return {
@@ -163,7 +175,8 @@ def build(location: dict, rows, marine, observation: dict | None, fetched_at: da
         "ubicacion": {k: location[k] for k in ("slug", "nombre", "region", "tipo", "lat", "lon", "es_costera")},
         "generado": _iso_local(now),
         "actualizado": _iso_local(fetched_at) if fetched_at else None,
-        "provisional": True,          # promedio simple de modelos hasta el ensemble de la Fase 2
+        "provisional": True,          # sin corrección con observaciones hasta la Fase 2
+        "fuente": {"modelo": "ICON (DWD)", "complementario": "GFS (índice UV y visibilidad)"},
         "modelos": models,
         "corridas": {m: corridas[m] for m in models if corridas and m in corridas},  # inicio de cada corrida
         "unidades": {"temperatura": "°C", "precipitacion": "mm", "viento": "km/h", "presion": "hPa",
@@ -182,9 +195,15 @@ def build(location: dict, rows, marine, observation: dict | None, fetched_at: da
             "viento_dir": _r(h["viento_dir"], 0),
             "rafaga": _kmh(h["viento_rafaga"]),
             "presion": _r(h["presion"], 0),
+            "punto_rocio": _r(h["punto_rocio"]),
+            "nubosidad": _r(h["nubosidad"], 0),
+            "visibilidad": _r(h["visibilidad"], -2),
+            "isoterma_0": _r(h["isoterma_0"], -1),
+            "nieve": _r(h["nieve"]),
         } for t, h in upcoming],
         "dias": daily(rows, now.astimezone(CHILE).date(), DAYS_AHEAD),
         "marino": marine_summary(marine, now) if location.get("es_costera") else None,
         "observacion": observation,
+        "cercanas": cercanas or [],
         "fuentes": FUENTES,
     }

@@ -1,6 +1,8 @@
-"""Conector Open-Meteo: pronóstico horario de GFS, ECMWF e ICON en varias ubicaciones.
+"""Conector Open-Meteo: pronóstico horario en varias ubicaciones.
 
-Detalles de la API y de la cuota en docs/spikes-semana1.md §1.
+Modelo único ICON (decisión del 2026-10-01, docs/precision-evaluacion.md): menor error contra las
+estaciones DMC y publicación más rápida. GFS aporta solo índice UV y visibilidad, que ICON no
+entrega. Detalles de la API y de la cuota en docs/spikes-semana1.md §1.
 """
 
 from __future__ import annotations
@@ -26,34 +28,47 @@ MARINE_VARIABLES = {
 }
 
 # Código interno → nombre del modelo en Open-Meteo.
-MODELS = {"gfs": "gfs_seamless", "ecmwf": "ecmwf_ifs025", "icon": "icon_seamless"}
+MODELS = {"icon": "icon_seamless", "gfs": "gfs_seamless"}
 
-# Variable de Open-Meteo → columna canónica. Open-Meteo entrega ya en °C, %, mm, hPa y
-# (con wind_speed_unit=ms) m/s. uv_index solo viene en GFS; ECMWF e ICON lo dejan nulo.
-VARIABLES = {
-    "temperature_2m": "temperatura",
-    "apparent_temperature": "sensacion_termica",
-    "weather_code": "estado_cielo",
-    "uv_index": "indice_uv",
-    "relative_humidity_2m": "humedad",
-    "precipitation_probability": "precip_prob",
-    "precipitation": "precipitacion",
-    "wind_speed_10m": "viento_vel",
-    "wind_direction_10m": "viento_dir",
-    "wind_gusts_10m": "viento_rafaga",
-    "pressure_msl": "presion",
+# Variables que se piden a cada modelo: variable de Open-Meteo → columna canónica. Open-Meteo entrega
+# ya en °C, %, mm, hPa, m y (con wind_speed_unit=ms) m/s; snowfall en cm.
+MODEL_VARIABLES = {
+    "icon": {
+        "temperature_2m": "temperatura",
+        "apparent_temperature": "sensacion_termica",
+        "dew_point_2m": "punto_rocio",
+        "weather_code": "estado_cielo",
+        "relative_humidity_2m": "humedad",
+        "cloud_cover": "nubosidad",
+        "precipitation_probability": "precip_prob",
+        "precipitation": "precipitacion",
+        "snowfall": "nieve",
+        "wind_speed_10m": "viento_vel",
+        "wind_direction_10m": "viento_dir",
+        "wind_gusts_10m": "viento_rafaga",
+        "pressure_msl": "presion",
+        "freezing_level_height": "isoterma_0",
+    },
+    "gfs": {  # complementarias: ICON no las calcula
+        "uv_index": "indice_uv",
+        "visibility": "visibilidad",
+    },
 }
 
-# Subconjunto que se archiva para la verificación de la Fase 2.
+# Todas las columnas de forecast_current, en orden estable.
+COLUMNS = list(dict.fromkeys(c for vs in MODEL_VARIABLES.values() for c in vs.values()))
+
+# Compatibilidad: todas las variables (p. ej. para pruebas) y subconjunto que se archiva (ICON).
+VARIABLES = {k: v for vs in MODEL_VARIABLES.values() for k, v in vs.items()}
 ARCHIVE_VARIABLES = {
-    k: v for k, v in VARIABLES.items()
+    k: v for k, v in MODEL_VARIABLES["icon"].items()
     if v in ("temperatura", "humedad", "precipitacion", "viento_vel", "viento_dir", "viento_rafaga", "presion")
 }
 
 # Metadatos de corridas: https://api.open-meteo.com/data/<modelo>/static/meta.json
 # gfs_seamless combina GFS 0.13° y 0.25°; se toma la corrida más nueva de ambos.
 META_URL = "https://api.open-meteo.com/data/{}/static/meta.json"
-META_SOURCES = {"gfs": ("ncep_gfs013", "ncep_gfs025"), "ecmwf": ("ecmwf_ifs025",), "icon": ("dwd_icon",)}
+META_SOURCES = {"icon": ("dwd_icon",), "gfs": ("ncep_gfs013", "ncep_gfs025")}
 
 BATCH_SIZE = 50            # ubicaciones por petición
 CALLS_PER_MINUTE = 500     # límite propio, bajo el de Open-Meteo (600/min)
@@ -174,13 +189,18 @@ def marine_rows(response: dict) -> Iterator[tuple[datetime, dict]]:
             yield datetime.fromisoformat(t).replace(tzinfo=timezone.utc), values
 
 
-def rows(response: dict, variables: dict[str, str]) -> Iterator[tuple[str, datetime, dict]]:
+def rows(response: dict, variables: dict[str, str],
+         models: list[str] | None = None) -> Iterator[tuple[str, datetime, dict]]:
     """Convierte la respuesta de una ubicación en (modelo, hora_valida_utc, {columna: valor}).
     Omite las horas en que el modelo no trae ningún dato."""
     hourly = response["hourly"]
     times = [datetime.fromisoformat(t).replace(tzinfo=timezone.utc) for t in hourly["time"]]
-    for model, api_model in MODELS.items():
-        series = {col: hourly.get(f"{var}_{api_model}") for var, col in variables.items()}
+    models = models or list(MODELS)
+    for model in models:
+        api_model = MODELS[model]
+        # Con un solo modelo en la petición, Open-Meteo no agrega el sufijo del modelo a la variable.
+        series = {col: hourly.get(f"{var}_{api_model}", hourly.get(var) if len(models) == 1 else None)
+                  for var, col in variables.items()}
         for i, valid_time in enumerate(times):
             values = {}
             for col, serie in series.items():

@@ -142,3 +142,23 @@ const REGIONES: Record<string, string> = {
 };
 
 export const region = (nombre: string) => `Región de ${REGIONES[nombre] ?? nombre}`.replace("Región de Metropolitana", "Región Metropolitana");
+
+/** Recomendación de protección solar según el índice UV. */
+export function proteccionUV(uv: number | null | undefined): string {
+  if (uv == null || uv < 3) return "Sin protección necesaria";
+  if (uv < 6) return "Usa protector FPS 30";
+  if (uv < 8) return "Protector FPS 30–50, gorro y lentes";
+  if (uv < 11) return "Protector FPS 50+, evita el sol al mediodía";
+  return "Evita exponerte al sol";
+}
+
+/** Visibilidad en m → texto ("> 10 km", "3,5 km", "800 m"). */
+export function visibilidad(m: number | null | undefined): string {
+  if (m == null) return "–";
+  if (m >= 10_000) return "> 10 km";
+  if (m >= 1_000) return `${(m / 1000).toLocaleString("es-CL", { maximumFractionDigits: 1 })} km`;
+  return `${Math.round(m / 100) * 100} m`;
+}
+
+/** Duración en minutos → "12 h 27 min". */
+export const duracion = (min: number) => `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, "0")} min`;

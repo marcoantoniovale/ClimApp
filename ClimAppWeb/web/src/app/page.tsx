@@ -1,7 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 
-import Search from "@/components/Search";
+import Inicio from "@/components/pronostico/Inicio";
 import { getAvisos } from "@/lib/data";
 import { tipoAviso } from "@/lib/format";
 
@@ -29,16 +28,7 @@ export default async function Home() {
 
   return (
     <div className="space-y-8">
-      <section className="flex flex-col items-center pt-6 text-center sm:pt-12">
-        <Image src="/brand/climapp_logo.svg" alt="" width={96} height={96} priority className="rounded-3xl" />
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">El tiempo en tu comuna</h1>
-        <p className="mt-2 max-w-md text-slate-300">
-          Pronóstico para las 346 comunas de Chile combinando tres modelos globales, con avisos marítimos y oleaje de la Armada.
-        </p>
-        <div className="mt-6 w-full max-w-xl">
-          <Search />
-        </div>
-      </section>
+      <Inicio />
 
       {avisos.length > 0 && (
         <Link
