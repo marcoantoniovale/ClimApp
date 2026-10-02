@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 import psycopg
 from psycopg.types.json import Jsonb
 
-from . import armada, avisos, correccion, dmc_obs, dmc_pasos, geo, open_meteo, redis, sinca, snapshot, web
+from . import armada, avisos, correccion, dmc_obs, dmc_pasos, geo, metno, open_meteo, redis, sinca, snapshot, web
 from .db import last_success, track_run
 
 log = logging.getLogger("climapp_etl")
@@ -164,15 +164,34 @@ def archive(conn: psycopg.Connection) -> None:
                 where o.station_id = s.id and o.observed_at > now() - interval '7 days'))
             order by s.id""")]
         issued_at = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0)
-        responses = open_meteo.fetch(points, open_meteo.ARCHIVE_VARIABLES, ARCHIVE_DAYS, models=["icon"])
+        modelos = ["icon", "ecmwf"]
+        responses = open_meteo.fetch(points, open_meteo.ARCHIVE_VARIABLES, ARCHIVE_DAYS, models=modelos)
+
+        def vale(valid_time: datetime) -> bool:
+            return issued_at <= valid_time <= issued_at + ARCHIVE_HORIZON and valid_time.hour % ARCHIVE_STEP_HOURS == 0
 
         records = [
             (point.key, model, issued_at, valid_time, *values.values())
             for point, data in responses
-            for model, valid_time, values in open_meteo.rows(data, open_meteo.ARCHIVE_VARIABLES, models=["icon"])
-            if issued_at <= valid_time <= issued_at + ARCHIVE_HORIZON
-            and valid_time.hour % ARCHIVE_STEP_HOURS == 0
+            for model, valid_time, values in open_meteo.rows(data, open_meteo.ARCHIVE_VARIABLES, models=modelos)
+            if vale(valid_time)
         ]
+        # Yr (MET Norway), para comparar con la mezcla: misma grilla de horas.
+        columnas = list(open_meteo.ARCHIVE_VARIABLES.values())
+
+        def yr(point: open_meteo.Point):
+            try:
+                return point, metno.rows(metno.fetch(point.lat, point.lon)), None
+            except Exception as exc:
+                return point, [], exc
+
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            yr_resultados = list(pool.map(yr, points))
+        records += [(point.key, "yr", issued_at, t, *(v.get(c) for c in columnas))
+                    for point, serie, _ in yr_resultados for t, v in serie if vale(t)]
+        fallas = sum(1 for _, _, exc in yr_resultados if exc)
+        if fallas:
+            run.warn(f"Yr: {fallas} de {len(points)} estaciones sin pronóstico")
         with conn.transaction():
             conn.execute("delete from forecast_archive where issued_at = %s", (issued_at,))
             _copy(conn, "forecast_archive", ARCHIVE_COLUMNS, records)
@@ -546,31 +565,41 @@ def _interpolar_icon(serie: dict[datetime, float], t: datetime) -> float | None:
     return a + (b - a) * (t - t0).total_seconds() / 3600
 
 
-def residuals(conn: psycopg.Connection) -> None:
+def residuals(conn: psycopg.Connection, reconstruir_dias: int = 0) -> None:
     """Algoritmo ClimApp, paso 1: error de ICON por estación y hora (con control de calidad) →
-    station_residuals (una fila por hora, con la lectura más reciente de esa hora). Luego publica el ajuste del momento por comuna (clave `algoritmo`)."""
+    station_residuals (una fila por hora, con la lectura más reciente de esa hora).
+    reconstruir_dias > 0: vuelve a calcular esos días con el pronóstico base actual (p. ej. al cambiar
+    la mezcla de modelos), reemplazando lo registrado. Luego publica el ajuste del momento por comuna (clave `algoritmo`)."""
     with track_run(conn, "residuos") as run:
         budget = open_meteo.MinuteBudget()
         _completar_alturas(conn, budget)
+        horas = max(RESIDUOS_HORAS, reconstruir_dias * 24)
+        extra_dias = max(0, reconstruir_dias - 2)
         estaciones = {e["id"]: e for e in _estaciones(conn, f"""exists (select 1 from observations o
-            where o.station_id = s.id and o.observed_at > now() - interval '{RESIDUOS_HORAS} hours')""")}
+            where o.station_id = s.id and o.observed_at > now() - interval '{horas} hours')""")}
         lecturas: dict[str, list[tuple[datetime, float]]] = defaultdict(list)
         for sid, t, v in conn.execute(f"""
                 select station_id, observed_at, temperatura from observations
                 where station_id = any(%s) and temperatura is not null
-                  and observed_at > now() - interval '{RESIDUOS_HORAS + 8} hours'
+                  and observed_at > now() - interval '{horas + 8} hours'
                 order by station_id, observed_at""", (list(estaciones),)):
             lecturas[sid].append((t, v))
-        existentes = {(r[0], r[1]): r[2] for r in conn.execute(f"""select station_id, hora, observed_at from station_residuals
-                                                                  where hora > now() - interval '{RESIDUOS_HORAS + 1} hours'""")}
+        existentes = {} if reconstruir_dias else {
+            (r[0], r[1]): r[2] for r in conn.execute(f"""select station_id, hora, observed_at from station_residuals
+                                                      where hora > now() - interval '{horas + 1} hours'""")}
 
         variables = {"temperature_2m": "temperatura"}
         puntos = [open_meteo.Point(e["id"], e["lat"], e["lon"]) for e in estaciones.values()]
-        icon = {p.key: {t: v["temperatura"] for _, t, v in open_meteo.rows(data, variables, models=["icon"])
-                        if v["temperatura"] is not None}
-                for p, data in open_meteo.fetch(puntos, variables, 1, past_days=3, budget=budget, models=["icon"])}
+        base = list(correccion.MODELOS_BASE)
+        icon: dict[str, dict[datetime, float]] = {}   # pronóstico base (mezcla) en cada estación
+        for p, data in open_meteo.fetch(puntos, variables, 1, past_days=3 + extra_dias, budget=budget, models=base):
+            por_hora: dict[datetime, list[float]] = defaultdict(list)
+            for _, t, v in open_meteo.rows(data, variables, models=base):
+                if v["temperatura"] is not None:
+                    por_hora[t].append(v["temperatura"])
+            icon[p.key] = {t: sum(vs) / len(vs) for t, vs in por_hora.items() if len(vs) == len(base)}
 
-        desde = datetime.now(timezone.utc) - timedelta(hours=RESIDUOS_HORAS)
+        desde = datetime.now(timezone.utc) - timedelta(hours=horas)
         nuevas: dict[datetime, list[dict]] = defaultdict(list)
         for sid, serie in lecturas.items():
             por_hora: dict[datetime, tuple[datetime, float]] = {}
@@ -591,6 +620,8 @@ def residuals(conn: psycopg.Connection) -> None:
             correccion.qc_vecinas(grupo)
         filas = [f for grupo in nuevas.values() for f in grupo]
         with conn.transaction():
+            if reconstruir_dias:
+                conn.execute("delete from station_residuals where hora >= %s", (desde,))
             with conn.cursor() as cur:
                 cur.executemany("""insert into station_residuals (station_id, hora, observed_at, medido, icon, qc)
                                    values (%(station_id)s, %(hora)s, %(observed_at)s, %(medido)s, %(icon)s, %(qc)s)

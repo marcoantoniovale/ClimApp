@@ -86,7 +86,7 @@ def test_modelos_pendientes():
     assert pending_models(state, runs, now=h(22)) == ["icon"]                 # solo ICON trae corrida nueva
     assert pending_models({k: v for k, v in state.items() if k != "gfs"}, runs, now=h(22)) == ["icon", "gfs"]
     viejo = {m: (h(12), h(5)) for m in runs}
-    assert set(pending_models(viejo, runs, now=h(22))) == {"gfs", "icon"}   # > 9 h sin renovar
+    assert set(pending_models(viejo, runs, now=h(22))) == {"gfs", "ecmwf", "icon"}   # > 9 h sin renovar
 
 
 def test_dias_limitados_a_hoy_mas_seis():
@@ -136,3 +136,12 @@ def test_umbrales_de_viento_mas_altos_en_el_altiplano():
     assert snapshot.alertas_paso([dia], 2900)[0]["nivel"] == "aviso"     # 70 km/h a 2.900 m: aviso
     assert snapshot.alertas_paso([dia], 4680) == []                       # 70 km/h en Chungará: habitual
     assert snapshot.alertas_paso([dict(dia, rafaga_max=100)], 4680)[0]["nivel"] == "alerta"
+
+
+def test_lluvia_diaria_no_cuenta_modelos_sin_lluvia():
+    rows = [("icon", NOW + timedelta(hours=h), {"temperatura": 15.0, "precipitacion": 0.5}) for h in range(24)]
+    rows += [("gfs", NOW + timedelta(hours=h), {"indice_uv": 3.0}) for h in range(24)]
+    rows += [("ecmwf", NOW + timedelta(hours=h), {"temperatura": 13.0}) for h in range(24)]
+    dia = snapshot.daily(rows, NOW.astimezone(snapshot.CHILE).date(), 2)[0]
+    assert dia["precipitacion"] == pytest.approx(0.5 * len([r for r in rows[:24]
+                                                           if r[1].astimezone(snapshot.CHILE).date() == NOW.astimezone(snapshot.CHILE).date()]))

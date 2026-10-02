@@ -28,7 +28,7 @@ MARINE_VARIABLES = {
 }
 
 # Código interno → nombre del modelo en Open-Meteo.
-MODELS = {"icon": "icon_seamless", "gfs": "gfs_seamless"}
+MODELS = {"icon": "icon_seamless", "ecmwf": "ecmwf_ifs", "gfs": "gfs_seamless"}
 
 # Variables que se piden a cada modelo: variable de Open-Meteo → columna canónica. Open-Meteo entrega
 # ya en °C, %, mm, hPa, m y (con wind_speed_unit=ms) m/s; snowfall en cm.
@@ -49,6 +49,12 @@ MODEL_VARIABLES = {
         "pressure_msl": "presion",
         "freezing_level_height": "isoterma_0",
     },
+    # Mezcla de temperatura (algoritmo ClimApp): ICON + ECMWF IFS 9 km por partes iguales; el precálculo
+    # promedia por hora los modelos presentes. Medido en 197 estaciones (docs/precision-evaluacion.md §8).
+    "ecmwf": {
+        "temperature_2m": "temperatura",
+        "apparent_temperature": "sensacion_termica",
+    },
     "gfs": {  # complementarias: ICON no las calcula
         "uv_index": "indice_uv",
         "visibility": "visibilidad",
@@ -68,7 +74,7 @@ ARCHIVE_VARIABLES = {
 # Metadatos de corridas: https://api.open-meteo.com/data/<modelo>/static/meta.json
 # gfs_seamless combina GFS 0.13° y 0.25°; se toma la corrida más nueva de ambos.
 META_URL = "https://api.open-meteo.com/data/{}/static/meta.json"
-META_SOURCES = {"icon": ("dwd_icon",), "gfs": ("ncep_gfs013", "ncep_gfs025")}
+META_SOURCES = {"icon": ("dwd_icon",), "ecmwf": ("ecmwf_ifs",), "gfs": ("ncep_gfs013", "ncep_gfs025")}
 
 BATCH_SIZE = 50            # ubicaciones por petición
 CALLS_PER_MINUTE = 500     # límite propio, bajo el de Open-Meteo (600/min)
