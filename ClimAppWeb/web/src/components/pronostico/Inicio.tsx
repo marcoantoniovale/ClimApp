@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { desdeAhora, type PronosticoConAvisos } from "@/lib/data";
-import { ErrorUbicacion, permisoConcedido, ubicacionGuardada, ubicarComuna } from "@/lib/ubicacion";
+import { ErrorUbicacion, ubicacionGuardada, ubicarComuna } from "@/lib/ubicacion";
 
 import Search from "../Search";
 import Pronostico from "./Pronostico";
@@ -29,13 +29,15 @@ function IconoUbicacion({ className = "h-5 w-5" }: { className?: string }) {
 }
 
 /**
- * Inicio: el tiempo de la ubicación del usuario. Si ya dio permiso, se ubica solo; si no, muestra la
- * última comuna usada en este dispositivo o invita a usar la ubicación. La posición no sale del equipo.
+ * Inicio: el tiempo de la ubicación del usuario. Muestra al instante la última comuna ubicada o buscada en
+ * este dispositivo (sin pedir el GPS, que es lento); solo si no hay ninguna guardada se ubica al abrir.
+ * El botón "Mi ubicación" o el buscador la cambian. La posición no sale del equipo.
  */
 export default function Inicio() {
   const [estado, setEstado] = useState<Estado>({ tipo: "inicial" });
 
-  async function mostrar(slug: string, etiqueta: string) {
+  async function mostrar(slug: string, etiqueta: string, nombre?: string) {
+    if (nombre) setEstado({ tipo: "buscando", texto: `Cargando el tiempo en ${nombre}…` });
     try {
       setEstado({ tipo: "listo", p: await cargarPronostico(slug), etiqueta });
     } catch {
@@ -47,8 +49,7 @@ export default function Inicio() {
     setEstado({ tipo: "buscando", texto: "Buscando tu ubicación…" });
     try {
       const comuna = await ubicarComuna();
-      setEstado({ tipo: "buscando", texto: `Cargando el tiempo en ${comuna.nombre}…` });
-      await mostrar(comuna.slug, "Tu ubicación");
+      await mostrar(comuna.slug, "Tu ubicación", comuna.nombre);
     } catch (e) {
       setEstado({ tipo: "error", mensaje: e instanceof ErrorUbicacion ? e.message : "No pudimos obtener tu ubicación." });
     }
@@ -56,17 +57,12 @@ export default function Inicio() {
 
   useEffect(() => {
     let cancelado = false;
-    (async () => {
-      if (await permisoConcedido()) {
-        if (!cancelado) ubicar();
-        return;
-      }
+    queueMicrotask(() => {
+      if (cancelado) return;
       const guardada = ubicacionGuardada();
-      if (guardada && !cancelado) {
-        setEstado({ tipo: "buscando", texto: `Cargando el tiempo en ${guardada.nombre}…` });
-        await mostrar(guardada.slug, "Tu última ubicación");
-      }
-    })();
+      if (guardada) mostrar(guardada.slug, guardada.origen === "busqueda" ? "Tu comuna guardada" : "Tu ubicación", guardada.nombre);
+      else ubicar();
+    });
     return () => {
       cancelado = true;
     };

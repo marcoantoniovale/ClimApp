@@ -250,6 +250,10 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 ### 2026-10-01 — rama `chore/quitar-nota-fuente`
 - Pedido del usuario: se quitó la nota bajo el pronóstico ("Modelo ICON (DWD) · obtenida … · actualizado …. Índice UV y visibilidad: GFS. Pronóstico con corrección…") por redundante con el pie de página. Los datos `fuente`, `corridas` y `correccion` siguen en el JSON.
 
+### 2026-10-01 — rama `feature/ubicacion-guardada`
+- Inicio más rápido: muestra al instante la última comuna guardada en el dispositivo (localStorage `climapp:ubicacion`, con `origen` gps/busqueda) sin pedir el GPS. Solo si no hay nada guardado se ubica automáticamente al abrir.
+- La comuna elegida en el buscador también se guarda; queda como inicio hasta que se cambie (buscador o botón "Mi ubicación"). Se eliminó `permisoConcedido` (ya no se ubica en cada visita).
+
 ---
 
 ## 8. Pendientes

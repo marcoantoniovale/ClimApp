@@ -62,33 +62,26 @@ export async function ubicarComuna(): Promise<UbicacionIndice> {
   if (!r || (!r.exacta && r.km > MAX_KM_UBICACION)) {
     throw new ErrorUbicacion("Tu ubicación parece estar fuera de Chile. Busca la comuna por nombre.");
   }
-  guardarUbicacion(r.lugar.slug, r.lugar.nombre);
+  guardarUbicacion(r.lugar.slug, r.lugar.nombre, "gps");
   return r.lugar;
 }
 
-/** ¿El usuario ya dio permiso de ubicación? (para ubicar sin preguntar al abrir la app). */
-export async function permisoConcedido(): Promise<boolean> {
-  try {
-    const estado = await navigator.permissions?.query({ name: "geolocation" as PermissionName });
-    return estado?.state === "granted";
-  } catch {
-    return false;
-  }
-}
+export type UbicacionGuardada = { slug: string; nombre: string; origen?: "gps" | "busqueda" };
 
-/** Última comuna ubicada, guardada solo en este dispositivo. */
-export function ubicacionGuardada(): { slug: string; nombre: string } | null {
+/** Última comuna ubicada o buscada, guardada solo en este dispositivo (el inicio la muestra sin pedir el GPS). */
+export function ubicacionGuardada(): UbicacionGuardada | null {
   try {
     const raw = localStorage.getItem(CLAVE_GUARDADA);
-    return raw ? JSON.parse(raw) : null;
+    const u = raw ? (JSON.parse(raw) as UbicacionGuardada) : null;
+    return u?.slug && u.nombre ? u : null;
   } catch {
     return null;
   }
 }
 
-function guardarUbicacion(slug: string, nombre: string) {
+export function guardarUbicacion(slug: string, nombre: string, origen: "gps" | "busqueda") {
   try {
-    localStorage.setItem(CLAVE_GUARDADA, JSON.stringify({ slug, nombre }));
+    localStorage.setItem(CLAVE_GUARDADA, JSON.stringify({ slug, nombre, origen }));
   } catch {
     // sin almacenamiento (modo privado): no es necesario
   }
