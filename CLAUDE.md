@@ -282,6 +282,9 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Pedido del usuario: contar visitas. **Vercel Web Analytics** (habilitado por el usuario en el panel): paquete `@vercel/analytics` y `<Analytics />` en [layout.tsx](ClimAppWeb/web/src/app/layout.tsx). Sin cookies; datos en Vercel → proyecto `clim-app` → Analytics.
 - Evaluación de publicidad (sin cambios de código): requiere uso comercial → plan comercial de Open-Meteo y Vercel Pro; recomendado partir con patrocinios directos (tarjeta rotulada "Publicidad" bajo el pronóstico y en pasos), sin cookies.
 
+### 2026-10-02 — rama `fix/pasos-volver`
+- Reclamo del usuario: al volver desde un paso, `/pasos` perdía el filtro y la posición. [ListaPasos.tsx](ClimAppWeb/web/src/components/pasos/ListaPasos.tsx) guarda filtro y último paso abierto en `sessionStorage` (`climapp:pasos:lista`); al volver recupera el filtro y centra el paso abierto (una vez). Probado en Chrome sin interfaz (CDP) con `next start`: filtro "Los", paso Dos Lagunas → vuelve con el mismo filtro y en la misma posición.
+
 ---
 
 ## 8. Pendientes
