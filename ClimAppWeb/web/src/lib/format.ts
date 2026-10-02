@@ -162,3 +162,7 @@ export function visibilidad(m: number | null | undefined): string {
 
 /** Duración en minutos → "12 h 27 min". */
 export const duracion = (min: number) => `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, "0")} min`;
+
+/** Temperatura con un decimal y coma decimal: "14,8°" (para la temperatura actual). */
+export const grados1 = (v: number | null | undefined) =>
+  v == null ? "–" : `${v.toLocaleString("es-CL", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}°`;
