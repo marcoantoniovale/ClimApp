@@ -198,6 +198,13 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Causa principal: Open-Meteo usa por defecto una celda de **tierra** (~15 km tierra adentro en Quintero). Con `cell_selection=nearest` el error del promedio baja de 2,4 a 1,7 °C allí. En 13 estaciones DMC: costa 1,19 → 1,08 °C, interior sin cambio (~0,95 °C). ECMWF IFS 0,25° es el peor en la costa (+3 °C).
 - Fuentes DMC encontradas: visor de estaciones automáticas (datos públicos; JSON con registro), `condicionactual.js` (METAR de ~30 aeropuertos) y `pronostico.js` (**pronóstico oficial de 103 localidades, 5 días**, mín/máx y texto por período).
 
+### 2026-10-01 — rama `feature/icon-ubicacion-dias`
+- **Cambio de foco (decisión del usuario):** se mantienen los avisos de la Armada; se agregarán alertas de pasos fronterizos; **pronóstico con un único modelo: ICON**. Inicio = el tiempo de la ubicación del usuario; pronóstico hora a hora con selector de día (hoy + 5). Estructura de página inspirada en Meteored, con diseño propio.
+- **Por qué ICON** (13 estaciones DMC, 2 días): error medio 0,97 °C (best_match 1,12; ECMWF 1,12; GFS 1,66); publica cada corrida a las 3,5 h (ECMWF 8,2 h). Para ICON la celda por defecto (`land`) es mejor en la costa (0,92 vs 1,01 °C con `nearest`): sin cambio de celda. ICON no entrega UV ni visibilidad → vienen de GFS como complemento.
+- ETL: `MODEL_VARIABLES` por modelo (ICON: 14 variables, incluidas punto de rocío, nubosidad, nieve e isoterma 0 °C; GFS: UV y visibilidad), una petición por modelo; migración 0007 (columnas nuevas, ECMWF eliminado). JSON v2: 6 días, horas hasta el fin del sexto día (~124), `fuente`, `cercanas` (6 comunas más cercanas). Prueba real: 132.864 filas en 89 s; Quintero a las 20:00 = 16,1 °C (la estación DMC marcó 16,1 °C a las 19:30). JSON promedio ~49 KB (antes ~16 KB).
+- Web: inicio `Inicio` (ubicación automática si ya hay permiso; si no, última comuna guardada en el dispositivo o botón "Ver el tiempo donde estoy"); vista común `Pronostico` (bloque Ahora, avisos, tarjetas de días, hora a hora desplegable con detalle, salida/puesta del sol calculada en el navegador, oleaje, comunas cercanas, fuente del modelo). `lib/ubicacion.ts` compartido con el buscador; `lib/sol.ts` con pruebas (±2 min vs Open-Meteo). Eliminados `CurrentWeather`, `HourlyForecast`, `WeeklyForecast`, `ClimateMetrics`.
+- Pruebas: ETL 47/47, web 13/13; lint y build sin errores.
+
 ---
 
 ## 8. Pendientes
@@ -222,6 +229,11 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] **RutaClimApp** — **en pausa por decisión del usuario (2026-10-01)**; retomar desde la propuesta (ver [§8 de la propuesta](docs/rutaclimapp-propuesta.md)): aprobación y prioridad frente a la Fase 2; cuenta y API key de openrouteservice; perfil camión en MVP; mapa en R1 o R2; horizonte.
 
 - [ ] **Precisión** (decidir, ver [plan](docs/precision-evaluacion.md#5-plan-propuesto)): P1 celda `nearest` en comunas costeras; P2 observaciones DMC y "ahora" medido; P3 corrección de sesgo y pesos por modelo (Fase 2); P4 pronóstico oficial DMC como referencia. Verificar términos de uso de la DMC y acceso desde la nube.
+
+- [ ] **Alertas de pasos fronterizos** (aprobado, siguiente): pronóstico oficial DMC por paso (archivos `datos_pasos_fronterizos_*.js`; ignorar el encabezado con nombre e IP del autor) + alertas propias con ICON en cada paso (nieve, rachas, isoterma bajo la cota del paso). Estado abierto/cerrado: el sitio de la UPF solo publica noticias → enlace al sitio oficial e investigar.
+- [ ] Probar en un teléfono real el inicio por ubicación (permiso, ubicación automática, última comuna guardada).
+- [ ] Tamaño del JSON v2 (~49 KB × 346 por cada publicación): revisar consumo de ancho de banda de Upstash (plan gratuito) y, si hace falta, compactar (claves cortas, quitar `rango`).
+- [ ] Validar ICON con 2–3 semanas de datos contra estaciones DMC (requiere ingerir observaciones DMC).
 
 ### Investigación
 - [x] Datos de la Armada: observaciones por API JSON; avisos imagen/PDF. Ver [docs/spikes-semana1.md](docs/spikes-semana1.md).

@@ -1,5 +1,5 @@
 # Ingesta horaria de ClimApp (código en ClimAppWeb/etl).
-# El modo "auto" decide qué corresponde: descarga un modelo (GFS/ECMWF/ICON) solo cuando Open-Meteo
+# El modo "auto" decide qué corresponde: descarga ICON (y GFS para UV/visibilidad) solo cuando Open-Meteo
 # publicó una corrida nueva (tabla model_runs), avisos cada hora, archivo cada 12 h, mantención
 # cada 24 h. Si se ejecuta dos veces seguidas, la segunda no descarga nada.
 #

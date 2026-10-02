@@ -40,7 +40,7 @@ def test_payload():
     p = snapshot.build(LOCATION, make_rows(), marine=None, observation=None, fetched_at=NOW, now=NOW)
     assert p["ubicacion"]["slug"] == "valparaiso" and p["provisional"] is True
     assert p["modelos"] == ["ecmwf", "gfs", "icon"]
-    assert len(p["horas"]) == 48
+    assert len(p["horas"]) == 72 - 15            # desde la hora actual hasta el fin de los datos (≤ 6 días)
     assert p["horas"][0]["hora"] == "2026-10-01T12:00-03:00"      # hora actual, en hora de Chile
     assert p["horas"][0]["viento"] == round(5.0 * 3.6)            # m/s → km/h
     assert p["unidades"]["viento"] == "km/h"
@@ -84,6 +84,24 @@ def test_modelos_pendientes():
     runs = {"gfs": Run(h(12), h(17)), "ecmwf": Run(h(12), h(20)), "icon": Run(h(18), h(21))}
     state = {"gfs": (h(12), h(20)), "ecmwf": (h(12), h(20)), "icon": (h(12), h(20))}
     assert pending_models(state, runs, now=h(22)) == ["icon"]                 # solo ICON trae corrida nueva
-    assert pending_models({k: v for k, v in state.items() if k != "gfs"}, runs, now=h(22)) == ["gfs", "icon"]
+    assert pending_models({k: v for k, v in state.items() if k != "gfs"}, runs, now=h(22)) == ["icon", "gfs"]
     viejo = {m: (h(12), h(5)) for m in runs}
-    assert set(pending_models(viejo, runs, now=h(22))) == {"gfs", "ecmwf", "icon"}   # > 9 h sin renovar
+    assert set(pending_models(viejo, runs, now=h(22))) == {"gfs", "icon"}   # > 9 h sin renovar
+
+
+def test_dias_limitados_a_hoy_mas_cinco():
+    p = snapshot.build(LOCATION, make_rows(24 * 8), marine=None, observation=None, fetched_at=NOW, now=NOW,
+                       cercanas=[{"slug": "vina-del-mar", "nombre": "Viña del Mar", "km": 8}])
+    assert len(p["dias"]) == 6
+    assert p["horas"][-1]["hora"].startswith("2026-10-06T23:00")
+    assert p["cercanas"][0]["slug"] == "vina-del-mar" and p["version"] == 2
+
+
+def test_comunas_cercanas_con_empates():
+    from climapp_etl.jobs import _nearest_locations
+
+    locs = [{"id": i, "slug": f"c{i}", "nombre": f"C{i}", "lat": -33.0, "lon": -71.0 + d}
+            for i, d in enumerate([0, 0.1, -0.1, 0.2])]   # c1 y c2 a la misma distancia de c0
+    near = _nearest_locations(locs, n=2)
+    assert {c["slug"] for c in near[0]} == {"c1", "c2"}
+    assert all(c["slug"] != "c0" for c in near[0])

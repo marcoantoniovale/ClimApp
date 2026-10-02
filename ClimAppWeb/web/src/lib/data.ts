@@ -42,6 +42,12 @@ export type Hora = {
   viento_dir: number | null;
   rafaga: number | null;
   presion: number | null;
+  // Desde la versión 2 del JSON:
+  punto_rocio?: number | null;
+  nubosidad?: number | null;
+  visibilidad?: number | null;  // m (GFS)
+  isoterma_0?: number | null;   // m
+  nieve?: number | null;        // cm/h
 };
 
 export type Dia = {
@@ -56,6 +62,9 @@ export type Dia = {
   viento_max: number | null;
   rafaga_max: number | null;
   indice_uv_max: number | null;
+  viento_dir?: number | null;
+  nieve?: number | null;
+  isoterma_0_min?: number | null;
   horas: number;
 };
 
@@ -90,6 +99,8 @@ export type Pronostico = {
   marino: Marino | null;
   observacion: Observacion | null;
   fuentes: { nombre: string; licencia?: string; url: string }[];
+  fuente?: { modelo: string; complementario: string };
+  cercanas?: { slug: string; nombre: string; km: number }[];
 };
 
 export type PronosticoConAvisos = Pronostico & { avisos: AvisoUbicacion[] };
@@ -135,4 +146,11 @@ export async function getIndice(options?: ReadOptions) {
 export async function getMeta(options?: ReadOptions) {
   const [meta] = await getJson<[{ generado: string; ubicaciones: number }]>(["meta"], options);
   return meta;
+}
+
+/** El JSON se regenera con cada corrida: descarta las horas ya pasadas (antes de la hora actual). */
+export function desdeAhora<T extends Pronostico>(p: T, ahora: Date = new Date()): T {
+  const inicio = new Date(ahora);
+  inicio.setMinutes(0, 0, 0);
+  return { ...p, horas: p.horas.filter((h) => Date.parse(h.hora) >= inicio.getTime()) };
 }

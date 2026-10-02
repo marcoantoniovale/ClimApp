@@ -5,7 +5,7 @@ import { type KeyboardEvent, useId, useMemo, useRef, useState } from "react";
 
 import type { UbicacionIndice } from "@/lib/data";
 import { region } from "@/lib/format";
-import { comunaEnPosicion } from "@/lib/geo";
+import { ErrorUbicacion, cargarIndice, ubicarComuna } from "@/lib/ubicacion";
 
 const normalize = (s: string) =>
   s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
@@ -13,16 +13,8 @@ const normalize = (s: string) =>
 type Entry = UbicacionIndice & { key: string; aliasKey: string };
 
 const MAX_RESULTS = 8;
-/** Más lejos que esto de cualquier cabecera comunal, se asume que la posición está fuera de Chile. */
-const MAX_KM_UBICACION = 80;  // solo si el punto no cayó dentro de ningún polígono
 
 type EstadoUbicacion = { estado: "inactivo" } | { estado: "buscando" } | { estado: "error"; mensaje: string };
-
-const ERRORES_GPS: Record<number, string> = {
-  1: "No diste permiso para usar tu ubicación. Puedes activarlo en la configuración del navegador.",
-  2: "No pudimos determinar tu ubicación. Intenta de nuevo o busca tu comuna por nombre.",
-  3: "Se agotó el tiempo para obtener tu ubicación. Intenta de nuevo.",
-};
 
 /** Buscador de comunas (combobox accesible) con opción de usar la ubicación del dispositivo. */
 export default function Search({ autoFocus = false, size = "lg" }: { autoFocus?: boolean; size?: "lg" | "md" }) {
@@ -36,12 +28,10 @@ export default function Search({ autoFocus = false, size = "lg" }: { autoFocus?:
   const [ubicacion, setUbicacion] = useState<EstadoUbicacion>({ estado: "inactivo" });
   const pending = useRef<Promise<Entry[] | null> | null>(null);
 
-  /** Carga el catálogo una sola vez y lo devuelve (para el buscador y para la ubicación). */
+  /** Carga el catálogo (compartido con "Usar mi ubicación"). */
   function load(): Promise<Entry[] | null> {
-    pending.current ??= fetch("/api/locations")
-      .then(async (res) => {
-        if (!res.ok) throw new Error(String(res.status));
-        const data: UbicacionIndice[] = await res.json();
+    pending.current ??= cargarIndice()
+      .then((data) => {
         const list = data.map((u) => ({ ...u, key: normalize(u.nombre), aliasKey: normalize(u.alias ?? "") }));
         setEntries(list);
         return list;
@@ -76,30 +66,17 @@ export default function Search({ autoFocus = false, size = "lg" }: { autoFocus?:
     router.push(`/comuna/${entry.slug}`);
   };
 
-  /** Pide la posición al navegador (en el mismo clic, lo exige Safari) y abre la comuna donde está. */
-  function usarUbicacion() {
-    if (!("geolocation" in navigator)) {
-      setUbicacion({ estado: "error", mensaje: "Tu navegador no permite obtener la ubicación." });
-      return;
-    }
+  /** Ubica al usuario (en el mismo clic, lo exige Safari) y abre su comuna. */
+  async function usarUbicacion() {
     setUbicacion({ estado: "buscando" });
-    const catalogo = load();
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const list = await catalogo;
-        const cercana = list && (await comunaEnPosicion(list, pos.coords.latitude, pos.coords.longitude));
-        if (!cercana) {
-          setUbicacion({ estado: "error", mensaje: "No se pudo cargar el listado de comunas. Intenta de nuevo." });
-        } else if (!cercana.exacta && cercana.km > MAX_KM_UBICACION) {
-          setUbicacion({ estado: "error", mensaje: "Tu ubicación parece estar fuera de Chile. Busca la comuna por nombre." });
-        } else {
-          setUbicacion({ estado: "inactivo" });
-          go(cercana.lugar);
-        }
-      },
-      (err) => setUbicacion({ estado: "error", mensaje: ERRORES_GPS[err.code] ?? ERRORES_GPS[2] }),
-      { enableHighAccuracy: false, timeout: 10_000, maximumAge: 5 * 60_000 },
-    );
+    try {
+      const comuna = await ubicarComuna();
+      setUbicacion({ estado: "inactivo" });
+      setQuery(comuna.nombre);
+      router.push(`/comuna/${comuna.slug}`);
+    } catch (e) {
+      setUbicacion({ estado: "error", mensaje: e instanceof ErrorUbicacion ? e.message : "No pudimos obtener tu ubicación." });
+    }
   }
 
   function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {

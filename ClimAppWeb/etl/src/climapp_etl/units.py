@@ -24,6 +24,10 @@ PLAUSIBLE = {
     "viento_rafaga": (0.0, 120.0),
     "viento_dir": (0.0, 360.0),
     "indice_uv": (0.0, 20.0),
+    "nubosidad": (0.0, 100.0),
+    "visibilidad": (0.0, 100_000.0),
+    "isoterma_0": (-1000.0, 7000.0),
+    "nieve": (0.0, 50.0),
 }
 
 

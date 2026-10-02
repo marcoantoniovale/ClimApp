@@ -23,14 +23,14 @@ export default function MarineForecast({ marino }: { marino: Marino | null }) {
       <p className="mb-2 text-xs text-slate-400">Altura significativa máxima del día (modelo marino de Open-Meteo)</p>
       <ul className="divide-y divide-climapp-line/70">
         {dias.map((d) => (
-          <li key={d.fecha} className="grid grid-cols-[4.5rem_1fr_3.5rem_4.5rem] items-center gap-3 py-2 text-sm sm:grid-cols-[6rem_1fr_4rem_5rem]"
+          <li key={d.fecha} className="grid grid-cols-[4.5rem_1fr_3.5rem_5.5rem] items-center gap-3 py-2 text-sm sm:grid-cols-[6rem_1fr_4rem_6rem]"
             aria-label={`${nombreDia(d.fecha)}: olas de hasta ${d.altura_max} m, período ${d.periodo_max ?? "–"} s, desde el ${cardinal(d.direccion)}`}>
             <span className="font-medium text-slate-100">{nombreDia(d.fecha)}</span>
             <div className="h-1.5 rounded-full bg-climapp-line">
               <div className="h-1.5 rounded-full bg-climapp-rain" style={{ width: `${(d.altura_max! / hi) * 100}%` }} />
             </div>
             <span className="font-semibold text-slate-100">{d.altura_max!.toFixed(1)} m</span>
-            <span className="flex items-center gap-1 text-xs text-slate-400">
+            <span className="flex items-center gap-1 whitespace-nowrap text-xs text-slate-400">
               <Arrow deg={d.direccion} />{cardinal(d.direccion)} · {d.periodo_max ?? "–"} s
             </span>
           </li>
