@@ -103,3 +103,41 @@ Implementa P2 y el comienzo de P3. Código: `etl/src/climapp_etl/correccion.py` 
 - En el punto de la estación el efecto es mayor (Quintero: sesgo de +1,8 °C de noche y de mañana).
 
 **Próximas mejoras:** usar `forecast_archive` (pronósticos reales a 24–72 h) en vez de los días pasados de Open-Meteo; considerar la diferencia de altura estación–comuna; sesgo según el horizonte; extender a viento y humedad; recalibrar con 2–3 semanas de datos.
+
+## 7. Algoritmo ClimApp v2 (en producción desde el 2026-10-01)
+
+Pedido del usuario: el algoritmo es la base de la plataforma; corregir la temperatura actual y el pronóstico con el historial inmediato, registrar el error de ICON contra las mediciones oficiales e irlo rectificando, y aplicar a las comunas sin medición un factor común de las estaciones cercanas (norte, sur, este, oeste). Código: [correccion.py](../ClimAppWeb/etl/src/climapp_etl/correccion.py), [jobs.py](../ClimAppWeb/etl/src/climapp_etl/jobs.py) (`residuals`, `corrections`, `_publicar_algoritmo`) y [lib/ahora.ts](../ClimAppWeb/web/src/lib/ahora.ts).
+
+**Fuentes de medición**
+| Red | Estaciones | Cómo se lee | Frecuencia |
+|---|---|---|---|
+| DMC, estaciones automáticas | ~136 con lectura | Mapa `menuTematicoEmas` (una página) | Cada hora (minuto 59) |
+| SINCA (Ministerio del Medio Ambiente) | 61 con temperatura vigente (9 en la RM: Quilicura, Las Condes, Cerro Navia, Pudahuel, Parque O'Higgins, La Florida, El Bosque, Puente Alto, Talagante) | Exportación CSV de Airviro por estación; catálogo en `data/catalog/estaciones_sinca.csv` (`scripts/build_sinca.py`) | Cada hora; promedio horario |
+
+SINCA rotula cada promedio al **inicio** de la hora en **UTC−4 fijo**. Verificado contra Quinta Normal (DMC) a 1,7 km de Parque O'Higgins: error 0,34 °C sin desfase, 0,70 °C con −1 h, 0,96 °C con +1 h. Cada promedio se fecha en el centro de su hora.
+
+INIA (agrometeorologia.cl): 210 estaciones propias y 271 de otras redes; no se encontró un servicio de datos público (descarga por formulario). Queda pendiente revisar términos y acceso.
+
+**Pasos**
+1. **Registro del error** (`station_residuals`, cada hora): ICON − medido en el punto de la estación, con ICON interpolado al instante de la lectura. Una fila por estación y hora; no se reescribe con corridas posteriores. Retención 45 días (~0,7 MB/día).
+2. **Control de calidad**: fuera de rango (−40…50 °C), error > 12 °C, salto > 8 °C/h, sensor pegado (6 lecturas idénticas) y discrepancia > 5 °C con la mediana de ≥ 3 vecinas de la misma zona a ≤ 50 km. Primera corrida: 84 de 10.175 horas descartadas (51 error, 31 vecinas, 2 saltos).
+3. **Sesgo sistemático** por estación y franja de 6 h: promedio con olvido exponencial (vida media 7 días, ventana 30), atenuado n/(n+12), límite ±5 °C. Se recalcula cada 3 h; equivale a un filtro de Kalman de nivel local en régimen.
+4. **Interpolación por cuadrantes** (sesgo y anomalía): estación más cercana al NE, NO, SE y SO; misma zona (costa/interior); ≤ 50 km; peso 1/(d+2)² · exp(−|Δaltura|/500 m); un peso fijo equivalente a una estación a 25 km tira hacia cero (lejos de todo, ICON puro). Se interpola el **error**, no la temperatura. Altura: modelo digital de Open-Meteo para estaciones y cabeceras.
+5. **Anomalía del momento**: a = medido − (ICON − sesgo) en la última lectura válida (≤ 3 h) de cada estación, interpolada por comuna y publicada cada hora en Redis (`algoritmo`, ~90 KB). La web la suma a la curva y la desvanece con τ (temperatura actual, hora a hora, máximas y mínimas).
+6. **Validación diaria** (`algoritmo_validacion`) y **τ automático** con la persistencia observada.
+7. Estaciones ubicadas por **polígono comunal** (antes, por la cabecera más cercana: Pudahuel caía en Quilicura y Rodelillo en Viña del Mar).
+
+**Primera validación** (2026-10-01, 196 estaciones, 10.091 horas de ~4 días):
+| Escenario | Error medio |
+|---|---|
+| ICON sin corregir | 1,28 °C |
+| Comuna **sin** estación (solo vecinas): sesgo | 1,20 °C |
+| Comuna **sin** estación: sesgo + ajuste del momento, 1 h después | **1,08 °C** |
+| Comuna **con** estación: sesgo | 0,95 °C (dentro de muestra, optimista) |
+| Comuna **con** estación: sesgo + ajuste del momento, 1 h después | **0,57 °C** |
+
+Persistencia de la anomalía (después de quitar el sesgo): 0,80 a 1 h, 0,59 a 2 h, 0,43 a 3 h, 0,23 a 6 h → **τ ≈ 4 h**. En v1 (sin separar el sesgo) la persistencia era 0,95 a 1 h (τ ≈ 20 h): la parte que dura días ahora la explica el sesgo.
+
+Cobertura: ajuste del momento en 303 de 346 comunas (v1: 159); sesgo en 304 (v1: 209).
+
+**Limitaciones y próximos pasos:** con solo ~4 días el sesgo se estima dentro de la muestra; recalibrar con 2–3 semanas. El sesgo usa ICON de la corrida más reciente (horizonte corto); evaluar con `forecast_archive` a 24–72 h. Mediciones cada 15 min requieren otro ejecutor (minutos de GitHub Actions). Sumar INIA si sus términos lo permiten.

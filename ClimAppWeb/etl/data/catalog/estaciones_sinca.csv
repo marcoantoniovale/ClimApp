@@ -1,0 +1,62 @@
+key,nombre,comuna,lat,lon,serie
+117,Alto Hospicio,Alto Hospicio,-20.29047,-70.10019,./RI/117/Met/TEMP//horario_010.ic
+231,Tres Marias,Tocopilla,-22.06029,-70.18740,./RII/231/Met/TEMP//horario_004.ic
+253,Nueva ChiuChiu,Calama,-22.34297,-68.64866,./RII/253/Met/TEMP//horario_002.ic
+235,Colegio Pedro Vergara Keller,Calama,-22.44284,-68.93255,./RII/235/Met/TEMP//horario_010.ic
+217,Hospital del Cobre,Calama,-22.45402,-68.91015,./RII/217/Met/TEMP//horario_010.ic
+233,Club Deportivo 23 de Marzo,Calama,-22.46027,-68.93771,./RII/233/Met/TEMP//horario_010.ic
+234,Oasis,Calama,-22.46484,-68.92097,./RII/234/Met/TEMP//horario_002.ic
+332,Copiapo Sivica,Copiapó,-27.37033,-70.32391,./RIII/332/Met/TEMP//horario_010.ic
+425,La Serena,Coquimbo,-29.93301,-71.26197,./RIV/425/Met/TEMP//horario_010.ic
+426,Coquimbo,Coquimbo,-29.97039,-71.33604,./RIV/426/Met/TEMP//horario_010.ic
+420,Andacollo,Andacollo,-30.22777,-71.08613,./RIV/420/Met/TEMP//horario_010.ic
+424,Cuncumen,Salamanca,-31.88928,-70.62931,./RIV/424/Met/TEMP//horario_010.ic
+532,Los Andes,Los Andes,-32.84412,-70.59213,./RV/532/Met/TEMP//horario_004.ic
+512,Las Gaviotas,Concón,-32.91546,-71.48148,./RV/512/Met/TEMP//horario_000.ic
+509,Concón,Concón,-32.92457,-71.51540,./RV/509/Met/TEMP//horario_002.ic
+560,Concón Bomberos MMA,Concón,-32.92611,-71.51212,./RV/560/Met/TEMP//horario_003.ic
+511,Colmo,Concón,-32.92955,-71.44057,./RV/511/Met/TEMP//horario_000.ic
+535,Junta de Vecinos,Concón,-32.93517,-71.52577,./RV/535/Met/TEMP//horario_000.ic
+529,Viña del Mar,Viña del Mar,-33.02042,-71.55009,./RV/529/Met/TEMP//horario_010.ic
+D30,Quilicura,Quilicura,-33.34963,-70.72379,./RM/D30/Met/TEMP//horario_003.ic
+D13,Las Condes (Acreditada),Las Condes,-33.37677,-70.52333,./RM/D13/Met/TEMP//horario_003.ic
+D18,Cerro Navia,Cerro Navia,-33.43309,-70.73215,./RM/D18/Met/TEMP//horario_003.ic
+D15,Pudahuel (Acreditada),Pudahuel,-33.43781,-70.75017,./RM/D15/Met/TEMP//horario_003.ic
+D14,Parque O'Higgins,Santiago,-33.46414,-70.66080,./RM/D14/Met/TEMP//horario_003.ic
+D12,La Florida (Acreditada),La Florida,-33.51663,-70.58812,./RM/D12/Met/TEMP//horario_003.ic
+D17,El Bosque (Acreditada),El Bosque,-33.54994,-70.67653,./RM/D17/Met/TEMP//horario_003.ic
+D27,Puente Alto,Puente Alto,-33.59139,-70.59479,./RM/D27/Met/TEMP//horario_003.ic
+D28,Talagante,Talagante,-33.67375,-70.95306,./RM/D28/Met/TEMP//horario_003.ic
+615,Rancagua II,Rancagua,-34.14389,-70.73713,./RVI/615/Met/TEMP//horario_010.ic
+609,Rancagua I,Rancagua,-34.16231,-70.71392,./RVI/609/Met/TEMP//horario_010.ic
+611,Rengo,Rengo,-34.39454,-70.85298,./RVI/611/Met/TEMP//horario_010.ic
+612,San Fernando,San Fernando,-34.57976,-70.98969,./RVI/612/Met/TEMP//horario_010.ic
+709,Curicó,Curicó,-34.97493,-71.23397,./RVII/709/Met/TEMP//horario_010.ic
+711,Universidad de Talca,Talca,-35.40658,-71.63340,./RVII/711/Met/TEMP//horario_010.ic
+703,La Florida,Talca,-35.43514,-71.67826,./RVII/703/Met/TEMP//horario_010.ic
+710,U.C. Maule,Talca,-35.43573,-71.61955,./RVII/710/Met/TEMP//horario_010.ic
+714,Cauquenes Sivica,Cauquenes,-35.96912,-72.31682,./RVII/714/Met/TEMP//horario_003.ic
+810,"INIA, Chillán",Chillán,-36.59488,-72.08925,./RVIII/810/Met/TEMP//horario_010.ic
+830,Liceo Polivalente,Tomé,-36.60171,-72.95852,./RVIII/830/Met/TEMP//horario_004.ic
+873,Puren,Chillán,-36.61617,-72.09304,./RVIII/873/Met/TEMP//horario_003.ic
+802,Consultorio - San Vicente,Talcahuano,-36.72370,-73.12366,./RVIII/802/Met/TEMP//horario_005.ic
+827,Kingston College,Concepción,-36.78465,-73.05206,./RVIII/827/Met/TEMP//horario_003.ic
+854,Punteras,Chiguayante,-36.92333,-73.03613,./RVIII/854/Met/TEMP//horario_003.ic
+880,"Escuadron, ENEL",Coronel,-36.95432,-73.15045,./RVIII/880/Met/TEMP//horario_003.ic
+841,Hualqui,Hualqui,-36.97743,-72.93202,./RVIII/841/Met/TEMP//horario_003.ic
+879,"Lagunillas, ENEL",Coronel,-36.98458,-73.15265,./RVIII/879/Met/TEMP//horario_003.ic
+860,Lota urbana,Coronel,-37.07762,-73.15414,./RVIII/860/Met/TEMP//horario_003.ic
+859,Lota rural,Coronel,-37.10070,-73.15576,./RVIII/859/Met/TEMP//horario_003.ic
+874,Los Ángeles Oriente,Los Angeles,-37.46304,-72.32458,./RVIII/874/Met/TEMP//horario_003.ic
+875,21 de mayo,Los Angeles,-37.47118,-72.36146,./RVIII/875/Met/TEMP//horario_003.ic
+832,Balneario Curanilahue,Curanilahue,-37.48513,-73.33163,./RVIII/832/Met/TEMP//horario_004.ic
+905,Ñielol,Temuco,-38.72700,-72.58000,./RIX/905/Met/TEMP//horario_010.ic
+901,Las Encinas Temuco,Temuco,-38.74865,-72.61901,./RIX/901/Met/TEMP//horario_010.ic
+906,Villarrica,Villarrica,-39.29049,-72.22210,./RIX/906/Met/TEMP//horario_010.ic
+E08,Valdivia 2,Valdivia,-39.81065,-73.21970,./RXIV/E08/Met/TEMP//horario_003.ic
+E03,Valdivia,Valdivia,-39.83132,-73.22851,./RXIV/E03/Met/TEMP//horario_010.ic
+E04,La Union,La Unión,-40.28686,-73.07671,./RXIV/E04/Met/TEMP//horario_010.ic
+A01,Osorno,Osorno,-40.58448,-73.11872,./RX/A01/Met/TEMP//horario_010.ic
+A08,Alerce,Puerto Montt,-41.39917,-72.89952,./RX/A08/Met/TEMP//horario_010.ic
+B04,Coyhaique II,Coyhaique,-45.57905,-72.04996,./RXI/B04/Met/TEMP//horario_010.ic
+B03,Coyhaique,Coyhaique,-45.57996,-72.06113,./RXI/B03/Met/TEMP//horario_010.ic

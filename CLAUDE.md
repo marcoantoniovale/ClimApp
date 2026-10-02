@@ -264,6 +264,19 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - ETL: `correccion.medicion_cercana` (estación más cercana de la misma zona, ≤ 15 km) usada en los JSON; nueva clave Redis `mediciones` ({slug: medición, km}) publicada en cada `dmc_obs` (cada hora) y `dmc_obs` renueva la web. 159 comunas con medición cercana (Santiago → Quinta Normal, 1,6 km).
 - Web: `getPronostico` usa la medición más nueva (JSON o `mediciones`); `lib/ahora.ts` τ 3 → 20 h, medición válida hasta 6 h; `ajustarHoras` aplica el mismo ajuste al hora a hora; "Medido en … (a X km)". Pruebas: ETL 68, web 20.
 
+### 2026-10-01 — rama `feature/algoritmo-v2`
+- Pedido del usuario: el algoritmo ClimApp es la base de la plataforma; aplicar de una vez el plan de mejoras. Detalle y resultados en [docs/precision-evaluacion.md §7](docs/precision-evaluacion.md).
+- Diagnóstico previo: la DMC publica en `estaciones.js` qué estación usa para la temperatura actual de cada sector (Santiago Centro → Quinta Normal, Oriente → Tobalaba, Poniente → Pudahuel), pero no los límites ni las comunas de cada sector.
+- **SINCA** como segunda red de mediciones ([sinca.py](ClimAppWeb/etl/src/climapp_etl/sinca.py), [build_sinca.py](ClimAppWeb/etl/scripts/build_sinca.py), catálogo `estaciones_sinca.csv`): 61 estaciones con temperatura (9 en la RM). Hora verificada: inicio de la hora en UTC−4 fijo. Job `sinca_obs` cada hora.
+- Migración [0011](ClimAppWeb/db/migrations/0011_algoritmo_v2.sql): red `sinca`, `stations.altura_m`, `locations.elevacion_m`, `station_residuals` (error hora a hora con control de calidad, retención 45 días) y `algoritmo_validacion`.
+- [correccion.py](ClimAppWeb/etl/src/climapp_etl/correccion.py) v2: control de calidad (rango, error, salto, pegado, vecinas), sesgo con olvido exponencial (vida media 7 días), interpolación por cuadrantes NE/NO/SE/SO con altura y retorno a ICON con la distancia, ajuste automático de τ, validación dejando cada estación fuera.
+- Jobs: `residuos` (cada hora: registro + publica la clave `algoritmo` con la anomalía por comuna) y `correccion` v2 (sesgo desde el registro cada 3 h; validación diaria). Estaciones ubicadas por polígono comunal ([geo.py](ClimAppWeb/etl/src/climapp_etl/geo.py)); alturas con la API de elevación de Open-Meteo. La clave `mediciones` deja de publicarse.
+- Web: `getPronostico` agrega `ancla` (anomalía, hora, τ, estaciones); [lib/ahora.ts](ClimAppWeb/web/src/lib/ahora.ts) aplica el ajuste a la temperatura actual, al hora a hora y a máximas y mínimas; API de pronóstico con caché de 60 s; crédito a SINCA en el pie.
+- Primera validación (196 estaciones, ~10 mil horas): ICON 1,28 °C → sin estación 1,08 °C y con estación 0,57 °C (1 h después de la medición). τ ajustado = 4 h. Ajuste del momento en 303/346 comunas (antes 159) y sesgo en 304 (antes 209).
+- INIA evaluada: 210 estaciones propias; sin servicio de datos público identificado (pendiente).
+- Corrección a un diagnóstico anterior: según sus coordenadas, la estación "Quinta Normal" está en la comuna de Estación Central y Torquemada en Concón (estaban bien); los errores reales eran Pudahuel (en Quilicura) y Rodelillo (en Viña del Mar).
+- Pruebas: ETL 84, web 20.
+
 ---
 
 ## 8. Pendientes
@@ -294,7 +307,11 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Tamaño del JSON v2 (~49 KB × 346 por cada publicación): revisar consumo de ancho de banda de Upstash (plan gratuito) y, si hace falta, compactar (claves cortas, quitar `rango`).
 - [x] Ingerir observaciones DMC (2026-10-01).
 - [ ] Recalibrar el algoritmo ClimApp con 2–3 semanas de datos; pasar a `forecast_archive` (pronósticos reales) y considerar altura estación–comuna.
-- [ ] Algoritmo ClimApp, ancla por medición: considerar la altura (p. ej. Valparaíso usa Rodelillo, ~350 m; Lo Barnechea usa Tobalaba a 12 km) y promediar varias estaciones; validar τ = 20 h con más días.
+- [x] Algoritmo ClimApp v2 (2026-10-01): altura, varias estaciones por cuadrante, τ automático, control de calidad, validación diaria.
+- [ ] Algoritmo ClimApp: revisar la validación diaria (`select fecha, metricas from algoritmo_validacion order by fecha desc`) y recalibrar con 2–3 semanas (el sesgo inicial es dentro de muestra); probar el sesgo con `forecast_archive` a 24–72 h.
+- [ ] Verificar que SINCA responde desde GitHub Actions (job `sinca_obs` en `ingestion_runs`).
+- [ ] INIA (agrometeorologia.cl, 210 estaciones): revisar términos y acceso a datos; sumarla si es posible.
+- [ ] SINCA: volver a correr `scripts/build_sinca.py` cada algunos meses (series nuevas o dadas de baja).
 - [ ] Mediciones cada 15 min (hoy cada hora, al minuto 59): GitHub Actions privado tiene 2.000 min/mes y ya se usan ~720–1.400; evaluar otro ejecutor (repo público, Supabase Edge Function, Cloudflare Worker).
 - [ ] **Búsqueda por localidades** (evaluada 2026-10-01, ver bitácora): índice estático de localidades OSM → comuna (nivel caseríos + barrios de comunas no urbanas, ~114–176 KB gzip, carga diferida al escribir), mostrar "Loncura · pronóstico de Quintero", desambiguar nombres repetidos, atribución ODbL. Validar contra entidades pobladas INE 2017.
 

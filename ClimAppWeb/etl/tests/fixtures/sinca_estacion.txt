@@ -1,0 +1,2 @@
+macropath=./RM/D14/Met/TEMP&amp;macro=horario_000&amp;from=031215&amp;to=250508&amp;
+macropath=./RM/D14/Met/TEMP&amp;macro=horario_003&amp;from=031215&amp;to=261001&amp;

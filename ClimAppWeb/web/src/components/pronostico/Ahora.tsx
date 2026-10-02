@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 
 import { estimacionActual, minutoActual, minutoServidor, suscribirMinuto } from "@/lib/ahora";
-import type { Dia, Hora, Observacion } from "@/lib/data";
+import type { AnclaUbicacion, Dia, Hora, Observacion } from "@/lib/data";
 import { cardinal, cielo, esNoche, fechaHora, grados, grados1, hora, region as nombreRegion } from "@/lib/format";
 
 import WeatherIcon from "../WeatherIcon";
@@ -20,6 +20,7 @@ export default function Ahora({
   horas,
   hoy,
   observacion,
+  ancla,
 }: {
   nombre: string;
   region: string;
@@ -28,11 +29,12 @@ export default function Ahora({
   horas: Hora[];
   hoy: Dia | undefined;
   observacion: Observacion | null;
+  ancla?: AnclaUbicacion | null;
 }) {
   const estado = cielo(ahora?.estado_cielo);
   // Temperatura actual minuto a minuto (algoritmo ClimApp, lib/ahora.ts); en el servidor, el valor horario.
   const minuto = useSyncExternalStore(suscribirMinuto, minutoActual, minutoServidor);
-  const estimada = minuto != null ? estimacionActual(horas, observacion, minuto) : null;
+  const estimada = minuto != null ? estimacionActual(horas, ancla, minuto) : null;
   const temperatura = estimada?.temperatura ?? ahora?.temperatura;
   const sensacion = estimada?.sensacion_termica ?? ahora?.sensacion_termica;
   // Antigüedad de la medición respecto de la hora mostrada (no de Date.now(): el render debe ser puro).
@@ -97,7 +99,7 @@ export default function Ahora({
       {ahora && (
         <p className="mt-3 text-xs text-slate-400">
           {minuto != null
-            ? <>Estimación ClimApp para las {hora(new Date(minuto).toISOString())}{estimada?.ajustada ? ", desde la última medición" : ""} · se actualiza cada minuto</>
+            ? <>Estimación ClimApp para las {hora(new Date(minuto).toISOString())}{estimada?.ajustada ? `, con ${ancla!.estaciones.length === 1 ? "1 estación" : `${ancla!.estaciones.length} estaciones`} cercanas` : ""} · se actualiza cada minuto</>
             : <>Pronóstico para las {hora(ahora.hora)} · {fechaHora(ahora.hora).split(",")[0]}</>}
         </p>
       )}
