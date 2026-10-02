@@ -82,7 +82,11 @@ export type Observacion = {
   presion: number | null;
   viento: number | null;
   viento_dir: number | null;
+  /** Distancia de la estación a la comuna (algoritmo ClimApp: estación más cercana de la misma zona). */
+  km?: number;
 };
+
+type MedicionesPayload = { generado: string; mediciones: Record<string, Observacion> };
 
 export type Pronostico = {
   version: number;
@@ -124,9 +128,18 @@ function avisosDe(avisos: AvisosPayload | null, slug: string): AvisoUbicacion[] 
 
 /** Pronóstico de una ubicación con sus avisos vigentes, o null si no existe. */
 export async function getPronostico(slug: string, options?: ReadOptions): Promise<PronosticoConAvisos | null> {
-  const [pronostico, avisos] = await getJson<[Pronostico, AvisosPayload]>([`loc:${slug}`, "avisos"], options);
+  const [pronostico, avisos, mediciones] = await getJson<[Pronostico, AvisosPayload, MedicionesPayload]>(
+    [`loc:${slug}`, "avisos", "mediciones"], options);
   if (!pronostico) return null;
-  return { ...pronostico, avisos: avisosDe(avisos, slug) };
+  return { ...pronostico, observacion: masReciente(pronostico.observacion, mediciones?.mediciones?.[slug]),
+           avisos: avisosDe(avisos, slug) };
+}
+
+/** La medición más nueva: la del JSON de la comuna o la de `mediciones` (se publica cada hora). */
+function masReciente(a: Observacion | null, b: Observacion | undefined): Observacion | null {
+  if (!b) return a;
+  if (!a) return b;
+  return Date.parse(b.hora) >= Date.parse(a.hora) ? b : a;
 }
 
 /** Todos los avisos vigentes, con las ubicaciones que cubre cada uno. */

@@ -87,7 +87,8 @@ export default function Ahora({
 
       {obsReciente && (
         <p className="mt-3 rounded-xl bg-climapp-bg/60 px-3 py-2 text-sm text-slate-300">
-          Medido en <strong className="font-semibold text-slate-100">{obsReciente.estacion}</strong> a las {hora(obsReciente.hora)}:{" "}
+          Medido en <strong className="font-semibold text-slate-100">{obsReciente.estacion}</strong>
+          {obsReciente.km != null && obsReciente.km >= 1 && ` (a ${obsReciente.km.toLocaleString("es-CL")} km)`} a las {hora(obsReciente.hora)}:{" "}
           {grados1(obsReciente.temperatura)}
           {obsReciente.viento != null && `, viento ${obsReciente.viento} km/h`}
         </p>

@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useState } from "react";
+import { useId, useState, useSyncExternalStore } from "react";
 
 import type { Hora, PronosticoConAvisos } from "@/lib/data";
 import { diaLargo, duracion, fechaLocal, grados, hora, oracion } from "@/lib/format";
+import { ajustarHoras, minutoActual, minutoServidor, suscribirMinuto } from "@/lib/ahora";
 import { salidaPuesta } from "@/lib/sol";
 
 import MarineForecast from "../weather/MarineForecast";
@@ -23,7 +24,11 @@ export default function Pronostico({ p, etiqueta }: { p: PronosticoConAvisos & {
   const panelId = useId();
   const dias = p.dias.slice(0, 7);
   const elegido = dias[dia];
-  const horasDelDia = elegido ? p.horas.filter((h) => fechaLocal(h.hora) === elegido.fecha) : [];
+  // Algoritmo ClimApp: las próximas horas también parten de la última medición cercana (lib/ahora.ts).
+  const minuto = useSyncExternalStore(suscribirMinuto, minutoActual, minutoServidor);
+  const base = [...(p.horasPrevias ?? []), ...p.horas];
+  const horas = minuto != null ? ajustarHoras(p.horas, base, p.observacion, minuto) : p.horas;
+  const horasDelDia = elegido ? horas.filter((h) => fechaLocal(h.hora) === elegido.fecha) : [];
   const sol = elegido ? salidaPuesta(new Date(`${elegido.fecha}T12:00:00-03:00`), p.ubicacion.lat, p.ubicacion.lon) : null;
   const ahora = p.horas[0];
   const hoy = dias.find((d) => ahora && d.fecha === fechaLocal(ahora.hora)) ?? dias[0];
@@ -31,7 +36,7 @@ export default function Pronostico({ p, etiqueta }: { p: PronosticoConAvisos & {
   return (
     <div className="space-y-4">
       <Ahora nombre={p.ubicacion.nombre} region={p.ubicacion.region} etiqueta={etiqueta}
-        ahora={ahora} horas={[...(p.horasPrevias ?? []), ...p.horas]} hoy={hoy} observacion={p.observacion} />
+        ahora={ahora} horas={base} hoy={hoy} observacion={p.observacion} />
 
       <WarningList avisos={p.avisos} />
 

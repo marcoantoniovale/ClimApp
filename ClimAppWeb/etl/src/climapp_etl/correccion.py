@@ -7,6 +7,8 @@
    misma zona (costa con costa, interior con interior), con peso exp(−d / ESCALA_KM) y un término que
    atenúa cuando las estaciones están lejos. Sin estaciones cercanas no se corrige.
 3. Se resta la corrección a la temperatura y a la sensación térmica de ICON, hora a hora.
+4. Medición de anclaje: la lectura más reciente de la estación más cercana de la misma zona (≤ RADIO_MEDICION_KM).
+   La web parte de ella y la acerca a la curva del pronóstico de a poco (ver web/src/lib/ahora.ts).
 """
 
 from __future__ import annotations
@@ -24,6 +26,7 @@ MAX_DIFERENCIA = 15.0   # °C: diferencias mayores se consideran error de medici
 RADIO_KM = 25.0
 ESCALA_KM = 10.0
 ATENUACION = 0.25   # peso "a favor de cero" cuando las estaciones están lejos
+RADIO_MEDICION_KM = 15.0
 
 
 def franja(t: datetime) -> int:
@@ -79,6 +82,23 @@ def correccion(lat: float, lon: float, costera: bool, estaciones: list[dict]) ->
             franjas[f] = sum(w * s for w, s in pares) / (peso + ATENUACION)
     cercanas.sort(key=lambda x: x[0])
     return {"franjas": franjas, "estaciones": [{"nombre": e["nombre"], "km": round(d, 1)} for d, e in cercanas[:3]]}
+
+
+def medicion_cercana(lat: float, lon: float, costera: bool, mediciones: list[dict],
+                     radio: float = RADIO_MEDICION_KM) -> dict | None:
+    """Última medición de la estación más cercana de la misma zona, con su distancia (km), o None.
+    mediciones: [{lat, lon, costera, ...campos de la medición}]."""
+    mejor = None
+    for m in mediciones:
+        if m["costera"] != costera:
+            continue
+        d = km(lat, lon, m["lat"], m["lon"])
+        if d <= radio and (mejor is None or d < mejor[0]):
+            mejor = (d, m)
+    if mejor is None:
+        return None
+    d, m = mejor
+    return {k: v for k, v in m.items() if k not in ("lat", "lon", "costera")} | {"km": round(d, 1)}
 
 
 def aplicar(rows: list[tuple], corr: dict) -> list[tuple]:
