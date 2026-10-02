@@ -278,6 +278,10 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Pruebas: ETL 84, web 20.
 - Ajuste posterior (rama `fix/residuo-lectura-reciente`): si llega una lectura más reciente dentro de una hora ya registrada, reemplaza a la anterior (el ancla usaba hasta ~1 h de atraso). Verificado en producción: SINCA responde desde GitHub Actions (61 estaciones, 0 errores).
 
+### 2026-10-02 — rama `feature/vercel-analytics`
+- Pedido del usuario: contar visitas. **Vercel Web Analytics** (habilitado por el usuario en el panel): paquete `@vercel/analytics` y `<Analytics />` en [layout.tsx](ClimAppWeb/web/src/app/layout.tsx). Sin cookies; datos en Vercel → proyecto `clim-app` → Analytics.
+- Evaluación de publicidad (sin cambios de código): requiere uso comercial → plan comercial de Open-Meteo y Vercel Pro; recomendado partir con patrocinios directos (tarjeta rotulada "Publicidad" bajo el pronóstico y en pasos), sin cookies.
+
 ---
 
 ## 8. Pendientes
@@ -318,6 +322,9 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 
 - [x] Retención de observaciones: **180 días** (decisión del usuario, 2026-10-01). Con el archivo de pronósticos 2 veces al día por 90 días, la base se estabiliza en ~387 MB (77 % de 500 MB).
 - [ ] Opcional: archivo de pronósticos 1 vez al día → ~283 MB (57 %), si hace falta más margen.
+
+- [ ] **Publicidad** (evaluada 2026-10-02): decidir paso a uso comercial (plan comercial de Open-Meteo, Vercel Pro, términos DMC/SINCA); luego componente de patrocinios con interruptor.
+- [ ] Opcional: Vercel Speed Insights (velocidad real en celulares).
 
 ### Investigación
 - [x] Datos de la Armada: observaciones por API JSON; avisos imagen/PDF. Ver [docs/spikes-semana1.md](docs/spikes-semana1.md).
