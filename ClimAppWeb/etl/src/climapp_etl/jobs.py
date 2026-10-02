@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 import psycopg
 from psycopg.types.json import Jsonb
 
-from . import armada, avisos, open_meteo, redis, snapshot
+from . import armada, avisos, dmc_pasos, open_meteo, redis, snapshot
 from .db import last_success, track_run
 
 log = logging.getLogger("climapp_etl")
@@ -29,6 +29,7 @@ ARCHIVE_STEP_HOURS = 3
 FORECAST_EVERY = timedelta(hours=6)
 MODEL_MAX_AGE = timedelta(hours=9)
 MARINE_EVERY = timedelta(hours=3)
+PASOS_DMC_EVERY = timedelta(hours=3)   # la DMC emite ~2 veces al día
 ARCHIVE_EVERY = timedelta(hours=12)
 MAINTENANCE_EVERY = timedelta(hours=24)
 MARGIN = timedelta(minutes=30)
@@ -60,22 +61,27 @@ def forecast(conn: psycopg.Connection, models: list[str] | None = None,
             except Exception as exc:  # sin metadatos igual se descarga; solo no se registra la corrida
                 run.warn(f"Metadatos de corridas: {exc}")
                 runs = {}
-        points = [open_meteo.Point(*r) for r in conn.execute(
+        comunas = [open_meteo.Point(*r) for r in conn.execute(
             "select id, lat, lon from locations where tipo = 'comuna' order by id")]
+        # Pasos fronterizos: con su altura, para que la temperatura corresponda a la cota del paso.
+        pasos = [open_meteo.Point(r[0], r[1], r[2], r[3]) for r in conn.execute(
+            "select id, lat, lon, altura_m from locations where tipo = 'paso' order by id")]
         fetched_at = datetime.now(timezone.utc)
         budget = open_meteo.MinuteBudget()
         records = []
-        location_ids: list = []
-        for model in models:  # una petición por modelo, cada uno con sus variables
+        location_ids = [p.key for p in comunas + pasos]
+        for model in models:  # una petición por modelo (y grupo), cada modelo con sus variables
             variables = open_meteo.MODEL_VARIABLES[model]
-            responses = open_meteo.fetch(points, variables, FORECAST_DAYS, past_days=1, models=[model],
-                                         budget=budget)
-            location_ids = [p.key for p, _ in responses]
-            records += [
-                (point.key, m, valid_time, fetched_at, *(values.get(c) for c in open_meteo.COLUMNS))
-                for point, data in responses
-                for m, valid_time, values in open_meteo.rows(data, variables, models=[model])
-            ]
+            for group in (comunas, pasos):
+                if not group:
+                    continue
+                responses = open_meteo.fetch(group, variables, FORECAST_DAYS, past_days=1, models=[model],
+                                             budget=budget)
+                records += [
+                    (point.key, m, valid_time, fetched_at, *(values.get(c) for c in open_meteo.COLUMNS))
+                    for point, data in responses
+                    for m, valid_time, values in open_meteo.rows(data, variables, models=[model])
+                ]
         received = {r[1] for r in records}
         if set(models) - received:
             run.warn(f"Sin datos de: {', '.join(sorted(set(models) - received))}")
@@ -251,9 +257,10 @@ def snapshots(conn: psycopg.Connection) -> None:
     with track_run(conn, "snapshots") as run:
         now = datetime.now(timezone.utc)
         cols = list(open_meteo.COLUMNS)
-        locations = [dict(zip(("id", "slug", "nombre", "alias", "region", "tipo", "lat", "lon", "es_costera"), r))
-                     for r in conn.execute("""select id, slug, nombre, alias, region, tipo, lat, lon, es_costera
-                                              from locations order by id""")]
+        locations = [dict(zip(("id", "slug", "nombre", "alias", "region", "tipo", "lat", "lon", "es_costera",
+                               "altura_m"), r))
+                     for r in conn.execute("""select id, slug, nombre, alias, region, tipo, lat, lon, es_costera,
+                                                     altura_m from locations order by id""")]
         rows, fetched = defaultdict(list), {}
         for r in conn.execute(f"""select location_id, modelo, valid_time, fetched_at, {', '.join(cols)}
                                   from forecast_current where valid_time >= now() - interval '30 hours'"""):
@@ -298,11 +305,13 @@ def snapshots(conn: psycopg.Connection) -> None:
 
         # lat/lon de la cabecera comunal: la web busca la comuna más cercana a la posición del
         # usuario en el propio dispositivo (la ubicación no se envía al servidor).
+        # Solo comunas: los pasos no deben aparecer en el buscador ni al ubicar al usuario.
         index = [{"slug": l["slug"], "nombre": l["nombre"], "alias": l["alias"], "region": l["region"],
                   "costera": l["es_costera"], "lat": round(l["lat"], 3), "lon": round(l["lon"], 3)}
-                 for l in locations]
+                 for l in locations if l["tipo"] == "comuna"]
         items = {f"loc:{p['ubicacion']['slug']}": p for p in payloads.values()}
         items["indice"] = index
+        items["pasos"] = _pasos_payload(locations, payloads, now)
         items["meta"] = {"generado": snapshot._iso_local(now), "ubicaciones": len(payloads)}
         published = redis.publish(items)
         if not redis.configured():
@@ -311,16 +320,50 @@ def snapshots(conn: psycopg.Connection) -> None:
         log.info("snapshots: %d ubicaciones, redis=%d claves", len(payloads), published)
 
 
+def _pasos_payload(locations: list[dict], payloads: dict[int, dict], now: datetime) -> dict:
+    """Resumen de los pasos fronterizos para la página /pasos: hoy y alertas de los próximos días."""
+    pasos = []
+    for loc in locations:
+        p = payloads.get(loc["id"])
+        if loc["tipo"] != "paso" or not p:
+            continue
+        hoy = p["dias"][0] if p["dias"] else {}
+        pasos.append({
+            "slug": loc["slug"], "nombre": loc["nombre"], "region": loc["region"], "altura_m": loc["altura_m"],
+            "lat": loc["lat"], "lon": loc["lon"],
+            "hoy": {k: hoy.get(k) for k in ("estado_cielo", "temperatura_max", "temperatura_min", "nieve", "rafaga_max")},
+            "alertas": p["alertas"],
+        })
+    pasos.sort(key=lambda x: -x["lat"])   # de norte a sur
+    return {"generado": snapshot._iso_local(now), "pasos": pasos}
+
+
 def _nearest_locations(locations: list[dict], n: int) -> dict[int, list[dict]]:
-    """Para cada ubicación, las n más cercanas (para el módulo "comunas cercanas" de la web)."""
+    """Para cada ubicación, las n comunas más cercanas (para el módulo "comunas cercanas" de la web)."""
     def km(a, b):
         return math.dist((a["lat"], a["lon"] * math.cos(math.radians(a["lat"]))),
                          (b["lat"], b["lon"] * math.cos(math.radians(a["lat"])))) * 111.2
     result = {}
     for loc in locations:
-        near = sorted(((km(loc, o), o) for o in locations if o["id"] != loc["id"]), key=lambda x: x[0])[:n]
+        near = sorted(((km(loc, o), o) for o in locations if o["id"] != loc["id"] and o.get("tipo", "comuna") == "comuna"),
+                      key=lambda x: x[0])[:n]
         result[loc["id"]] = [{"slug": o["slug"], "nombre": o["nombre"], "km": round(d)} for d, o in near]
     return result
+
+
+def dmc_passes(conn: psycopg.Connection) -> None:
+    """Pronóstico oficial de pasos fronterizos de la DMC → Redis (clave pasos_dmc)."""
+    with track_run(conn, "pasos_dmc") as run:
+        datos, errores = dmc_pasos.fetch()
+        for e in errores:
+            run.warn(e)
+        if not datos:
+            raise RuntimeError("La DMC no entregó pronósticos de pasos: " + "; ".join(errores[:3]))
+        payload = {"generado": snapshot._iso_local(datetime.now(timezone.utc)),
+                   "pasos": {f"paso-{slug}": p for slug, p in datos.items()}}
+        published = redis.publish({"pasos_dmc": payload})
+        run.filas = len(datos)
+        log.info("pasos DMC: %d pasos, %d errores, redis=%d", len(datos), len(errores), published)
 
 
 def maintenance(conn: psycopg.Connection) -> None:
@@ -359,6 +402,7 @@ def auto(conn: psycopg.Connection, with_observations: bool = True) -> None:
     jobs = [("open_meteo", forecast, "por_corrida"),
             ("open_meteo_archivo", archive, ARCHIVE_EVERY),
             ("armada_avisos", warnings, None),
+            ("pasos_dmc", dmc_passes, PASOS_DMC_EVERY),
             ("snapshots", snapshots, "tras_pronostico"),
             ("mantencion", maintenance, MAINTENANCE_EVERY)]
     if with_observations:

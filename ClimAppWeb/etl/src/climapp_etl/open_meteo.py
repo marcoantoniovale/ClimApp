@@ -79,6 +79,7 @@ class Point:
     key: object            # location_id o station_id
     lat: float
     lon: float
+    elevation: float | None = None   # m; si se indica, Open-Meteo ajusta la temperatura a esa altura
 
 
 def call_weight(n_points: int, n_variables: int, n_models: int, days: int) -> float:
@@ -147,6 +148,7 @@ def fetch(points: list[Point], variables: dict[str, str], days: int, past_days: 
             "past_days": past_days,
             "wind_speed_unit": "ms",
             "timezone": "GMT",
+            **_elevation_param(batch),
         })
         if isinstance(data, dict):  # con una sola coordenada la API no devuelve lista
             data = [data]
@@ -154,6 +156,13 @@ def fetch(points: list[Point], variables: dict[str, str], days: int, past_days: 
             raise RuntimeError(f"Open-Meteo devolvió {len(data)} ubicaciones para un lote de {len(batch)}")
         results.extend(zip(batch, data))
     return results
+
+
+def _elevation_param(batch: list[Point]) -> dict:
+    """Parámetro elevation solo si todos los puntos del lote la traen (no mezclar con la del DEM)."""
+    if batch and all(p.elevation is not None for p in batch):
+        return {"elevation": ",".join(f"{p.elevation:.0f}" for p in batch)}
+    return {}
 
 
 def fetch_marine(points: list[Point], days: int, budget: MinuteBudget | None = None,

@@ -1,0 +1,11 @@
+var fechaemision_LosLagos="Jueves 01 de Octubre del 2026 a las 16:46 horas";
+var PronoFechas_LosLagos="Viernes 02:S&aacute;bado 03:Domingo 04:Lunes 05:Martes 06";
+var apreciacion_LosLagos="Sistema frontal.";
+var iso_registrada_LosLagos="";
+var iso_fecha_registrada_LosLagos="Jueves 01";
+var PronoPajaritos="lluvia.png|Cubierto y lluvia.:lluvia.png|Cubierto y lluvia.:lluvia.png|Cubierto y lluvia.:lluvia.png|Nublado y chubascos de agua hasta la ma&ntilde;ana.:lluvia.png|Nublado y chubascos de agua.";
+var PronoSamore="lluvianieve.png|Cubierto y lluvia/aguanieve/nieve. Viento 40/60 km/h.:nieve.png|Cubierto y nevadas. Viento 40/60 km/h.:nieve.png|Cubierto y nevadas. Viento 40/60 km/h.:lluvianieve.png|Nublado y chubascos de nieve/aguanieve hasta la ma&ntilde;ana.:lluvia.png|Nublado y chubascos de agua.";
+var PronovicentePR="lluvia.png|Cubierto y lluvia.:lluvia.png|Cubierto y lluvia.:lluvia.png|Cubierto y lluvia.:lluvia.png|Nublado y chubascos de agua hasta la ma&ntilde;ana.:lluvia.png|Nublado y chubascos de agua.";
+var PronoFutaleufu="lluvia.png|Cubierto y lluvia d&eacute;bil.:lluvia.png|Cubierto y lluvia d&eacute;bil.:lluvia.png|Cubierto y lluvia.:lluvia.png|Nublado y chubascos d&eacute;biles en declinaci&oacute;n.:parcial.png|Nublado.";
+var PronoIsotermas_LosLagos="1400-800:800:800:800-1300:1300";
+var PronoIsotermas_LosLagosExtra="1800-1300:1300:1300:1300-1800:1800";

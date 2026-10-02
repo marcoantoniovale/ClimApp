@@ -114,3 +114,9 @@ def test_respuesta_de_un_solo_modelo_sin_sufijo():
     assert len(rows) == 1
     model, _, values = rows[0]
     assert model == "icon" and values["temperatura"] == 12.5 and values["isoterma_0"] == 3800.0
+
+
+def test_altura_solo_si_todo_el_lote_la_trae():
+    from climapp_etl.open_meteo import _elevation_param
+    assert _elevation_param([Point(1, -32.8, -70.1, 2900), Point(2, -35.1, -70.5, 2505)]) == {"elevation": "2900,2505"}
+    assert _elevation_param([Point(1, -32.8, -70.1, 2900), Point(2, -33.4, -70.6)]) == {}

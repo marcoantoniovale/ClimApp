@@ -105,3 +105,34 @@ def test_comunas_cercanas_con_empates():
     near = _nearest_locations(locs, n=2)
     assert {c["slug"] for c in near[0]} == {"c1", "c2"}
     assert all(c["slug"] != "c0" for c in near[0])
+
+
+def test_alertas_de_paso():
+    dia = lambda **kw: {"fecha": "2026-10-02", "nieve": 0, "rafaga_max": 20, "temperatura_min": 2,
+                        "isoterma_0_min": 4000, "precipitacion": 0, **kw}
+    a = snapshot.alertas_paso
+    assert a([dia()], 2900) == []
+    assert [x["texto"] for x in a([dia(nieve=12)], 2900)] == ["Nieve intensa: 12 cm"]
+    ventisca = a([dia(nieve=3, rafaga_max=65)], 2900)
+    assert {x["tipo"] for x in ventisca} == {"nieve", "ventisca"} and any(x["nivel"] == "alerta" for x in ventisca)
+    assert a([dia(rafaga_max=85)], 2900)[0]["nivel"] == "alerta"
+    assert a([dia(rafaga_max=62)], 2900)[0]["nivel"] == "aviso"
+    assert a([dia(temperatura_min=-14)], 2900)[0]["tipo"] == "frio"
+    assert a([dia(isoterma_0_min=2500, precipitacion=4)], 2900)[0]["tipo"] == "hielo"
+    assert a([dia(isoterma_0_min=2500, precipitacion=4)], 2000) == []      # isoterma sobre el paso
+
+
+def test_solo_los_pasos_llevan_alertas():
+    rows = make_rows(48)
+    assert snapshot.build(LOCATION, rows, None, None, NOW, now=NOW)["alertas"] == []
+    paso = dict(LOCATION, tipo="paso", altura_m=2900, es_costera=False)
+    p = snapshot.build(paso, rows, None, None, NOW, now=NOW)
+    assert p["ubicacion"]["altura_m"] == 2900 and isinstance(p["alertas"], list)
+
+
+def test_umbrales_de_viento_mas_altos_en_el_altiplano():
+    dia = {"fecha": "2026-10-02", "nieve": 0, "rafaga_max": 70, "temperatura_min": -5,
+           "isoterma_0_min": 5000, "precipitacion": 0}
+    assert snapshot.alertas_paso([dia], 2900)[0]["nivel"] == "aviso"     # 70 km/h a 2.900 m: aviso
+    assert snapshot.alertas_paso([dia], 4680) == []                       # 70 km/h en Chungará: habitual
+    assert snapshot.alertas_paso([dict(dia, rafaga_max=100)], 4680)[0]["nivel"] == "alerta"

@@ -1,0 +1,13 @@
+var fechaemision="Jueves 01 de Octubre del 2026 a las 17:40 horas";
+var apreciacion="Dorsal en altura.";
+var iso_registrada_cuando="Hoy a las 08 horas";
+var iso_registrada="Sin informaci&oacute;n. ";
+var iso_estimada="3.800 - 2.500 metros";
+var iso_estimada_cuando="Estimada para ma&ntilde;ana";
+var iso_tendencia="Durante los pr&oacute;ximos d&iacute;as la isoterma 0&deg;C oscilar&aacute; entre los 2.300-3.800 metros.";
+var PronoFechas="Viernes 02:S&aacute;bado 03:Domingo 04:Lunes 05:Martes 06";
+var PronoAndes="lluvia.png|Nublado a cubierto y chubascos. Probables tormentas electricas. Viento de hasta 40 km/h.:lluvianoche.png|Nublado y chubascos aislados a nubosidad parcial.:solparciallluvia.png|Nublado y chubascos aislados a nubosidad parcial.:parcial.png|Nublado.:cubierto.png|Nublado a cubierto.";
+var PronoGuardia="lluvia.png|Nublado a cubierto y chubascos. Probables tormentas electricas. Viento de 40 km/h y rachas de 50 km/h.:lluvianoche.png|Nublado y chubascos aislados.:solparciallluvia.png|Nublado y chubascos aislados a nubosidad parcial.:parcial.png|Nublado.:lluvia.png|Nublado a cubierto y chubascos.";
+var PronoJuncal="lluviaelectrica.png|Cubierto y lluvia a chubascos. Probables tormentas electricas. Viento de 40 km/h y rachas de 50 km/h.:lluvia.png|Nublado y chubascos.:lluvia.png|Nublado y chubascos a nubosidad parcial.:lluvia.png|Nublado y chubascos.:lluvia.png|Cubierto y chubascos.";
+var PronoLosLibertadores="lluviaelectrica.png|Cubierto y chubascos de lluvia a nieve. Probables tormentas electricas.Viento de 40 km/h y rachas de 70 km/h. Ventisca.:nieve.png|Nublado y chubascos de nieve d&eacute;biles. Viento de 40 km/h y rachas de 50 km/h.:nieve.png|Nublado y chubascos de nieve a nubosidad parcial. Viento de 40 km/h y rachas de 50 km/h.:nieve.png|Nublado y chubascos de nieve. Viento de 40 km/h y rachas de 50 km/h.:nieve.png|Cubierto y nevadas. Viento de 40 km/h y rachas de 50 km/h.";
+var PronoIsotermas="3800-2500:2500-2900-2600:2600-2300-2800:2800-2300:2300-2500";

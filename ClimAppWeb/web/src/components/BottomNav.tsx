@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const ITEMS = [
   { href: "/", label: "Inicio", icon: "M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" },
+  { href: "/pasos", label: "Pasos", icon: "M2 20l7-12 4 6 3-4 6 10z" },
   { href: "/avisos", label: "Avisos", icon: "M12 3l10 18H2zM12 10v5M12 18h.01" },
 ];
 
@@ -19,13 +20,13 @@ export default function BottomNav() {
     >
       <ul className="mx-auto flex max-w-md justify-around">
         {ITEMS.map((item) => {
-          const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+          const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href) || (item.href === "/pasos" && pathname.startsWith("/paso/"));
           return (
             <li key={item.href}>
               <Link
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex flex-col items-center gap-1 px-6 py-2 text-xs font-medium ${active ? "text-climapp-teal" : "text-slate-400"}`}
+                className={`flex flex-col items-center gap-1 px-5 py-2 text-xs font-medium ${active ? "text-climapp-teal" : "text-slate-400"}`}
               >
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d={item.icon} />

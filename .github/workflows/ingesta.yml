@@ -20,7 +20,7 @@ on:
       comando:
         description: "Comando del ETL"
         type: choice
-        options: [auto, observaciones, pronostico, archivo, avisos, precalculo, mantencion]
+        options: [auto, observaciones, pronostico, archivo, avisos, pasos, precalculo, mantencion]
         default: auto
   push:
     paths: [".github/workflows/ingesta.yml"]   # prueba al modificar este archivo

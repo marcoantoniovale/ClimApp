@@ -17,7 +17,7 @@ export default function Footer() {
       <div className="mt-6 flex items-center gap-2 border-t border-climapp-line/60 pt-4">
         <Image src="/brand/msins-mark.svg" alt="" width={24} height={24} className="rounded-md ring-1 ring-white/15" />
         <p>
-          Creador: <span className="font-semibold text-slate-200">Grupo MSinS</span>
+          Creador: <span className="font-semibold text-slate-200">Marco</span>
         </p>
       </div>
     </footer>

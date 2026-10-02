@@ -7,6 +7,7 @@ Uso:
   python -m climapp_etl archivo                     # Open-Meteo en estaciones → forecast_archive
   python -m climapp_etl avisos                      # avisos Armada → marine_warnings + Redis
   python -m climapp_etl precalculo                  # JSON por ubicación → location_snapshots + Redis
+  python -m climapp_etl pasos                       # pronóstico DMC de pasos fronterizos → Redis
   python -m climapp_etl mantencion                  # retención de datos
 
 Opción --log ARCHIVO: escribe el registro en un archivo (para pythonw.exe, que no tiene consola).
@@ -29,6 +30,7 @@ COMMANDS = {
     "archivo": jobs.archive,
     "avisos": jobs.warnings,
     "precalculo": jobs.snapshots,
+    "pasos": jobs.dmc_passes,
     "mantencion": jobs.maintenance,
 }
 

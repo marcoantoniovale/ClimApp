@@ -205,6 +205,16 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Web: inicio `Inicio` (ubicación automática si ya hay permiso; si no, última comuna guardada en el dispositivo o botón "Ver el tiempo donde estoy"); vista común `Pronostico` (bloque Ahora, avisos, tarjetas de días, hora a hora desplegable con detalle, salida/puesta del sol calculada en el navegador, oleaje, comunas cercanas, fuente del modelo). `lib/ubicacion.ts` compartido con el buscador; `lib/sol.ts` con pruebas (±2 min vs Open-Meteo). Eliminados `CurrentWeather`, `HourlyForecast`, `WeeklyForecast`, `ClimateMetrics`.
 - Pruebas: ETL 47/47, web 13/13; lint y build sin errores.
 
+### 2026-10-01 — rama `feature/pasos-fronterizos`
+- **Pasos fronterizos**: catálogo [pasos.csv](ClimAppWeb/etl/data/catalog/pasos.csv) con 37 pasos (nombre, región, coordenadas, altura y archivo/variable DMC; nombres de variables DMC irregulares, por eso el mapeo explícito). Futaleufú: la página DMC lo rotula "Río Encuentro" pero coordenadas y variable son de Futaleufú. Monte Aymond: coordenadas y altura aproximadas.
+- Migración 0008: `locations.tipo` admite `paso` y columna `altura_m`. Los pasos se pronostican con ICON pasando `elevation` (altura real) a Open-Meteo, en peticiones separadas de las comunas.
+- Alertas propias (`snapshot.alertas_paso`): nieve (≥1 cm aviso, ≥10 cm alerta), ventisca (nieve + ráfagas ≥50), viento (60/80 km/h; en altiplano ≥3.500 m: 75/95), frío extremo (≤ −10 °C), precipitación con isoterma bajo el paso. Umbrales iniciales, a calibrar.
+- Pronóstico oficial DMC ([dmc_pasos.py](ClimAppWeb/etl/src/climapp_etl/dmc_pasos.py)): 5 días por paso, isoterma, situación y emisión; job `pasos_dmc` cada 3 h → Redis `pasos_dmc`. Los archivos DMC traen nombre e IP del redactor en la primera línea: no se leen ni se guardan (quitados de las muestras de prueba).
+- Redis: `pasos` (resumen y alertas de los 37 pasos); el índice del buscador sigue solo con comunas (la ubicación GPS nunca devuelve un paso).
+- Web: `/pasos` (por región, de norte a sur, alertas y texto DMC del día) y `/paso/[slug]` (alertas, pronóstico oficial DMC, hora a hora ICON); "Pasos" en la navegación y resumen en el inicio. Estado abierto/cerrado: enlace a la Unidad de Pasos Fronterizos (no publica datos estructurados).
+- Prueba real: 37/37 pasos con pronóstico DMC; ICON y DMC coinciden en la tendencia de Los Libertadores (isoterma ~2.500–2.900 m, nieve desde el fin de semana). Pruebas ETL 56/56, web 13/13.
+- Pie: "Creador: Marco" (pedido del usuario; antes "Grupo MSinS").
+
 ---
 
 ## 8. Pendientes
@@ -230,7 +240,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 
 - [ ] **Precisión** (decidir, ver [plan](docs/precision-evaluacion.md#5-plan-propuesto)): P1 celda `nearest` en comunas costeras; P2 observaciones DMC y "ahora" medido; P3 corrección de sesgo y pesos por modelo (Fase 2); P4 pronóstico oficial DMC como referencia. Verificar términos de uso de la DMC y acceso desde la nube.
 
-- [ ] **Alertas de pasos fronterizos** (aprobado, siguiente): pronóstico oficial DMC por paso (archivos `datos_pasos_fronterizos_*.js`; ignorar el encabezado con nombre e IP del autor) + alertas propias con ICON en cada paso (nieve, rachas, isoterma bajo la cota del paso). Estado abierto/cerrado: el sitio de la UPF solo publica noticias → enlace al sitio oficial e investigar.
+- [x] Alertas de pasos fronterizos (2026-10-01). Pendiente: estado abierto/cerrado estructurado y calibrar umbrales. Detalle original: pronóstico oficial DMC por paso (archivos `datos_pasos_fronterizos_*.js`; ignorar el encabezado con nombre e IP del autor) + alertas propias con ICON en cada paso (nieve, rachas, isoterma bajo la cota del paso). Estado abierto/cerrado: el sitio de la UPF solo publica noticias → enlace al sitio oficial e investigar.
 - [ ] Probar en un teléfono real el inicio por ubicación (permiso, ubicación automática, última comuna guardada).
 - [ ] Tamaño del JSON v2 (~49 KB × 346 por cada publicación): revisar consumo de ancho de banda de Upstash (plan gratuito) y, si hace falta, compactar (claves cortas, quitar `rango`).
 - [ ] Validar ICON con 2–3 semanas de datos contra estaciones DMC (requiere ingerir observaciones DMC).

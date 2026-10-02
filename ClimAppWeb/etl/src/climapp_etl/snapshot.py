@@ -169,10 +169,12 @@ def build(location: dict, rows, marine, observation: dict | None, fetched_at: da
     upcoming = [(t, h) for t, h in hours.items()
                 if t >= current_hour and t.astimezone(CHILE).date() <= last_day]
     models = sorted({m for m, _, _ in rows})
+    dias = daily(rows, now.astimezone(CHILE).date(), DAYS_AHEAD)
 
     return {
         "version": SCHEMA_VERSION,
-        "ubicacion": {k: location[k] for k in ("slug", "nombre", "region", "tipo", "lat", "lon", "es_costera")},
+        "ubicacion": {**{k: location[k] for k in ("slug", "nombre", "region", "tipo", "lat", "lon", "es_costera")},
+                      "altura_m": location.get("altura_m")},
         "generado": _iso_local(now),
         "actualizado": _iso_local(fetched_at) if fetched_at else None,
         "provisional": True,          # sin corrección con observaciones hasta la Fase 2
@@ -201,9 +203,54 @@ def build(location: dict, rows, marine, observation: dict | None, fetched_at: da
             "isoterma_0": _r(h["isoterma_0"], -1),
             "nieve": _r(h["nieve"]),
         } for t, h in upcoming],
-        "dias": daily(rows, now.astimezone(CHILE).date(), DAYS_AHEAD),
+        "dias": dias,
+        "alertas": alertas_paso(dias, location.get("altura_m")) if location.get("tipo") == "paso" else [],
         "marino": marine_summary(marine, now) if location.get("es_costera") else None,
         "observacion": observation,
         "cercanas": cercanas or [],
         "fuentes": FUENTES,
     }
+
+
+# Alertas propias para pasos fronterizos (umbrales iniciales; a calibrar con la experiencia).
+NIEVE_AVISO_CM, NIEVE_ALERTA_CM = 1.0, 10.0
+VENTISCA_RAFAGA_KMH = 50
+RAFAGA_AVISO_KMH, RAFAGA_ALERTA_KMH = 60, 80
+# En el altiplano (≥ 3.500 m) el viento fuerte es habitual: umbrales más altos para no saturar.
+ALTIPLANO_M = 3500
+RAFAGA_AVISO_ALTIPLANO_KMH, RAFAGA_ALERTA_ALTIPLANO_KMH = 75, 95
+FRIO_EXTREMO_C = -10.0
+
+
+def alertas_paso(dias: list[dict], altura_m: float | None) -> list[dict]:
+    """Alertas por día para un paso a partir del resumen diario (ICON ajustado a la altura del paso).
+    nivel: 'alerta' (riesgo alto) o 'aviso'."""
+    out = []
+    altiplano = (altura_m or 0) >= ALTIPLANO_M
+    aviso_kmh = RAFAGA_AVISO_ALTIPLANO_KMH if altiplano else RAFAGA_AVISO_KMH
+    alerta_kmh = RAFAGA_ALERTA_ALTIPLANO_KMH if altiplano else RAFAGA_ALERTA_KMH
+    for d in dias:
+        nieve = d.get("nieve") or 0
+        rafaga = d.get("rafaga_max") or 0
+        tmin = d.get("temperatura_min")
+        iso = d.get("isoterma_0_min")
+        lluvia = d.get("precipitacion") or 0
+
+        def add(nivel, tipo, texto):
+            out.append({"fecha": d["fecha"], "nivel": nivel, "tipo": tipo, "texto": texto})
+
+        if nieve >= NIEVE_ALERTA_CM:
+            add("alerta", "nieve", f"Nieve intensa: {nieve:.0f} cm")
+        elif nieve >= NIEVE_AVISO_CM:
+            add("aviso", "nieve", f"Nieve: {nieve:.0f} cm")
+        if nieve > 0 and rafaga >= VENTISCA_RAFAGA_KMH:
+            add("alerta", "ventisca", f"Ventisca: nieve con ráfagas de {rafaga} km/h")
+        elif rafaga >= alerta_kmh:
+            add("alerta", "viento", f"Viento muy fuerte: ráfagas de {rafaga} km/h")
+        elif rafaga >= aviso_kmh:
+            add("aviso", "viento", f"Viento fuerte: ráfagas de {rafaga} km/h")
+        if tmin is not None and tmin <= FRIO_EXTREMO_C:
+            add("aviso", "frio", f"Frío extremo: mínima de {tmin:.0f} °C")
+        if (altura_m and iso is not None and iso < altura_m and lluvia >= 1 and nieve < NIEVE_AVISO_CM):
+            add("aviso", "hielo", f"Precipitación con isoterma 0 °C bajo el paso ({iso:.0f} m): posible nieve o hielo")
+    return out
