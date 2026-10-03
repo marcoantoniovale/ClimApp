@@ -292,6 +292,9 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Corregido: la lluvia diaria contaba GFS como 0 mm y mostraba la mitad.
 - Pie: "Pronóstico de los modelos ICON … y ECMWF IFS …". Base: 68 MB. Pruebas ETL 87.
 
+### 2026-10-03 — rama `docs/localidades`
+- Pedido del usuario: localidades y barrios con pronóstico propio (microclimas; Loncura se parece más a Ventanas que a Quintero) e historial más pequeño. Propuesta en [docs/localidades-propuesta.md](docs/localidades-propuesta.md).
+- Hallazgos: en Quintero/Puchuncaví el algoritmo usa una sola estación; la red CQP del MMA (SINCA) tiene 13 estaciones nuevas con temperatura en la zona (Loncura MMA, Super Sitio Ventanas, etc.). En la tarde Loncura se parece más a Ventanas que a Quintero; Valle Alegre (interior, 4,9 km) difiere 1,4 °C. **El archivo de pronósticos crece ~6 MB/día desde que se sumaron ECMWF y Yr: con la retención actual la base llegaría a ~790 MB en 2 meses.**
 ### 2026-10-03 — rama `feature/l0-historial` (localidades, etapa L0)
 - Aprobado por el usuario: L0 + L1, todo Chile, L2 con cuota gratuita, atribución OSM. Pidió limpieza cada vez que se cumple el plazo de cada historial y seguir evaluando cuánto historial guardar según la capacidad.
 - **Retención** ([jobs.py](ClimAppWeb/etl/src/climapp_etl/jobs.py) `RETENTION`): archivo de pronósticos 30 días (1 vez al día, cada 6 h, 0–48 h), observaciones 60, registro del error 35, `ingestion_runs` 30, validación 365. **Limpieza cada hora** (job `mantencion`), que además informa el tamaño de cada tabla en `ingestion_runs` (para decidir el historial según la capacidad). Proyección estable ~175 MB.
@@ -342,6 +345,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] **Publicidad** (evaluada 2026-10-02): decidir paso a uso comercial (plan comercial de Open-Meteo, Vercel Pro, términos DMC/SINCA); luego componente de patrocinios con interruptor.
 - [ ] Comparar Yr vs mezcla vs ICON con 2–3 semanas de `forecast_archive` (temperatura, lluvia, viento) y decidir si Yr entra a la mezcla.
 - [ ] Revisar periódicamente el tamaño por tabla (detalle del job `mantencion` en `ingestion_runs`) y ajustar `RETENTION` según la capacidad (pedido del usuario).
+- [ ] **Localidades (propuesta, por aprobar)**: L0 (catálogo SINCA 61 → 74 y retención menor; urgente por el crecimiento del archivo), L1 (localidades como puntos con ajuste local), L2 (modelo propio para localidades lejanas; depende del plan de Open-Meteo), L3 (memoria del sesgo más corta). Ver [docs/localidades-propuesta.md](docs/localidades-propuesta.md). Reemplaza al pendiente "Búsqueda por localidades".
 - [ ] Opcional: Vercel Speed Insights (velocidad real en celulares).
 
 ### Investigación
