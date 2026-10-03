@@ -38,6 +38,7 @@ COMMANDS = {
     "dmc": jobs.dmc_observations,
     "dmc_historial": jobs.dmc_history,
     "sinca": jobs.sinca_observations,
+    "sinca_catalogo": jobs.sinca_catalog,
     "residuos": jobs.residuals,
     "residuos_reconstruir": lambda conn: jobs.residuals(conn, reconstruir_dias=5),
     "correccion": jobs.corrections,

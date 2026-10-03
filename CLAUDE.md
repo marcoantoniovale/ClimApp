@@ -292,6 +292,12 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Corregido: la lluvia diaria contaba GFS como 0 mm y mostraba la mitad.
 - Pie: "Pronóstico de los modelos ICON … y ECMWF IFS …". Base: 68 MB. Pruebas ETL 87.
 
+### 2026-10-03 — rama `feature/l0-historial` (localidades, etapa L0)
+- Aprobado por el usuario: L0 + L1, todo Chile, L2 con cuota gratuita, atribución OSM. Pidió limpieza cada vez que se cumple el plazo de cada historial y seguir evaluando cuánto historial guardar según la capacidad.
+- **Retención** ([jobs.py](ClimAppWeb/etl/src/climapp_etl/jobs.py) `RETENTION`): archivo de pronósticos 30 días (1 vez al día, cada 6 h, 0–48 h), observaciones 60, registro del error 35, `ingestion_runs` 30, validación 365. **Limpieza cada hora** (job `mantencion`), que además informa el tamaño de cada tabla en `ingestion_runs` (para decidir el historial según la capacidad). Proyección estable ~175 MB.
+- **SINCA en la base** (migración 0013, `stations.serie`): job `sinca_catalogo` semanal descubre estaciones con temperatura vigente y desactiva las que dejan de publicar; el CSV queda como semilla. 61 → 74 estaciones (13 de la red CQP en Quintero, Puchuncaví y Concón, incluida Loncura MMA). Carga de 5 días y registro del error recalculado: 210 estaciones.
+- Pruebas ETL 88.
+
 ---
 
 ## 8. Pendientes
@@ -326,15 +332,16 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Algoritmo ClimApp: revisar la validación diaria (`select fecha, metricas from algoritmo_validacion order by fecha desc`) y recalibrar con 2–3 semanas (el sesgo inicial es dentro de muestra); probar el sesgo con `forecast_archive` a 24–72 h.
 - [ ] Verificar que SINCA responde desde GitHub Actions (job `sinca_obs` en `ingestion_runs`).
 - [ ] INIA (agrometeorologia.cl, 210 estaciones): revisar términos y acceso a datos; sumarla si es posible.
-- [ ] SINCA: volver a correr `scripts/build_sinca.py` cada algunos meses (series nuevas o dadas de baja).
+- [x] SINCA: catálogo renovado cada semana por el job `sinca_catalogo` (2026-10-03).
 - [ ] Mediciones cada 15 min (hoy cada hora, al minuto 59): GitHub Actions privado tiene 2.000 min/mes y ya se usan ~720–1.400; evaluar otro ejecutor (repo público, Supabase Edge Function, Cloudflare Worker).
 - [ ] **Búsqueda por localidades** (evaluada 2026-10-01, ver bitácora): índice estático de localidades OSM → comuna (nivel caseríos + barrios de comunas no urbanas, ~114–176 KB gzip, carga diferida al escribir), mostrar "Loncura · pronóstico de Quintero", desambiguar nombres repetidos, atribución ODbL. Validar contra entidades pobladas INE 2017.
 
-- [x] Retención de observaciones: **180 días** (decisión del usuario, 2026-10-01). Con el archivo de pronósticos 2 veces al día por 90 días, la base se estabiliza en ~387 MB (77 % de 500 MB).
+- [x] Retención de observaciones: 180 días (2026-10-01) → **60 días** (2026-10-03, L0). Con el archivo de pronósticos 2 veces al día por 90 días, la base se estabiliza en ~387 MB (77 % de 500 MB).
 - [ ] Opcional: archivo de pronósticos 1 vez al día → ~283 MB (57 %), si hace falta más margen.
 
 - [ ] **Publicidad** (evaluada 2026-10-02): decidir paso a uso comercial (plan comercial de Open-Meteo, Vercel Pro, términos DMC/SINCA); luego componente de patrocinios con interruptor.
 - [ ] Comparar Yr vs mezcla vs ICON con 2–3 semanas de `forecast_archive` (temperatura, lluvia, viento) y decidir si Yr entra a la mezcla.
+- [ ] Revisar periódicamente el tamaño por tabla (detalle del job `mantencion` en `ingestion_runs`) y ajustar `RETENTION` según la capacidad (pedido del usuario).
 - [ ] Opcional: Vercel Speed Insights (velocidad real en celulares).
 
 ### Investigación

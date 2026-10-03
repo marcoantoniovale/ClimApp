@@ -18,9 +18,9 @@ from .db import last_success, track_run
 log = logging.getLogger("climapp_etl")
 
 FORECAST_DAYS = 7
-ARCHIVE_DAYS = 4            # los días cuentan desde las 00:00 UTC; 4 cubren 72 h desde cualquier hora
-ARCHIVE_HORIZON = timedelta(hours=72)
-ARCHIVE_STEP_HOURS = 3
+ARCHIVE_DAYS = 3            # los días cuentan desde las 00:00 UTC; 3 cubren 48 h desde cualquier hora
+ARCHIVE_HORIZON = timedelta(hours=48)
+ARCHIVE_STEP_HOURS = 6
 
 # Frecuencias objetivo; el modo "auto" las aplica según la última corrida exitosa,
 # así tolera retrasos del disparador.
@@ -36,19 +36,23 @@ VALIDATION_EVERY = timedelta(hours=20)  # validación del algoritmo ClimApp (una
 RESIDUOS_HORAS = 48                    # horas hacia atrás que revisa el registro de errores
 DMC_MAX_AGE = timedelta(hours=3)       # lecturas más antiguas del mapa DMC no se guardan
 PUBLICA_EN_WEB = {"snapshots", "armada_avisos", "pasos_dmc", "residuos"}   # tras ellos, renovar la web
-ARCHIVE_EVERY = timedelta(hours=12)
-MAINTENANCE_EVERY = timedelta(hours=24)
+ARCHIVE_EVERY = timedelta(hours=24)
+MAINTENANCE_EVERY = timedelta(hours=1)   # limpieza cada hora: cada historial se borra apenas cumple su plazo
+SINCA_CATALOGO_EVERY = timedelta(days=7)
 MARGIN = timedelta(minutes=30)
 
-# Retención (ver db/migrations/0003_retencion.sql). Observaciones: 180 días desde el 2026-10-01.
+# Retención (docs/localidades-propuesta.md §5; aprobada por el usuario el 2026-10-03). Se revisa según
+# la capacidad disponible: el job `mantencion` informa el tamaño de cada tabla en ingestion_runs.
 RETENTION = {
-    "forecast_archive": timedelta(days=90),
-    "observations": timedelta(days=180),     # 180 días (decisión del usuario, 2026-10-01)
+    "forecast_archive": timedelta(days=30),     # ICON, ECMWF y Yr en las estaciones (~1,1 MB/día)
+    "observations": timedelta(days=60),         # ~0,8 MB/día
     "observations_raw": timedelta(days=14),
-    "ingestion_runs": timedelta(days=90),
-    "station_residuals": timedelta(days=45),    # el sesgo usa 30 días (~0,7 MB/día)
+    "ingestion_runs": timedelta(days=30),
+    "station_residuals": timedelta(days=35),    # el sesgo usa 30 días (~0,8 MB/día)
     "algoritmo_validacion": timedelta(days=365),
 }
+TABLAS_INFORME = ["forecast_current", "forecast_archive", "observations", "station_residuals",
+                  "location_snapshots", "forecast_marine", "ingestion_runs"]
 
 CURRENT_COLUMNS = ["location_id", "modelo", "valid_time", "fetched_at", *open_meteo.COLUMNS]
 ARCHIVE_COLUMNS = ["station_id", "modelo", "issued_at", "valid_time", *open_meteo.ARCHIVE_VARIABLES.values()]
@@ -495,9 +499,12 @@ def dmc_history(conn: psycopg.Connection) -> None:
 def sinca_observations(conn: psycopg.Connection) -> None:
     """Temperatura horaria de las estaciones SINCA con temperatura (catálogo) → stations + observations."""
     with track_run(conn, "sinca_obs") as run:
-        catalogo = sinca.cargar_catalogo()
+        catalogo = [sinca.Estacion(r[0].removeprefix("sinca-"), r[1].removesuffix(" (SINCA)"), "", r[2], r[3], r[4])
+                    for r in conn.execute("""select id, nombre, lat, lon, serie from stations
+                                             where red = 'sinca' and activa and serie is not null""")]
+        catalogo = catalogo or sinca.cargar_catalogo()   # primera vez: la semilla del repositorio
         if not catalogo:
-            raise RuntimeError("Sin catálogo SINCA (scripts/build_sinca.py)")
+            raise RuntimeError("Sin catálogo SINCA (job sinca_catalogo o scripts/build_sinca.py)")
         now = datetime.now(timezone.utc)
 
         def leer(est: sinca.Estacion):
@@ -510,8 +517,7 @@ def sinca_observations(conn: psycopg.Connection) -> None:
             resultados = list(pool.map(leer, catalogo))
         errores = [f"{e.nombre}: {exc}" for e, _, exc in resultados if exc]
         with conn.transaction():
-            _upsert_stations(conn, "sinca", [{"id": e.id, "nombre": f"{e.nombre} (SINCA)", "lat": e.lat,
-                                              "lon": e.lon} for e in catalogo])
+            _guardar_sinca(conn, catalogo)
             with conn.cursor() as cur:
                 cur.executemany("""insert into observations (station_id, observed_at, temperatura) values (%s, %s, %s)
                                    on conflict (station_id, observed_at) do nothing""",
@@ -522,6 +528,30 @@ def sinca_observations(conn: psycopg.Connection) -> None:
         if len(errores) == len(catalogo):
             raise RuntimeError("SINCA no respondió")
         log.info("SINCA: %d estaciones, %d lecturas nuevas, %d con error", len(catalogo), run.filas, len(errores))
+
+
+def _guardar_sinca(conn: psycopg.Connection, catalogo: list[sinca.Estacion]) -> None:
+    _upsert_stations(conn, "sinca", [{"id": e.id, "nombre": f"{e.nombre} (SINCA)", "lat": e.lat, "lon": e.lon}
+                                     for e in catalogo])
+    with conn.cursor() as cur:
+        cur.executemany("update stations set serie = %s, activa = true where id = %s",
+                        [(e.serie, e.id) for e in catalogo])
+
+
+def sinca_catalog(conn: psycopg.Connection) -> None:
+    """Renueva el catálogo SINCA (estaciones con temperatura vigente) en `stations`. Las que dejan de
+    publicar temperatura quedan inactivas (sus datos se conservan hasta que vence su retención)."""
+    with track_run(conn, "sinca_catalogo") as run:
+        estaciones, total = sinca.descubrir()
+        if len(estaciones) < 20:   # protección: una respuesta rota no debe desactivar la red
+            raise RuntimeError(f"SINCA entregó solo {len(estaciones)} estaciones con temperatura")
+        with conn.transaction():
+            _guardar_sinca(conn, estaciones)
+            bajas = conn.execute("update stations set activa = false where red = 'sinca' and activa and id <> all(%s)",
+                                 ([e.id for e in estaciones],)).rowcount
+        run.filas = len(estaciones)
+        run.detalle.append(f"{len(estaciones)} con temperatura de {total}; {bajas} desactivadas")
+        log.info("catálogo SINCA: %d estaciones con temperatura de %d, %d desactivadas", len(estaciones), total, bajas)
 
 
 def _completar_alturas(conn: psycopg.Connection, budget: open_meteo.MinuteBudget) -> None:
@@ -755,15 +785,18 @@ def maintenance(conn: psycopg.Connection) -> None:
             params = (cutoff, run.id) if name == "ingestion_runs" else (cutoff,)
             counts[name] = conn.execute(sql, params).rowcount
         size = conn.execute("select pg_size_pretty(pg_database_size(current_database()))").fetchone()[0]
+        tablas = {t: round(conn.execute("select pg_total_relation_size(%s)", (t,)).fetchone()[0] / 1e6, 1)
+                  for t in TABLAS_INFORME}
         run.filas = sum(counts.values())
-        run.detalle.append(f"{counts}; tamaño de la base: {size}")
-        log.info("mantención: %s; base %s", counts, size)
+        run.detalle.append(f"borradas: {counts}")
+        run.detalle.append(f"tamaño: base {size}; MB por tabla {tablas}")
+        log.info("mantención: borradas %s; base %s; MB por tabla %s", counts, size, tablas)
 
 
 def auto(conn: psycopg.Connection, with_observations: bool = True) -> None:
     """Lo que corresponda según la última corrida exitosa: observaciones siempre,
-    pronóstico por modelo al publicarse una corrida nueva, archivo cada 12 h, avisos cada hora,
-    precálculo tras cada pronóstico y mantención cada 24 h. Pensado para un disparo horario.
+    pronóstico por modelo al publicarse una corrida nueva, archivo cada 24 h, avisos cada hora,
+    precálculo tras cada pronóstico y limpieza (retención) cada hora. Pensado para un disparo horario.
 
     with_observations=False: la API de observaciones de la Armada bloquea las redes de nube
     (GitHub Actions/Azure, AWS); ahí las observaciones se recolectan desde un equipo en Chile."""
@@ -773,6 +806,7 @@ def auto(conn: psycopg.Connection, with_observations: bool = True) -> None:
     jobs = [("open_meteo", forecast, "por_corrida"),
             ("open_meteo_archivo", archive, ARCHIVE_EVERY),
             ("dmc_obs", dmc_observations, None),
+            ("sinca_catalogo", sinca_catalog, SINCA_CATALOGO_EVERY),
             ("sinca_obs", sinca_observations, None),
             ("residuos", residuals, None),
             ("correccion", corrections, CORRECTION_EVERY),
