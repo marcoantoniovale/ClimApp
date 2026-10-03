@@ -5,8 +5,9 @@ algoritmo ClimApp, sobre todo en ciudades donde la DMC tiene pocas estaciones (p
 Santiago).
 
 - Catálogo: `listadomapa2k19` (estaciones con coordenadas) y la página de cada estación, de donde se
-  toma la serie de temperatura vigente (`./RM/D14/Met/TEMP//horario_003.ic`). Se genera con
-  scripts/build_sinca.py en data/catalog/estaciones_sinca.csv.
+  toma la serie de temperatura vigente (`./RM/D14/Met/TEMP//horario_003.ic`). El job `sinca_catalogo`
+  lo renueva cada semana en la base (stations.serie); data/catalog/estaciones_sinca.csv
+  (scripts/build_sinca.py) es la semilla y el respaldo.
 - Datos: exportación CSV de Airviro (`apub.tsindico2.cgi?outtype=xcl`), promedio horario.
   Hora rotulada al INICIO del período, en hora estándar UTC−4 fija (sin horario de verano): verificado
   el 2026-10-01 contra Quinta Normal (DMC); la serie de Parque O'Higgins calza desfasada una hora
@@ -18,6 +19,7 @@ from __future__ import annotations
 import csv
 import re
 import urllib.parse
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -55,6 +57,35 @@ def serie_temperatura(pagina: str) -> tuple[str, str] | None:
         return None
     hasta, macro = max(series)
     return macro, hasta
+
+
+def descubrir(get_json=None, get_text=None, vigencia_dias: int = 30) -> tuple[list[Estacion], int]:
+    """Estaciones de SINCA con temperatura actualizada en los últimos `vigencia_dias` días.
+    Devuelve (estaciones, total del listado). Lee el listado del mapa y la página de cada estación."""
+    get_json = get_json or http.get_json
+    get_text = get_text or http.get_text
+    listado = get_json(LISTADO_URL)
+    vigente = (datetime.now(timezone.utc) - timedelta(days=vigencia_dias)).astimezone(HORA_SINCA).strftime("%y%m%d")
+
+    def serie(est: dict):
+        try:
+            return est, serie_temperatura(get_text(ESTACION_URL.format(key=est["key"])))
+        except Exception:  # una estación caída no detiene el catálogo
+            return est, None
+
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        encontradas = [(est, s) for est, s in pool.map(serie, listado) if s and s[1] >= vigente]
+    estaciones = [Estacion(str(e["key"]), e["nombre"].strip(), e["comuna"], round(float(e["latitud"]), 5),
+                           round(float(e["longitud"]), 5), s[0]) for e, s in encontradas]
+    return sorted(estaciones, key=lambda e: (-e.lat, e.key)), len(listado)
+
+
+def guardar_catalogo(estaciones: list[Estacion], path: Path = CATALOGO) -> None:
+    with path.open("w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=["key", "nombre", "comuna", "lat", "lon", "serie"])
+        w.writeheader()
+        w.writerows({"key": e.key, "nombre": e.nombre, "comuna": e.comuna, "lat": f"{e.lat:.5f}",
+                     "lon": f"{e.lon:.5f}", "serie": e.serie} for e in estaciones)
 
 
 def cargar_catalogo(path: Path = CATALOGO) -> list[Estacion]:

@@ -11,12 +11,25 @@ key,nombre,comuna,lat,lon,serie
 426,Coquimbo,Coquimbo,-29.97039,-71.33604,./RIV/426/Met/TEMP//horario_010.ic
 420,Andacollo,Andacollo,-30.22777,-71.08613,./RIV/420/Met/TEMP//horario_010.ic
 424,Cuncumen,Salamanca,-31.88928,-70.62931,./RIV/424/Met/TEMP//horario_010.ic
+568,Maitencillo MMA,Puchuncaví,-32.68495,-71.43301,./RV/568/Met/TEMP//horario_003.ic
+563,Puchuncavi Centro MMA,Puchuncaví,-32.72568,-71.41893,./RV/563/Met/TEMP//horario_003.ic
+562,Escuela La Greda MMA,Puchuncaví,-32.73633,-71.46073,./RV/562/Met/TEMP//horario_003.ic
+564,Pucalan MMA,Puchuncaví,-32.75312,-71.35473,./RV/564/Met/TEMP//horario_003.ic
+565,Super Sitio Ventanas MMA,Puchuncaví,-32.75369,-71.48245,./RV/565/Met/TEMP//horario_003.ic
+572,Super Sitio Quintero MMA,Quintero,-32.77189,-71.53534,./RV/572/Met/TEMP//horario_003.ic
+566,Quintero Sur MMA,Quintero,-32.78660,-71.52365,./RV/566/Met/TEMP//horario_003.ic
+567,Loncura MMA,Quintero,-32.80276,-71.49069,./RV/567/Met/TEMP//horario_003.ic
+569,Valle Alegre MMA,Quintero,-32.81184,-71.43963,./RV/569/Met/TEMP//horario_003.ic
 532,Los Andes,Los Andes,-32.84412,-70.59213,./RV/532/Met/TEMP//horario_004.ic
+570,Mantagua MMA,Quintero,-32.86602,-71.47827,./RV/570/Met/TEMP//horario_003.ic
 512,Las Gaviotas,Concón,-32.91546,-71.48148,./RV/512/Met/TEMP//horario_000.ic
 509,Concón,Concón,-32.92457,-71.51540,./RV/509/Met/TEMP//horario_002.ic
 560,Concón Bomberos MMA,Concón,-32.92611,-71.51212,./RV/560/Met/TEMP//horario_003.ic
 511,Colmo,Concón,-32.92955,-71.44057,./RV/511/Met/TEMP//horario_000.ic
+571,Super Sitio ConCon MMA,Concón,-32.93313,-71.51709,./RV/571/Met/TEMP//horario_003.ic
 535,Junta de Vecinos,Concón,-32.93517,-71.52577,./RV/535/Met/TEMP//horario_000.ic
+573,ConCon Oeste MMA,Concón,-32.93560,-71.54149,./RV/573/Met/TEMP//horario_003.ic
+561,Puente Colmo MMA,Concón,-32.93657,-71.43993,./RV/561/Met/TEMP//horario_003.ic
 529,Viña del Mar,Viña del Mar,-33.02042,-71.55009,./RV/529/Met/TEMP//horario_010.ic
 D30,Quilicura,Quilicura,-33.34963,-70.72379,./RM/D30/Met/TEMP//horario_003.ic
 D13,Las Condes (Acreditada),Las Condes,-33.37677,-70.52333,./RM/D13/Met/TEMP//horario_003.ic
