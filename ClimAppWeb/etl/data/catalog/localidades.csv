@@ -1525,10 +1525,13 @@ llay-llay,las-penas,Las Peñas,village,-32.87152,-70.92413,405,4.6
 llay-llay,llaillay,Llaillay,town,-32.84297,-70.95265,389,1.5
 llay-llay,los-loros,Los Loros,village,-32.86007,-70.89548,415,6.7
 llay-llay,santa-rosa,Santa Rosa,village,-32.87696,-70.95426,395,3.2
+lo-barnechea,corral-quemado,Corral Quemado,hamlet,-33.35043,-70.36545,1298,14.0
 lo-barnechea,el-golf-de-manquehue,El Golf de Manquehue,neighbourhood,-33.33848,-70.55562,867,3.8
 lo-barnechea,el-huinganal,El Huinganal,neighbourhood,-33.34148,-70.50986,895,1.1
+lo-barnechea,farellones,Farellones,hamlet,-33.3508,-70.31294,2422,18.9
 lo-barnechea,jardin-la-dehesa,Jardín La Dehesa,neighbourhood,-33.3655,-70.52942,810,2.1
 lo-barnechea,la-ermita,La Ermita,neighbourhood,-33.36493,-70.50473,818,2.0
+lo-barnechea,la-parva,La Parva,hamlet,-33.33559,-70.29,2741,21.1
 lo-barnechea,las-pataguas,Las Pataguas,neighbourhood,-33.35161,-70.53455,831,1.7
 lo-barnechea,lomas-de-la-dehesa,Lomas de La Dehesa,neighbourhood,-33.34295,-70.52719,864,1.3
 lo-barnechea,los-hornitos,Los Hornitos,locality,-33.28229,-70.30401,2386,21.1
@@ -1543,6 +1546,7 @@ lo-barnechea,pueblito-de-lo-barnechea,Pueblito de Lo Barnechea,neighbourhood,-33
 lo-barnechea,santuario-del-valle,Santuario del Valle,neighbourhood,-33.32301,-70.54809,884,4.2
 lo-barnechea,valle-escondido,Valle Escondido,neighbourhood,-33.34728,-70.49045,953,2.5
 lo-barnechea,valle-la-dehesa,Valle La Dehesa,neighbourhood,-33.33039,-70.51983,937,2.2
+lo-barnechea,valle-nevado,Valle Nevado,hamlet,-33.35435,-70.24916,2991,24.9
 lo-espejo,jose-maria-caro-rodriguez,José María Caro Rodríguez,neighbourhood,-33.51594,-70.69799,528,2.6
 lo-espejo,pueblo-lo-espejo,Pueblo Lo Espejo,neighbourhood,-33.53197,-70.69404,542,2.1
 loncoche,huiscapi,Huiscapi,village,-39.29747,-72.40293,253,21.3
@@ -1585,6 +1589,7 @@ los-andes,codelco-andina,Codelco Andina,locality,-33.14446,-70.25873,3538,46.9
 los-andes,el-juncal,El Juncal,locality,-32.86667,-70.16667,2123,40.5
 los-andes,el-penon,El Peñón,locality,-32.87902,-70.20933,1907,36.7
 los-andes,el-sauce,El Sauce,village,-32.83805,-70.53781,903,5.7
+los-andes,guardia-vieja,Guardia Vieja,hamlet,-32.9031,-70.26886,1604,31.7
 los-andes,jardin-de-los-villares,Jardín de los Villares,neighbourhood,-32.83083,-70.62257,792,2.3
 los-andes,la-pulperia,La Pulpería,locality,-32.89119,-70.22461,1776,35.5
 los-andes,laderas-de-santa-rosa,Laderas de Santa Rosa,neighbourhood,-32.85592,-70.58412,838,2.8
@@ -1594,7 +1599,9 @@ los-andes,ojos-de-agua,Ojos de Agua,locality,-32.86235,-70.17332,2117,39.8
 los-andes,parada-caracoles,Parada Caracoles,locality,-32.83757,-70.09212,3087,47.3
 los-andes,paso-internacional-los-libertadores,Paso Internacional Los Libertadores,locality,-32.82819,-70.09264,3174,47.2
 los-andes,piscicultura,Piscicultura,neighbourhood,-32.93208,-70.28265,1542,31.4
+los-andes,portillo,Portillo,hamlet,-32.83642,-70.12908,2875,43.8
 los-andes,rio-blanco,Río Blanco,village,-32.90968,-70.30387,1417,28.8
+los-andes,saladillo,Saladillo,hamlet,-32.94622,-70.27317,1657,32.8
 los-andes,sendero-de-los-andes,Sendero de Los Andes,neighbourhood,-32.81724,-70.61332,796,2.3
 los-andes,valle-andino,Valle Andino,neighbourhood,-32.84219,-70.58284,839,1.7
 los-angeles,almirante-latorre,Almirante Latorre,neighbourhood,-37.45876,-72.35273,141,1.3
@@ -1646,6 +1653,7 @@ lumaco,tranaman,Tranamán,locality,-38.26014,-72.9935,297,14.0
 machali,adobes-de-nogales,Adobes de Nogales,neighbourhood,-34.20211,-70.6669,584,2.6
 machali,camino-a-machali,Camino a Machalí,suburb,-34.17313,-70.68474,534,3.3
 machali,cerrillos,Cerrillos,locality,-34.25,-70.4,1119,24.3
+machali,chapa-verde,Chapa Verde,hamlet,-34.05041,-70.43383,2286,24.8
 machali,coya,Coya,village,-34.20469,-70.53098,837,11.3
 machali,ecoparque-las-palmas,Ecoparque Las Palmas,neighbourhood,-34.17255,-70.64935,552,1.1
 machali,el-alamo,El Álamo,neighbourhood,-34.20208,-70.51615,833,12.6
@@ -1664,6 +1672,7 @@ machali,nogales,Nogales,suburb,-34.20861,-70.65789,595,3.0
 machali,parque-san-andres,Parque San Andrés,neighbourhood,-34.17096,-70.67257,536,2.4
 machali,portones-de-machali,Portones de Machalí,neighbourhood,-34.16192,-70.66729,525,2.7
 machali,sewell,Sewell,village,-34.08488,-70.38294,2140,27.0
+machali,termas-de-cauquenes,Termas de Cauquenes,hamlet,-34.24675,-70.55701,769,11.2
 macul,los-husares,Los Húsares,neighbourhood,-33.49132,-70.6096,563,1.0
 mafil,pidey,Pidey,neighbourhood,-39.66306,-72.95577,25,1.5
 mafil,renacer,Renacer,neighbourhood,-39.66247,-72.94889,26,1.4
@@ -2200,6 +2209,7 @@ pinto,el-rosal,El Rosal,village,-36.72035,-71.84906,325,5.1
 pinto,fundo-castillo,Fundo Castillo,locality,-36.87746,-71.6153,983,32.1
 pinto,fundo-entrepiernas,Fundo Entrepiernas,locality,-36.81729,-71.74579,711,18.9
 pinto,fundo-trelenca,Fundo Trelenca,locality,-36.81672,-71.76345,648,17.8
+pinto,las-trancas,Las Trancas,hamlet,-36.91479,-71.4957,1229,43.2
 pinto,las-vertientes,Las Vertientes,village,-36.73266,-71.83136,346,7.1
 pinto,los-lleuques,Los Lleuques,village,-36.85467,-71.64452,776,28.5
 pinto,millalemu,Millalemu,locality,-36.83501,-71.6863,689,24.2
@@ -2437,6 +2447,7 @@ puerto-varas,colonos-del-lago-llanquihue,Colonos del Lago Llanquihue,neighbourho
 puerto-varas,costa-del-lago,Costa del Lago,neighbourhood,-41.3106,-72.91811,72,5.5
 puerto-varas,el-bosque-de-puerto-varas-etapa-1,El Bosque de Puerto Varas Etapa 1,neighbourhood,-41.33256,-72.82288,168,13.4
 puerto-varas,el-bosque-de-puerto-varas-etapa-5,El Bosque de Puerto Varas Etapa 5,neighbourhood,-41.33111,-72.80792,187,14.7
+puerto-varas,ensenada,Ensenada,hamlet,-41.20819,-72.53867,55,39.1
 puerto-varas,graneros-de-puerto-varas,Graneros de Puerto Varas,neighbourhood,-41.38128,-72.94957,115,7.6
 puerto-varas,la-codicia,La Codicia,locality,-41.33461,-72.4113,75,47.8
 puerto-varas,la-foresta-de-puerto-varas,La Foresta de Puerto Varas,neighbourhood,-41.3978,-72.96571,95,9.0
@@ -2456,6 +2467,7 @@ puerto-varas,parque-residencial-santa-ines,Parque Residencial Santa Inés,neighb
 puerto-varas,parque-stocker,Parque Stocker,neighbourhood,-41.31448,-72.93974,76,3.6
 puerto-varas,parque-tres-puentes,Parque Tres Puentes,neighbourhood,-41.3279,-72.79041,203,16.1
 puerto-varas,parque-westfalia,Parque Westfalia,neighbourhood,-41.32966,-73.00237,119,2.1
+puerto-varas,peulla,Peulla,hamlet,-41.08709,-72.02089,196,84.5
 puerto-varas,puerto-chico,Puerto Chico,neighbourhood,-41.32816,-72.96053,48,2.2
 puerto-varas,reflejos-del-lago,Reflejos del Lago,neighbourhood,-41.23111,-72.57934,66,35.1
 pumanque,nilahue-cornejo,Nilahue Cornejo,village,-34.65977,-71.74005,91,9.4
@@ -2940,6 +2952,7 @@ san-javier-de-loncomilla,villavicencio,Villavicencio,village,-35.59339,-71.88778
 san-joaquin,la-legua-vieja,La Legua Vieja,neighbourhood,-33.49227,-70.63566,551,2.0
 san-jose-de-maipo,alfalfal,Alfalfal,locality,-34.07947,-70.09584,2034,55.6
 san-jose-de-maipo,banos-del-tupungato,Baños del Tupungato,locality,-33.35301,-69.89841,3024,53.5
+san-jose-de-maipo,banos-morales,Baños Morales,hamlet,-33.82288,-70.06102,1853,35.3
 san-jose-de-maipo,confluencia,Confluencia,locality,-33.75758,-69.97256,3275,39.0
 san-jose-de-maipo,corrales,Corrales,locality,-33.50087,-70.39952,1974,15.0
 san-jose-de-maipo,el-cabrerio,El Cabrerío,locality,-33.81491,-70.008,2381,38.8
@@ -2948,8 +2961,10 @@ san-jose-de-maipo,el-manzanito,El Manzanito,locality,-33.76623,-70.16718,1600,23
 san-jose-de-maipo,el-melocoton,El Melocotón,neighbourhood,-33.69837,-70.33437,1020,7.8
 san-jose-de-maipo,el-nocedal,El Nocedal,neighbourhood,-33.60702,-70.3489,966,3.4
 san-jose-de-maipo,el-paso,El Paso,locality,-33.47078,-70.31867,2601,18.6
+san-jose-de-maipo,el-volcan,El Volcán,hamlet,-33.81538,-70.16881,1405,27.3
 san-jose-de-maipo,las-pataguas,Las Pataguas,neighbourhood,-33.64929,-70.35496,958,2.1
 san-jose-de-maipo,las-vertientes,Las Vertientes,neighbourhood,-33.58839,-70.46696,815,10.5
+san-jose-de-maipo,lo-valdes,Lo Valdés,hamlet,-33.82738,-70.06281,1796,35.4
 san-jose-de-maipo,los-chacayes,Los Chacayes,locality,-33.73333,-70.16667,2245,21.6
 san-jose-de-maipo,puente-salinillas,Puente Salinillas,locality,-33.49435,-70.13856,1591,26.2
 san-jose-de-maipo,puerta-de-marcelo,Puerta de Marcelo,locality,-33.50054,-70.20324,1446,21.1

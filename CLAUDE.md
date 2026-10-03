@@ -308,6 +308,7 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Web: [lib/lugar.ts](ClimAppWeb/web/src/lib/lugar.ts), `/lugar/[comuna]/[slug]`, `/api/lugar/...`, buscador con localidades (carga diferida de `localidades.json`, 75 KB comprimido; también se carga al escribir), GPS a la localidad más cercana, enlaces entre localidades, atribución OSM en el pie. Probado en Chrome sin interfaz: búsqueda (Loncura, Horcón, Valle Alegre, Maitencillo · Puchuncaví), Enter → `/lugar/puchuncavi/horcon`, inicio con lugar guardado y GPS simulado en Loncura.
 - Agoté la cuota horaria de Open-Meteo en pruebas locales (límite por IP; producción no afectada).
 - Pruebas: ETL 93, web 23.
+- Ajuste (rama `feature/localidades-montana`): en OSM, Farellones, Baños Morales, El Volcán y otros lugares de montaña son caseríos (hamlet, excluidos). Se agregaron 15 a mano en `localidades_extra.csv` (3.599 localidades). El generador reutiliza las alturas ya calculadas (solo pide las nuevas).
 
 ---
 
@@ -354,6 +355,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Comparar Yr vs mezcla vs ICON con 2–3 semanas de `forecast_archive` (temperatura, lluvia, viento) y decidir si Yr entra a la mezcla.
 - [ ] Revisar periódicamente el tamaño por tabla (detalle del job `mantencion` en `ingestion_runs`) y ajustar `RETENTION` según la capacidad (pedido del usuario).
 - [x] **Localidades** L0, L1 y L2 implementadas (2026-10-03). Pendiente: L3 (memoria del sesgo más corta, según la validación) y que el usuario compare Loncura/Ventanas en terreno.
+- [ ] Localidades: evaluar incluir caseríos (hamlet, 14.578) con gran diferencia de altura con su cabecera (≥ 400 m); requiere la altura de cada uno (~14.600 llamadas a la API de elevación, repartidas en varios días).
 - [ ] Localidades: renovar el catálogo de OSM cada algunos meses (`python scripts/build_localidades.py`; Overpass puede responder 504) y ampliar `localidades_extra.csv` con lugares que pidan los usuarios.
 - [ ] Vigilar la cuota diaria de Open-Meteo (~9.000 de 10.000 estimadas): si aparecen errores 429 en `ingestion_runs`, espaciar `localidades_perfil` o el archivo.
 - [ ] Opcional: Vercel Speed Insights (velocidad real en celulares).
