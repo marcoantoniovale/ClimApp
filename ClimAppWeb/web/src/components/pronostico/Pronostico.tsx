@@ -35,7 +35,7 @@ export default function Pronostico({ p, etiqueta }: { p: PronosticoConAvisos & {
 
   return (
     <div className="space-y-4">
-      <Ahora nombre={p.ubicacion.nombre} region={p.ubicacion.region} etiqueta={etiqueta}
+      <Ahora nombre={p.ubicacion.nombre} region={p.ubicacion.region} comuna={p.ubicacion.comuna?.nombre} etiqueta={etiqueta}
         ahora={ahora} horas={base} hoy={hoy} observacion={p.observacion} ancla={p.ancla} />
 
       <WarningList avisos={p.avisos} />
@@ -69,6 +69,32 @@ export default function Pronostico({ p, etiqueta }: { p: PronosticoConAvisos & {
       </section>
 
       {p.ubicacion.es_costera && <MarineForecast marino={p.marino} />}
+
+      {p.localidades && p.localidades.length > 0 && (
+        <section aria-labelledby="localidades">
+          <h2 id="localidades" className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-400">
+            {p.ubicacion.comuna ? `Otras localidades de ${p.ubicacion.comuna.nombre}` : `Localidades de ${p.ubicacion.nombre}`}
+          </h2>
+          <ul className="flex flex-wrap gap-2">
+            {p.ubicacion.comuna && (
+              <li>
+                <Link href={`/comuna/${p.ubicacion.comuna.slug}`}
+                  className="block rounded-full border border-climapp-line bg-climapp-card/70 px-3 py-1.5 text-sm font-medium hover:border-climapp-teal hover:text-white">
+                  {p.ubicacion.comuna.nombre} <span className="text-xs text-slate-400">comuna</span>
+                </Link>
+              </li>
+            )}
+            {p.localidades.map((l) => (
+              <li key={l.slug}>
+                <Link href={`/lugar/${p.ubicacion.comuna?.slug ?? p.ubicacion.slug}/${l.slug}`}
+                  className="block rounded-full border border-climapp-line bg-climapp-card/70 px-3 py-1.5 text-sm hover:border-climapp-teal hover:text-white">
+                  {l.nombre}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {p.cercanas && p.cercanas.length > 0 && (
         <section aria-labelledby="cercanas">

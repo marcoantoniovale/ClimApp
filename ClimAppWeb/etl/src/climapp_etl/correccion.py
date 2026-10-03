@@ -136,29 +136,36 @@ def sesgos(residuos: list[tuple[datetime, float]], ahora: datetime) -> dict[int,
 # ---------------------------------------------------------------------------
 # 4. Interpolación por cuadrantes
 
+def _peso(d: float, e: dict, altura: float | None) -> float:
+    w = 1 / (d + D0_KM) ** 2
+    if altura is not None and e.get("altura") is not None:
+        w *= math.exp(-abs(e["altura"] - altura) / ALTURA_ESCALA_M)
+    return w
+
+
 def interpolar(lat: float, lon: float, altura: float | None, costera: bool, estaciones: list[dict],
                excluir: str | None = None) -> dict | None:
-    """Valor en un punto desde las estaciones [{id, nombre, lat, lon, altura, costera, valor}].
+    """Valor en un punto desde las estaciones [{id, nombre, lat, lon, altura, costera, valor}], solo de la misma
+    zona (costa/interior). En cada cuadrante gana la de mayor peso (distancia y altura).
+    (Ponderar por distancia al mar con Natural Earth 1:10M no mejoró la validación: 1,040 vs 1,026 °C.)
     Devuelve {valor, estaciones: [{nombre, km, peso}]} o None si no hay estaciones útiles."""
-    cuadrantes: dict[int, tuple[float, dict]] = {}
+    cuadrantes: dict[int, tuple[float, float, dict]] = {}
     cos = math.cos(math.radians(lat))
     for e in estaciones:
-        if e.get("valor") is None or e["costera"] != costera or e["id"] == excluir:
+        if e.get("valor") is None or e["id"] == excluir:
+            continue
+        if e["costera"] != costera:
             continue
         d = km(lat, lon, e["lat"], e["lon"])
         if d > RADIO_KM:
             continue
+        w = _peso(d, e, altura)
         q = (e["lat"] >= lat) * 2 + ((e["lon"] - lon) * cos >= 0)
-        if q not in cuadrantes or d < cuadrantes[q][0]:
-            cuadrantes[q] = (d, e)
+        if q not in cuadrantes or w > cuadrantes[q][0]:
+            cuadrantes[q] = (w, d, e)
     if not cuadrantes:
         return None
-    pesos = []
-    for d, e in cuadrantes.values():
-        w = 1 / (d + D0_KM) ** 2
-        if altura is not None and e.get("altura") is not None:
-            w *= math.exp(-abs(e["altura"] - altura) / ALTURA_ESCALA_M)
-        pesos.append((w, d, e))
+    pesos = list(cuadrantes.values())
     total = sum(w for w, _, _ in pesos)
     valor = sum(w * e["valor"] for w, _, e in pesos) / (total + PESO_CERO)
     pesos.sort(key=lambda x: -x[0])
