@@ -110,9 +110,17 @@ def main(sin_red: bool = False) -> None:
         usados[e["comuna"]].add(slug)
         e["slug"] = slug
 
-    alturas = open_meteo.elevations([open_meteo.Point(i, e["lat"], e["lon"]) for i, e in enumerate(elegidos)])
+    # Altura: se reutiliza la del catálogo anterior y solo se piden a Open-Meteo los lugares nuevos.
+    previas = {}
+    if (CATALOG / "localidades.csv").exists():
+        previas = {(r["lat"], r["lon"]): r["altura"] for r in csv.DictReader((CATALOG / "localidades.csv").open(encoding="utf-8"))
+                   if r["altura"]}
+    faltan = [i for i, e in enumerate(elegidos) if (f"{e['lat']}", f"{e['lon']}") not in previas]
+    alturas = open_meteo.elevations([open_meteo.Point(i, elegidos[i]["lat"], elegidos[i]["lon"]) for i in faltan]) if faltan else {}
     for i, e in enumerate(elegidos):
-        e["altura"] = round(alturas[i]) if i in alturas else ""
+        previa = previas.get((f"{e['lat']}", f"{e['lon']}"))
+        e["altura"] = previa if previa is not None else (round(alturas[i]) if i in alturas else "")
+    print(f"alturas: {len(elegidos) - len(faltan)} reutilizadas, {len(faltan)} nuevas")
 
     elegidos.sort(key=lambda e: (e["comuna"], e["slug"]))
     campos = ["comuna", "slug", "nombre", "tipo", "lat", "lon", "altura", "km_cabecera"]
