@@ -21,6 +21,10 @@ export default function Footer() {
         <a href="https://meteoarmada.directemar.cl" className="underline hover:text-white" rel="noopener">
           Servicio Meteorológico de la Armada de Chile
         </a>
+        . Localidades y barrios: ©{" "}
+        <a href="https://www.openstreetmap.org/copyright" className="underline hover:text-white" rel="noopener">
+          colaboradores de OpenStreetMap
+        </a>
         . Ante una emergencia, siga siempre los avisos oficiales.
       </p>
 

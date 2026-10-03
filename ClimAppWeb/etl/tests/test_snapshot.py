@@ -145,3 +145,15 @@ def test_lluvia_diaria_no_cuenta_modelos_sin_lluvia():
     dia = snapshot.daily(rows, NOW.astimezone(snapshot.CHILE).date(), 2)[0]
     assert dia["precipitacion"] == pytest.approx(0.5 * len([r for r in rows[:24]
                                                            if r[1].astimezone(snapshot.CHILE).date() == NOW.astimezone(snapshot.CHILE).date()]))
+
+
+def test_gfs_solo_dos_veces_al_dia():
+    from climapp_etl.jobs import pending_models
+    from climapp_etl.open_meteo import Run
+
+    h = lambda hour: datetime(2026, 10, 1, hour, tzinfo=timezone.utc)
+    runs = {"gfs": Run(h(18), h(21)), "ecmwf": Run(h(12), h(20)), "icon": Run(h(12), h(20))}
+    reciente = {"gfs": (h(12), h(19)), "ecmwf": (h(12), h(20)), "icon": (h(12), h(20))}
+    assert pending_models(reciente, runs, now=h(22)) == []                      # GFS nuevo, pero hace 3 h
+    luego = reciente | {m: (h(12), h(22) + timedelta(hours=7)) for m in ("icon", "ecmwf")}
+    assert pending_models(luego, runs, now=h(22) + timedelta(hours=8)) == ["gfs"]   # pasaron 11 h

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { desdeAhora, type PronosticoConAvisos } from "@/lib/data";
-import { ErrorUbicacion, ubicacionGuardada, ubicarComuna } from "@/lib/ubicacion";
+import { apiDe, type Destino, ErrorUbicacion, ubicacionGuardada, ubicar as ubicarDestino } from "@/lib/ubicacion";
 
 import Search from "../Search";
 import Pronostico from "./Pronostico";
@@ -14,8 +14,8 @@ type Estado =
   | { tipo: "listo"; p: PronosticoConAvisos; etiqueta: string }
   | { tipo: "error"; mensaje: string };
 
-async function cargarPronostico(slug: string): Promise<PronosticoConAvisos> {
-  const res = await fetch(`/api/forecast/${slug}`);
+async function cargarPronostico(destino: Destino): Promise<PronosticoConAvisos> {
+  const res = await fetch(apiDe(destino));
   if (!res.ok) throw new Error(String(res.status));
   return desdeAhora(await res.json());
 }
@@ -36,10 +36,10 @@ function IconoUbicacion({ className = "h-5 w-5" }: { className?: string }) {
 export default function Inicio() {
   const [estado, setEstado] = useState<Estado>({ tipo: "inicial" });
 
-  async function mostrar(slug: string, etiqueta: string, nombre?: string) {
-    if (nombre) setEstado({ tipo: "buscando", texto: `Cargando el tiempo en ${nombre}…` });
+  async function mostrar(destino: Destino, etiqueta: string) {
+    setEstado({ tipo: "buscando", texto: `Cargando el tiempo en ${destino.nombre}…` });
     try {
-      setEstado({ tipo: "listo", p: await cargarPronostico(slug), etiqueta });
+      setEstado({ tipo: "listo", p: await cargarPronostico(destino), etiqueta });
     } catch {
       setEstado({ tipo: "error", mensaje: "No pudimos cargar el pronóstico. Intenta de nuevo en unos segundos." });
     }
@@ -48,8 +48,7 @@ export default function Inicio() {
   async function ubicar() {
     setEstado({ tipo: "buscando", texto: "Buscando tu ubicación…" });
     try {
-      const comuna = await ubicarComuna();
-      await mostrar(comuna.slug, "Tu ubicación", comuna.nombre);
+      await mostrar(await ubicarDestino(), "Tu ubicación");
     } catch (e) {
       setEstado({ tipo: "error", mensaje: e instanceof ErrorUbicacion ? e.message : "No pudimos obtener tu ubicación." });
     }
@@ -60,7 +59,7 @@ export default function Inicio() {
     queueMicrotask(() => {
       if (cancelado) return;
       const guardada = ubicacionGuardada();
-      if (guardada) mostrar(guardada.slug, guardada.origen === "busqueda" ? "Tu comuna guardada" : "Tu ubicación", guardada.nombre);
+      if (guardada) mostrar(guardada, guardada.origen === "busqueda" ? "Tu lugar guardado" : "Tu ubicación");
       else ubicar();
     });
     return () => {

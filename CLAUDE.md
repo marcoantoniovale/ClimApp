@@ -301,6 +301,14 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - **SINCA en la base** (migración 0013, `stations.serie`): job `sinca_catalogo` semanal descubre estaciones con temperatura vigente y desactiva las que dejan de publicar; el CSV queda como semilla. 61 → 74 estaciones (13 de la red CQP en Quintero, Puchuncaví y Concón, incluida Loncura MMA). Carga de 5 días y registro del error recalculado: 210 estaciones.
 - Pruebas ETL 88.
 
+### 2026-10-03 — rama `feature/localidades` (etapas L1 y L2)
+- **3.584 localidades y barrios** de OSM en todo Chile ([build_localidades.py](ClimAppWeb/etl/scripts/build_localidades.py), `localidades.csv`, `localidades_extra.csv` con Valle Alegre). Fuente OSM guardada en `data/sources/osm_lugares.tsv` (Overpass dio 504; se usó la descarga del 2026-10-01).
+- ETL: [localidades.py](ClimAppWeb/etl/src/climapp_etl/localidades.py); jobs `localidades` (cada hora, clave `lugares:<comuna>`) y `localidades_perfil` (diario, L2). Migración 0014: `station_forecast` (pronóstico de estaciones guardado: ~10.000 → ~1.800 llamadas/día a Open-Meteo) y `localidad_perfil`. GFS 2 veces al día. En cada cuadrante gana la estación de mayor peso (distancia y altura).
+- Probado y descartado: ponderar costa/interior por distancia al mar (Natural Earth): validación 1,040 vs 1,026 °C.
+- Web: [lib/lugar.ts](ClimAppWeb/web/src/lib/lugar.ts), `/lugar/[comuna]/[slug]`, `/api/lugar/...`, buscador con localidades (carga diferida de `localidades.json`, 75 KB comprimido; también se carga al escribir), GPS a la localidad más cercana, enlaces entre localidades, atribución OSM en el pie. Probado en Chrome sin interfaz: búsqueda (Loncura, Horcón, Valle Alegre, Maitencillo · Puchuncaví), Enter → `/lugar/puchuncavi/horcon`, inicio con lugar guardado y GPS simulado en Loncura.
+- Agoté la cuota horaria de Open-Meteo en pruebas locales (límite por IP; producción no afectada).
+- Pruebas: ETL 93, web 23.
+
 ---
 
 ## 8. Pendientes
@@ -337,7 +345,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] INIA (agrometeorologia.cl, 210 estaciones): revisar términos y acceso a datos; sumarla si es posible.
 - [x] SINCA: catálogo renovado cada semana por el job `sinca_catalogo` (2026-10-03).
 - [ ] Mediciones cada 15 min (hoy cada hora, al minuto 59): GitHub Actions privado tiene 2.000 min/mes y ya se usan ~720–1.400; evaluar otro ejecutor (repo público, Supabase Edge Function, Cloudflare Worker).
-- [ ] **Búsqueda por localidades** (evaluada 2026-10-01, ver bitácora): índice estático de localidades OSM → comuna (nivel caseríos + barrios de comunas no urbanas, ~114–176 KB gzip, carga diferida al escribir), mostrar "Loncura · pronóstico de Quintero", desambiguar nombres repetidos, atribución ODbL. Validar contra entidades pobladas INE 2017.
+- [x] **Búsqueda por localidades** (implementada 2026-10-03 con L1; evaluada 2026-10-01, ver bitácora): índice estático de localidades OSM → comuna (nivel caseríos + barrios de comunas no urbanas, ~114–176 KB gzip, carga diferida al escribir), mostrar "Loncura · pronóstico de Quintero", desambiguar nombres repetidos, atribución ODbL. Validar contra entidades pobladas INE 2017.
 
 - [x] Retención de observaciones: 180 días (2026-10-01) → **60 días** (2026-10-03, L0). Con el archivo de pronósticos 2 veces al día por 90 días, la base se estabiliza en ~387 MB (77 % de 500 MB).
 - [ ] Opcional: archivo de pronósticos 1 vez al día → ~283 MB (57 %), si hace falta más margen.
@@ -345,7 +353,9 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] **Publicidad** (evaluada 2026-10-02): decidir paso a uso comercial (plan comercial de Open-Meteo, Vercel Pro, términos DMC/SINCA); luego componente de patrocinios con interruptor.
 - [ ] Comparar Yr vs mezcla vs ICON con 2–3 semanas de `forecast_archive` (temperatura, lluvia, viento) y decidir si Yr entra a la mezcla.
 - [ ] Revisar periódicamente el tamaño por tabla (detalle del job `mantencion` en `ingestion_runs`) y ajustar `RETENTION` según la capacidad (pedido del usuario).
-- [ ] **Localidades (propuesta, por aprobar)**: L0 (catálogo SINCA 61 → 74 y retención menor; urgente por el crecimiento del archivo), L1 (localidades como puntos con ajuste local), L2 (modelo propio para localidades lejanas; depende del plan de Open-Meteo), L3 (memoria del sesgo más corta). Ver [docs/localidades-propuesta.md](docs/localidades-propuesta.md). Reemplaza al pendiente "Búsqueda por localidades".
+- [x] **Localidades** L0, L1 y L2 implementadas (2026-10-03). Pendiente: L3 (memoria del sesgo más corta, según la validación) y que el usuario compare Loncura/Ventanas en terreno.
+- [ ] Localidades: renovar el catálogo de OSM cada algunos meses (`python scripts/build_localidades.py`; Overpass puede responder 504) y ampliar `localidades_extra.csv` con lugares que pidan los usuarios.
+- [ ] Vigilar la cuota diaria de Open-Meteo (~9.000 de 10.000 estimadas): si aparecen errores 429 en `ingestion_runs`, espaciar `localidades_perfil` o el archivo.
 - [ ] Opcional: Vercel Speed Insights (velocidad real en celulares).
 
 ### Investigación

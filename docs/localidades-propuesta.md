@@ -1,6 +1,6 @@
 # Propuesta: localidades y barrios con pronóstico propio (microclimas)
 
-Fecha: 2026-10-03. Estado: **propuesta, por aprobar**.
+Fecha: 2026-10-03. Estado: **aprobada** (L0, L1 y L2 con cuota gratuita, todo Chile; OSM con atribución) e implementada el 2026-10-03 (ver §7).
 
 ## 1. Problema
 
@@ -95,3 +95,13 @@ Las localidades de L1 casi no ocupan espacio en la base: el catálogo de ~3.000 
 2. Alcance de L1: ¿2.629 localidades más barrios de comunas no urbanas, o empezar por la Región de Valparaíso como piloto?
 3. L2: esperar a decidir el plan comercial de Open-Meteo (ligado a la publicidad) o hacerlo con la cuota gratuita (2 veces al día, solo pueblos).
 4. Licencia: OSM es ODbL → atribución "© colaboradores de OpenStreetMap" en el pie, y el catálogo derivado queda bajo la misma licencia.
+
+## 7. Implementación (2026-10-03)
+
+- **L0:** catálogo SINCA renovado cada semana en la base (74 estaciones); retención menor con limpieza cada hora.
+- **Catálogo:** [build_localidades.py](../ClimAppWeb/etl/scripts/build_localidades.py) → `data/catalog/localidades.csv`, **3.584 localidades** (1.405 parajes, 1.249 barrios, 779 aldeas, 98 sectores, 51 pueblos y 2 ciudades) en 335 comunas, todas con altura. A mano: Valle Alegre (Quintero). Índice de búsqueda `web/public/localidades.json` (305 KB; 75 KB comprimido, se carga al escribir).
+- **Zona costa/interior:** se probó ponderar por distancia al mar (línea de costa Natural Earth 1:10M) y no mejoró la validación (1,040 vs 1,026 °C); se mantiene la zona de la comuna. Lo que captura el microclima es la estación más cercana, que domina el peso.
+- **L1:** job `localidades` (cada hora) → clave `lugares:<comuna>` con la diferencia de sesgo por franja, la altura o el perfil, la anomalía del momento y la medición más cercana. Web: `/lugar/<comuna>/<localidad>`, `/api/lugar/<comuna>/<localidad>`, buscador con localidades, GPS a la localidad más cercana dentro de la comuna (si está más cerca que la cabecera y a ≤ 3 km), localidades de cada comuna enlazadas.
+- **L2:** job `localidades_perfil` (1 vez al día): 1.897 localidades a > 8 km de su cabecera, en ~1.100 celdas de 0,1°; perfil por hora local en `localidad_perfil`.
+- **Cuota de Open-Meteo:** el error de las estaciones pedía su pronóstico cada hora (~10.000 llamadas/día, sobre el límite gratuito). Ahora se guarda en `station_forecast` y se renueva solo con corridas nuevas (~1.800/día). GFS pasa a 2 veces al día. Total estimado ~9.000/día con L2.
+- Ejemplo (3 oct): Valle Alegre (interior) queda 2,2 °C más frío de madrugada que Quintero, con su propia estación (Valle Alegre MMA, a 0,3 km); Ventanas se corrige con Super Sitio Ventanas.

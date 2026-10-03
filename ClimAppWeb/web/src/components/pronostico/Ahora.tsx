@@ -15,6 +15,7 @@ const OBS_MAX_MIN = 120; // una medición más antigua no se muestra como "actua
 export default function Ahora({
   nombre,
   region,
+  comuna,
   etiqueta,
   ahora,
   horas,
@@ -24,6 +25,8 @@ export default function Ahora({
 }: {
   nombre: string;
   region: string;
+  /** Solo localidades: nombre de su comuna. */
+  comuna?: string;
   etiqueta?: string;
   ahora: Hora | undefined;
   horas: Hora[];
@@ -50,7 +53,7 @@ export default function Ahora({
 
       {etiqueta && <p className="text-xs font-semibold uppercase tracking-wide text-climapp-teal">{etiqueta}</p>}
       <h1 id="ahora" className="text-2xl font-semibold tracking-tight">{nombre}</h1>
-      <p className="text-sm text-slate-400">{nombreRegion(region)}</p>
+      <p className="text-sm text-slate-400">{comuna ? `${comuna} · ` : ""}{nombreRegion(region)}</p>
 
       {ahora ? (
         <div className="mt-4 flex items-center gap-4">

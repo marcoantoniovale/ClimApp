@@ -3,20 +3,23 @@
 import { useRouter } from "next/navigation";
 import { type KeyboardEvent, useId, useMemo, useRef, useState } from "react";
 
-import type { UbicacionIndice } from "@/lib/data";
 import { region } from "@/lib/format";
-import { ErrorUbicacion, cargarIndice, guardarUbicacion, ubicarComuna } from "@/lib/ubicacion";
+import {
+  type Destino, ErrorUbicacion, cargarIndice, cargarLocalidades, guardarUbicacion, rutaDe, ubicar,
+} from "@/lib/ubicacion";
 
 const normalize = (s: string) =>
   s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 
-type Entry = UbicacionIndice & { key: string; aliasKey: string };
+/** Comuna o localidad del buscador. `detalle` se muestra a la derecha (región o comuna). */
+type Entry = { destino: Destino; nombre: string; detalle: string; costera?: boolean; esComuna: boolean;
+               key: string; aliasKey: string };
 
 const MAX_RESULTS = 8;
 
 type EstadoUbicacion = { estado: "inactivo" } | { estado: "buscando" } | { estado: "error"; mensaje: string };
 
-/** Buscador de comunas (combobox accesible) con opción de usar la ubicación del dispositivo. */
+/** Buscador de comunas, localidades y barrios (combobox accesible) con opción de usar la ubicación del dispositivo. */
 export default function Search({ autoFocus = false, size = "lg" }: { autoFocus?: boolean; size?: "lg" | "md" }) {
   const router = useRouter();
   const listId = useId();
@@ -28,11 +31,21 @@ export default function Search({ autoFocus = false, size = "lg" }: { autoFocus?:
   const [ubicacion, setUbicacion] = useState<EstadoUbicacion>({ estado: "inactivo" });
   const pending = useRef<Promise<Entry[] | null> | null>(null);
 
-  /** Carga el catálogo (compartido con "Usar mi ubicación"). */
+  /** Carga comunas y localidades (compartido con "Usar mi ubicación"). Sin localidades, quedan las comunas. */
   function load(): Promise<Entry[] | null> {
-    pending.current ??= cargarIndice()
-      .then((data) => {
-        const list = data.map((u) => ({ ...u, key: normalize(u.nombre), aliasKey: normalize(u.alias ?? "") }));
+    pending.current ??= Promise.all([cargarIndice(), cargarLocalidades().catch(() => [])])
+      .then(([comunas, lugares]) => {
+        const nombres = new Map(comunas.map((c) => [c.slug, c.nombre]));
+        const list: Entry[] = [
+          ...comunas.map((u) => ({
+            destino: { slug: u.slug, nombre: u.nombre }, nombre: u.nombre, detalle: region(u.region), costera: u.costera,
+            esComuna: true, key: normalize(u.nombre), aliasKey: normalize(u.alias ?? ""),
+          })),
+          ...lugares.filter((l) => nombres.has(l.c)).map((l) => ({
+            destino: { slug: l.s, nombre: l.n, comuna: { slug: l.c, nombre: nombres.get(l.c)! } }, nombre: l.n,
+            detalle: nombres.get(l.c)!, esComuna: false, key: normalize(l.n), aliasKey: "",
+          })),
+        ];
         setEntries(list);
         return list;
       })
@@ -54,7 +67,8 @@ export default function Search({ autoFocus = false, size = "lg" }: { autoFocus?:
     return entries
       .map((e) => [score(e), e] as const)
       .filter(([s]) => s < 3)
-      .sort((a, b) => a[0] - b[0] || a[1].nombre.localeCompare(b[1].nombre, "es"))
+      .sort((a, b) => a[0] - b[0] || Number(b[1].esComuna) - Number(a[1].esComuna)
+        || a[1].nombre.localeCompare(b[1].nombre, "es"))
       .slice(0, MAX_RESULTS)
       .map(([, e]) => e);
   }, [entries, query]);
@@ -63,18 +77,18 @@ export default function Search({ autoFocus = false, size = "lg" }: { autoFocus?:
     if (!entry) return;
     setOpen(false);
     setQuery(entry.nombre);
-    guardarUbicacion(entry.slug, entry.nombre, "busqueda");   // el inicio mostrará esta comuna hasta que se cambie
-    router.push(`/comuna/${entry.slug}`);
+    guardarUbicacion(entry.destino, "busqueda");   // el inicio mostrará este lugar hasta que se cambie
+    router.push(rutaDe(entry.destino));
   };
 
   /** Ubica al usuario (en el mismo clic, lo exige Safari) y abre su comuna. */
   async function usarUbicacion() {
     setUbicacion({ estado: "buscando" });
     try {
-      const comuna = await ubicarComuna();
+      const destino = await ubicar();
       setUbicacion({ estado: "inactivo" });
-      setQuery(comuna.nombre);
-      router.push(`/comuna/${comuna.slug}`);
+      setQuery(destino.nombre);
+      router.push(rutaDe(destino));
     } catch (e) {
       setUbicacion({ estado: "error", mensaje: e instanceof ErrorUbicacion ? e.message : "No pudimos obtener tu ubicación." });
     }
@@ -115,14 +129,14 @@ export default function Search({ autoFocus = false, size = "lg" }: { autoFocus?:
           aria-expanded={showList}
           aria-controls={listId}
           aria-autocomplete="list"
-          aria-activedescendant={showList && results[active] ? `${listId}-${results[active].slug}` : undefined}
+          aria-activedescendant={showList && results[active] ? `${listId}-${rutaDe(results[active].destino).replaceAll("/", "-")}` : undefined}
           autoComplete="off"
           autoFocus={autoFocus}
-          placeholder="Busca tu comuna o ciudad…"
+          placeholder="Busca tu comuna, localidad o barrio…"
           value={query}
           onFocus={() => { load(); setOpen(true); }}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
-          onChange={(e) => { setQuery(e.target.value); setActive(0); setOpen(true); }}
+          onChange={(e) => { load(); setQuery(e.target.value); setActive(0); setOpen(true); }}
           onKeyDown={onKeyDown}
           className={`w-full rounded-2xl border border-climapp-line bg-climapp-card text-slate-100 placeholder:text-slate-400 focus:border-climapp-teal focus:outline-none focus:ring-2 focus:ring-climapp-teal/40 ${big ? "py-4 pl-12 pr-14 text-lg" : "py-2.5 pl-10 pr-12 text-base"}`}
         />
@@ -148,15 +162,15 @@ export default function Search({ autoFocus = false, size = "lg" }: { autoFocus?:
       </p>
 
       {showList && (
-        <ul id={listId} role="listbox" aria-label="Comunas"
+        <ul id={listId} role="listbox" aria-label="Comunas y localidades"
           className="absolute z-40 mt-2 max-h-80 w-full overflow-auto rounded-2xl border border-climapp-line bg-climapp-card py-1 shadow-xl">
           {error && <li className="px-4 py-3 text-sm text-slate-300">No se pudo cargar el listado de comunas.</li>}
           {!error && !entries && <li className="px-4 py-3 text-sm text-slate-300">Cargando…</li>}
           {entries && results.length === 0 && <li className="px-4 py-3 text-sm text-slate-300">Sin resultados para “{query}”.</li>}
           {results.map((r, i) => (
             <li
-              key={r.slug}
-              id={`${listId}-${r.slug}`}
+              key={rutaDe(r.destino)}
+              id={`${listId}-${rutaDe(r.destino).replaceAll("/", "-")}`}
               role="option"
               aria-selected={i === active}
               onMouseDown={(e) => { e.preventDefault(); go(r); }}
@@ -164,7 +178,7 @@ export default function Search({ autoFocus = false, size = "lg" }: { autoFocus?:
               className={`flex cursor-pointer items-baseline justify-between gap-3 px-4 py-2.5 ${i === active ? "bg-climapp-line/70" : ""}`}
             >
               <span className="font-medium text-slate-100">{r.nombre}</span>
-              <span className="truncate text-xs text-slate-400">{r.costera ? "Costa · " : ""}{region(r.region)}</span>
+              <span className="truncate text-xs text-slate-400">{r.costera ? "Costa · " : ""}{r.detalle}</span>
             </li>
           ))}
         </ul>

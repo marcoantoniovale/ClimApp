@@ -1,5 +1,6 @@
 // Tipos y acceso a los datos precalculados por el ETL (ver ClimAppWeb/etl/src/climapp_etl/snapshot.py).
 
+import { diasDe, horasDe, type LugaresPayload } from "./lugar";
 import { getJson, type ReadOptions } from "./redis";
 
 export type Aviso = {
@@ -101,7 +102,9 @@ export type AnclaUbicacion = { anomalia: number; hora: string; tau_h: number; es
 export type Pronostico = {
   version: number;
   ubicacion: { slug: string; nombre: string; region: string; tipo: string; lat: number; lon: number; es_costera: boolean;
-               altura_m?: number | null };
+               altura_m?: number | null;
+               /** Solo localidades: su comuna. */
+               comuna?: { slug: string; nombre: string } };
   generado: string;
   actualizado: string | null;
   provisional: boolean;
@@ -120,7 +123,19 @@ export type Pronostico = {
   correccion?: { aplicada: boolean; estaciones: { nombre: string; km: number }[]; franjas: Record<string, number> };
 };
 
-export type PronosticoConAvisos = Pronostico & { avisos: AvisoUbicacion[]; ancla?: AnclaUbicacion | null };
+export type LocalidadEnlace = { slug: string; nombre: string };
+
+export type PronosticoConAvisos = Pronostico & {
+  avisos: AvisoUbicacion[];
+  ancla?: AnclaUbicacion | null;
+  /** Localidades y barrios de la comuna (para navegar entre ellas). */
+  localidades?: LocalidadEnlace[];
+};
+
+const enlaces = (lugares: LugaresPayload | null): LocalidadEnlace[] =>
+  Object.entries(lugares?.lugares ?? {})
+    .map(([slug, l]) => ({ slug, nombre: l.nombre }))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -138,15 +153,40 @@ function avisosDe(avisos: AvisosPayload | null, slug: string): AvisoUbicacion[] 
 
 /** Pronóstico de una ubicación con sus avisos vigentes, o null si no existe. */
 export async function getPronostico(slug: string, options?: ReadOptions): Promise<PronosticoConAvisos | null> {
-  const [pronostico, avisos, algoritmo] = await getJson<[Pronostico, AvisosPayload, AlgoritmoPayload]>(
-    [`loc:${slug}`, "avisos", "algoritmo"], options);
+  const [pronostico, avisos, algoritmo, lugares] = await getJson<[Pronostico, AvisosPayload, AlgoritmoPayload, LugaresPayload]>(
+    [`loc:${slug}`, "avisos", "algoritmo", `lugares:${slug}`], options);
   if (!pronostico) return null;
   const ajuste = algoritmo?.comunas?.[slug];
   const ancla = ajuste?.anomalia != null && ajuste.hora
     ? { anomalia: ajuste.anomalia, hora: ajuste.hora, tau_h: algoritmo!.tau_h, estaciones: ajuste.estaciones ?? [] }
     : null;
   return { ...pronostico, observacion: masReciente(pronostico.observacion, ajuste?.medicion), ancla,
-           avisos: avisosDe(avisos, slug) };
+           avisos: avisosDe(avisos, slug), localidades: enlaces(lugares) };
+}
+
+/**
+ * Pronóstico de una localidad o barrio: el de su comuna con el ajuste propio de la localidad
+ * (lib/lugar.ts). null si la comuna o la localidad no existen.
+ */
+export async function getLugar(comuna: string, slug: string, options?: ReadOptions): Promise<PronosticoConAvisos | null> {
+  const [pronostico, avisos, lugares] = await getJson<[Pronostico, AvisosPayload, LugaresPayload]>(
+    [`loc:${comuna}`, "avisos", `lugares:${comuna}`], options);
+  const l = lugares?.lugares?.[slug];
+  if (!pronostico || !l) return null;
+  return {
+    ...pronostico,
+    ubicacion: { ...pronostico.ubicacion, slug, nombre: l.nombre, lat: l.lat, lon: l.lon, tipo: "localidad",
+                 altura_m: l.altura, comuna: { slug: comuna, nombre: pronostico.ubicacion.nombre } },
+    horas: horasDe(pronostico.horas, l),
+    dias: diasDe(pronostico.dias, pronostico.horas, l),
+    observacion: l.medicion ? { estacion: l.medicion.estacion, red: l.medicion.red ?? "", hora: l.medicion.hora,
+                                temperatura: l.medicion.temperatura, humedad: null, presion: null,
+                                viento: l.medicion.viento ?? null, viento_dir: null, km: l.medicion.km } : null,
+    ancla: l.anomalia != null && l.hora
+      ? { anomalia: l.anomalia, hora: l.hora, tau_h: lugares!.tau_h, estaciones: l.estaciones ?? [] } : null,
+    avisos: avisosDe(avisos, comuna),
+    localidades: enlaces(lugares).filter((x) => x.slug !== slug),
+  };
 }
 
 /** La medición más nueva: la del JSON de la comuna o la de `algoritmo` (se publica cada hora). */

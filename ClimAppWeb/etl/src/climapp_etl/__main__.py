@@ -40,6 +40,8 @@ COMMANDS = {
     "sinca": jobs.sinca_observations,
     "sinca_catalogo": jobs.sinca_catalog,
     "residuos": jobs.residuals,
+    "localidades": jobs.localities,
+    "localidades_perfil": jobs.localities_profiles,
     "residuos_reconstruir": lambda conn: jobs.residuals(conn, reconstruir_dias=5),
     "correccion": jobs.corrections,
     "revalidar": lambda conn: print("web renovada" if web.revalidar() else "la web no respondió"),
