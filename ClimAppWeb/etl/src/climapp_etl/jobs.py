@@ -967,10 +967,11 @@ def auto(conn: psycopg.Connection, with_observations: bool = True) -> None:
                 continue
             log.info("%s: corridas nuevas de %s", name, ", ".join(models))
             job = functools.partial(forecast, models=models, runs=runs or None)
-        elif every == "tras_pronostico":   # solo si hay un pronóstico o una corrección más nuevos
+        elif every == "tras_pronostico":   # si hay un pronóstico o una corrección más nuevos, o cambió el día
             forecast_at = max(filter(None, [last_success(conn, "open_meteo"), last_success(conn, "correccion")]),
                               default=None)
-            if last and forecast_at and last > forecast_at:
+            mismo_dia = last and last.astimezone(snapshot.CHILE).date() == now.astimezone(snapshot.CHILE).date()
+            if last and forecast_at and last > forecast_at and mismo_dia:
                 log.info("%s: no corresponde (sin pronóstico nuevo)", name)
                 continue
         elif every and last and now - last < every - MARGIN:

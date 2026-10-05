@@ -218,21 +218,7 @@ export async function getMeta(options?: ReadOptions) {
   return meta;
 }
 
-/**
- * El JSON se regenera con cada corrida: separa las horas ya pasadas (antes de la hora actual).
- * `horasPrevias` (hasta 3) no se muestran, pero la estimación minuto a minuto las usa para comparar
- * la última medición con la curva del pronóstico en ese instante.
- */
-export function desdeAhora<T extends Pronostico>(p: T, ahora: Date = new Date()): T & { horasPrevias: Hora[] } {
-  const inicio = new Date(ahora);
-  inicio.setMinutes(0, 0, 0);
-  const t = inicio.getTime();
-  return {
-    ...p,
-    horas: p.horas.filter((h) => Date.parse(h.hora) >= t),
-    horasPrevias: p.horas.filter((h) => Date.parse(h.hora) < t).slice(-3),
-  };
-}
+export { desdeAhora } from "./vigencia";
 
 // ---------------------------------------------------------------------------
 // Pasos fronterizos

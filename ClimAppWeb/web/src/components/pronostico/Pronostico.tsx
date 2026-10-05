@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useId, useState, useSyncExternalStore } from "react";
 
-import type { Hora, PronosticoConAvisos } from "@/lib/data";
+import { desdeAhora, type Hora, type PronosticoConAvisos } from "@/lib/data";
 import { diaLargo, duracion, fechaLocal, grados, hora, oracion } from "@/lib/format";
 import { ajustarDias, ajustarHoras, minutoActual, minutoServidor, suscribirMinuto } from "@/lib/ahora";
 import { salidaPuesta } from "@/lib/sol";
@@ -19,11 +19,14 @@ import Horas from "./Horas";
  * pronóstico hora a hora, sol, oleaje y comunas cercanas. La usan el inicio (ubicación del usuario) y
  * la página de cada comuna. `p.horas` debe venir desde la hora actual.
  */
-export default function Pronostico({ p, etiqueta }: { p: PronosticoConAvisos & { horasPrevias?: Hora[] }; etiqueta?: string }) {
+export default function Pronostico({ p: recibido, etiqueta }: { p: PronosticoConAvisos & { horasPrevias?: Hora[] }; etiqueta?: string }) {
   const [dia, setDia] = useState(0);
   const panelId = useId();
-  // Algoritmo ClimApp: horas, máximas y mínimas parten de las mediciones del momento (lib/ahora.ts).
   const minuto = useSyncExternalStore(suscribirMinuto, minutoActual, minutoServidor);
+  // En el navegador se vuelve a separar lo ya pasado con la hora real: la página puede venir de caché
+  // (p. ej. generada antes de medianoche, con el día anterior todavía primero).
+  const p = minuto != null ? desdeAhora(recibido, new Date(minuto)) : recibido;
+  // Algoritmo ClimApp: horas, máximas y mínimas parten de las mediciones del momento (lib/ahora.ts).
   const base = [...(p.horasPrevias ?? []), ...p.horas];
   const horas = minuto != null ? ajustarHoras(p.horas, p.ancla, minuto) : p.horas;
   const dias = (minuto != null ? ajustarDias(p.dias, p.horas, p.ancla, minuto, fechaLocal) : p.dias).slice(0, 7);

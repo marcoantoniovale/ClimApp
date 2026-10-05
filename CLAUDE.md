@@ -317,6 +317,12 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Resultado en Quintero: llovizna a las 16 h y lluvia desde las 21 h (antes 22 h), en línea con Yr.
 - Pruebas ETL 95. Sin validación contra lluvia medida todavía (pendiente).
 
+### 2026-10-06 — rama `fix/dias-medianoche`
+- Bug reportado por el usuario (2 días seguidos): entre las 00:00 y las 01:00 el pronóstico por hora decía "Sin datos para este día". Causa: el JSON se genera con la fecha del momento (antes de medianoche) y la web solo descartaba las horas pasadas, no los días: el día anterior quedaba primero y seleccionado, sin horas.
+- Web: `desdeAhora` (movido a [lib/vigencia.ts](ClimAppWeb/web/src/lib/vigencia.ts), sin dependencias, con prueba) quita también los días terminados; `Pronostico` lo vuelve a aplicar en el navegador con la hora real (la página puede venir de caché generada antes de medianoche).
+- ETL: el precálculo se rehace cuando cambia el día aunque no haya corrida nueva (entre 00:00 y 00:59 se ven 6 días hasta la ingesta de las 00:59).
+- Verificado en Chrome con el reloj adelantado a las 00:46: producción mostraba "Lun 5" (día anterior) seleccionado; la versión corregida parte en "Hoy" con la hora 00:00. Pruebas web 24, ETL 95.
+
 ---
 
 ## 8. Pendientes
