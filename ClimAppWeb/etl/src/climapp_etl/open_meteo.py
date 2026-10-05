@@ -49,11 +49,15 @@ MODEL_VARIABLES = {
         "pressure_msl": "presion",
         "freezing_level_height": "isoterma_0",
     },
-    # Mezcla de temperatura (algoritmo ClimApp): ICON + ECMWF IFS 9 km por partes iguales; el precálculo
-    # promedia por hora los modelos presentes. Medido en 197 estaciones (docs/precision-evaluacion.md §8).
+    # Mezcla (algoritmo ClimApp): ICON + ECMWF IFS 9 km por partes iguales; el precálculo promedia por hora
+    # los modelos presentes. Temperatura medida en 197 estaciones (docs/precision-evaluacion.md §8); lluvia
+    # en consenso desde el 2026-10-05 (ICON sola atrasaba el inicio respecto de los demás modelos).
     "ecmwf": {
         "temperature_2m": "temperatura",
         "apparent_temperature": "sensacion_termica",
+        "precipitation": "precipitacion",
+        "precipitation_probability": "precip_prob",
+        "weather_code": "estado_cielo",
     },
     "gfs": {  # complementarias: ICON no las calcula
         "uv_index": "indice_uv",

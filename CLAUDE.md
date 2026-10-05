@@ -310,6 +310,13 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Pruebas: ETL 93, web 23.
 - Ajuste (rama `feature/localidades-montana`): en OSM, Farellones, Baños Morales, El Volcán y otros lugares de montaña son caseríos (hamlet, excluidos). Se agregaron 15 a mano en `localidades_extra.csv` (3.599 localidades). El generador reutiliza las alturas ya calculadas (solo pide las nuevas).
 
+### 2026-10-05 — rama `fix/lluvia-hora-consenso`
+- Reclamo del usuario: en Loncura, Yr marca lluvia a las 15 h y Meteored a las 17 h; ClimApp, a las 22 h.
+- Causa 1 (sistemática): Open-Meteo rotula la lluvia, su probabilidad, la nieve y el código del cielo con la hora en que **termina** el período; Yr y Meteored, con la hora en que **empieza**. ClimApp mostraba toda la lluvia una hora tarde (y la de 23 a 24 h caía en el día siguiente). `snapshot.a_hora_de_inicio` la corre una hora antes.
+- Causa 2: la lluvia salía solo de ICON, el más tardío ese día (inicio por modelo: ECMWF 17 h aislado, Météo-France 19, GFS 20, ICON 22, JMA 22, GEM 23, UKMO 00). Ahora ECMWF también aporta lluvia, probabilidad y código del cielo, y se promedian con ICON (cielo: el más severo). Sin costo de cuota (≤ 10 variables).
+- Resultado en Quintero: llovizna a las 16 h y lluvia desde las 21 h (antes 22 h), en línea con Yr.
+- Pruebas ETL 95. Sin validación contra lluvia medida todavía (pendiente).
+
 ---
 
 ## 8. Pendientes
@@ -358,6 +365,8 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Localidades: evaluar incluir caseríos (hamlet, 14.578) con gran diferencia de altura con su cabecera (≥ 400 m); requiere la altura de cada uno (~14.600 llamadas a la API de elevación, repartidas en varios días).
 - [ ] Localidades: renovar el catálogo de OSM cada algunos meses (`python scripts/build_localidades.py`; Overpass puede responder 504) y ampliar `localidades_extra.csv` con lugares que pidan los usuarios.
 - [ ] Vigilar la cuota diaria de Open-Meteo (~9.000 de 10.000 estimadas): si aparecen errores 429 en `ingestion_runs`, espaciar `localidades_perfil` o el archivo.
+- [ ] **Validar la lluvia**: guardar lluvia medida (series RAIN de SINCA; revisar si la DMC la publica) y medir inicio y montos de ICON, ECMWF, la mezcla y Yr (ya archivado en `forecast_archive`).
+- [ ] Mostrar el rango de inicio de la lluvia entre modelos ("lluvia probable desde las 19–22 h"), vista de fiabilidad RF05.3.
 - [ ] Opcional: Vercel Speed Insights (velocidad real en celulares).
 
 ### Investigación

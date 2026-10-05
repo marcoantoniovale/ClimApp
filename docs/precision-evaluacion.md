@@ -162,3 +162,9 @@ Validación con la mezcla (14.876 h): base 1,24 °C → sin estación 1,04 °C; 
 **Comparación con Yr:** el pronóstico real de Yr (API Locationforecast de MET Norway, CC BY 4.0) se guarda dos veces al día en las estaciones (`forecast_archive`, modelo `yr`), junto con ICON y ECMWF, a 0–72 h. Con 2–3 semanas se compara temperatura, lluvia y viento.
 
 Corregido además: la lluvia diaria promediaba como 0 mm los modelos que no la pronostican (GFS), y mostraba la mitad (Santiago, 2 oct: 2,3 en vez de 4,6 mm).
+
+## 9. Lluvia: hora y consenso (2026-10-05)
+
+- Open-Meteo entrega `precipitation`, `precipitation_probability`, `snowfall` y `weather_code` como valores de la **hora anterior** (la lluvia de 15 a 16 h viene rotulada 16:00). Yr (`next_1_hours`) y Meteored rotulan por la hora que empieza. Desde ahora el JSON usa la hora de inicio (`snapshot.a_hora_de_inicio`).
+- La lluvia era solo de ICON. Ejemplo del 5 oct en Loncura (inicio ≥ 0,2 mm): ECMWF 17 h (aislado), Météo-France 19, GFS 20, ICON 22, JMA 22, GEM 23, UKMO 00; Yr: chubasco de 0,3 mm entre las 15–17 h y lluvia desde las 21 h. Ahora la lluvia es el promedio de ICON y ECMWF (probabilidad promedio; cielo: el código más severo).
+- Pendiente: validar con lluvia medida (no hay mediciones de lluvia guardadas todavía).
