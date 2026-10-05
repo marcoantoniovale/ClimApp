@@ -157,3 +157,22 @@ def test_gfs_solo_dos_veces_al_dia():
     assert pending_models(reciente, runs, now=h(22)) == []                      # GFS nuevo, pero hace 3 h
     luego = reciente | {m: (h(12), h(22) + timedelta(hours=7)) for m in ("icon", "ecmwf")}
     assert pending_models(luego, runs, now=h(22) + timedelta(hours=8)) == ["gfs"]   # pasaron 11 h
+
+
+def test_lluvia_rotulada_por_la_hora_que_empieza():
+    t0 = NOW.replace(minute=0)
+    rows = [("icon", t0, {"temperatura": 15.0, "precipitacion": 0.0, "precip_prob": 5, "estado_cielo": 3}),
+            ("icon", t0 + timedelta(hours=1), {"temperatura": 14.0, "precipitacion": 0.3, "precip_prob": 60, "estado_cielo": 61})]
+    out = snapshot.a_hora_de_inicio(rows)
+    assert out[0][2] == {"temperatura": 15.0, "precipitacion": 0.3, "precip_prob": 60, "estado_cielo": 61}
+    assert out[1][2]["temperatura"] == 14.0 and out[1][2]["precipitacion"] is None   # sin hora siguiente
+    gfs = snapshot.a_hora_de_inicio([("gfs", t0, {"indice_uv": 3.0})])
+    assert gfs[0][2] == {"indice_uv": 3.0}                                           # no agrega columnas
+
+
+def test_lluvia_de_consenso_entre_modelos():
+    t0 = NOW.replace(minute=0)
+    h = snapshot.consensus_hours([("icon", t0, {"precipitacion": 0.0, "precip_prob": 10, "estado_cielo": 3}),
+                                  ("ecmwf", t0, {"precipitacion": 0.4, "precip_prob": 30, "estado_cielo": 61})])[t0]
+    assert h["precipitacion"] == pytest.approx(0.2) and h["precip_prob"] == pytest.approx(20)
+    assert h["estado_cielo"] == 61                                                   # el más severo

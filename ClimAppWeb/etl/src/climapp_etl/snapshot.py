@@ -1,9 +1,13 @@
 """Precálculo: JSON por ubicación listo para la API (docs/fase1-mapeo-requisitos.md §4.6).
 
-Temperatura y sensación térmica: mezcla de ICON y ECMWF IFS (promedio por hora; máximas y mínimas:
-promedio de las de cada modelo). El resto de las variables vienen de ICON y GFS aporta índice UV y
-visibilidad (docs/precision-evaluacion.md). Las funciones promedian por hora los modelos que traen
-cada variable.
+Temperatura, sensación térmica, lluvia, su probabilidad y estado del cielo: mezcla de ICON y ECMWF IFS
+(promedio por hora; máximas y mínimas: promedio de las de cada modelo; cielo: el más severo si difieren).
+El resto de las variables vienen de ICON y GFS aporta índice UV y visibilidad (docs/precision-evaluacion.md).
+Las funciones promedian por hora los modelos que traen cada variable.
+
+Horas de lluvia: Open-Meteo rotula la lluvia (y su probabilidad, la nieve y el código del cielo) con la hora
+en que TERMINA el período (la de 15:00 a 16:00 viene como 16:00). En el JSON cada hora describe el período
+que EMPIEZA a esa hora, como Yr y Meteored (a_hora_de_inicio).
 Unidades de salida: °C, %, mm, hPa, viento en km/h, oleaje en m. Horas en ISO 8601 con zona de Chile.
 """
 
@@ -60,6 +64,20 @@ def _kmh(value):
 
 def _iso_local(t: datetime) -> str:
     return t.astimezone(CHILE).isoformat(timespec="minutes")
+
+
+POR_HORA_PREVIA = ("precipitacion", "precip_prob", "nieve", "estado_cielo")
+
+
+def a_hora_de_inicio(rows) -> list:
+    """Mueve las variables de "hora anterior" (POR_HORA_PREVIA) una hora antes: el valor de las 16:00
+    (lluvia de 15 a 16) pasa a las 15:00. A la última hora de cada modelo le quedan sin dato."""
+    siguiente = {(m, t): v for m, t, v in rows}
+    out = []
+    for m, t, v in rows:
+        sig = siguiente.get((m, t + timedelta(hours=1)), {})
+        out.append((m, t, {**v, **{c: sig.get(c) for c in POR_HORA_PREVIA if c in v}}))
+    return out
 
 
 def consensus_hours(rows) -> dict[datetime, dict]:
@@ -167,6 +185,7 @@ def build(location: dict, rows, marine, observation: dict | None, fetched_at: da
     """Arma el JSON de una ubicación. rows: (modelo, valid_time, valores) de forecast_current."""
     now = now or datetime.now(timezone.utc)
     current_hour = now.replace(minute=0, second=0, microsecond=0)
+    rows = a_hora_de_inicio(rows)
     hours = consensus_hours(rows)
     last_day = now.astimezone(CHILE).date() + timedelta(days=DAYS_AHEAD - 1)
     upcoming = [(t, h) for t, h in hours.items()
@@ -181,7 +200,7 @@ def build(location: dict, rows, marine, observation: dict | None, fetched_at: da
         "generado": _iso_local(now),
         "actualizado": _iso_local(fetched_at) if fetched_at else None,
         "provisional": not (correccion and correccion["franjas"]),
-        "fuente": {"modelo": "ICON (DWD) + ECMWF IFS (temperatura)", "complementario": "GFS (índice UV y visibilidad)"},
+        "fuente": {"modelo": "ICON (DWD) + ECMWF IFS", "complementario": "GFS (índice UV y visibilidad)"},
         "modelos": models,
         "corridas": {m: corridas[m] for m in models if corridas and m in corridas},  # inicio de cada corrida
         "unidades": {"temperatura": "°C", "precipitacion": "mm", "viento": "km/h", "presion": "hPa",
