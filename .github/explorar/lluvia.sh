@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Prueba temporal del lector de lluvia DMC en todas las estaciones, sin base de datos (se borra al terminar).
+# Prueba temporal (código de la rama) del lector de lluvia DMC en todas las estaciones, sin base de datos (se borra al terminar).
 set -eu
 cd ClimAppWeb/etl && pip install -q -e . && python - <<'PY'
 import time
