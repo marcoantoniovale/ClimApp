@@ -336,6 +336,11 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - **Repositorio público (opción 1)**: auditado todo el historial (99 commits, todas las ramas): sin contraseñas, tokens ni `.env` (solo las plantillas vacías), sin datos de los redactores DMC; la IP 172.16.0.188 de una muestra de la Armada es privada. El cambio de visibilidad lo debe hacer el usuario (el sistema de permisos lo bloqueó para el agente).
 - **Mediciones cada 15 min**: comando `mediciones` (lluvia DMC solo a Redis + renovar la web; la base guarda una lectura por hora en `auto`) y flujo [mediciones.yml](.github/workflows/mediciones.yml) a los minutos 14, 29 y 44. **Solo corre si la variable del repositorio `MEDICIONES_15MIN` = `si`** (activarla con el repo público; en privado serían ~2.200 min/mes más). Temperaturas DMC/SINCA son horarias en la fuente: no ganan con 15 min.
 
+### 2026-10-06 — rama `ccr-4fc20060-hdky4r` (disparador de las mediciones)
+- PR #38 fusionado; repositorio público; variable `MEDICIONES_15MIN` creada por el usuario. Producción verificada: corrida manual de "Mediciones" (29 s, 108 estaciones con lluvia, 46 lloviendo) y la página de Loncura mostró "Lluvia medida en Quintero, Climatológica".
+- **El "schedule" de GitHub no disparó ninguna medición** (03:14, 03:29, 03:44 UTC). En este repositorio casi no dispara: la ingesta horaria se lanzó por "schedule" solo 10 veces en 2 días (cada 4–6 h, hasta 40 min tarde).
+- [0015_disparador_mediciones.sql](ClimAppWeb/db/migrations/0015_disparador_mediciones.sql): `ops.disparar_mediciones()` + tarea `climapp-mediciones` (`14,29,44 * * * *`), mismo token del Vault que la ingesta. `mediciones.yml` ahora respeta `MEDICIONES_15MIN` también cuando lo dispara Supabase (antes todo `workflow_dispatch` corría); a mano, entrada "forzar". SQL validado con pglast.
+
 ---
 
 ## 8. Pendientes
@@ -371,7 +376,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Verificar que SINCA responde desde GitHub Actions (job `sinca_obs` en `ingestion_runs`).
 - [ ] INIA (agrometeorologia.cl, 210 estaciones): revisar términos y acceso a datos; sumarla si es posible.
 - [x] SINCA: catálogo renovado cada semana por el job `sinca_catalogo` (2026-10-03).
-- [ ] **Mediciones cada 15 min** (código listo, 2026-10-06): (1) el usuario hace público el repositorio (Settings → General → Danger Zone → Change visibility); (2) fusionar a `main`; (3) crear la variable de Actions `MEDICIONES_15MIN` = `si`; (4) revisar corridas del flujo "Mediciones" (~1 min cada una). Opcional: disparador de Supabase a los minutos 14/29/44 si el cron de GitHub se atrasa.
+- [ ] **Mediciones cada 15 min**: repo público, PR #38 fusionado y variable `MEDICIONES_15MIN` creados (2026-10-06). Falta aplicar la migración 0015 en Supabase (`python scripts/migrate.py`) y verificar en `cron.job_run_details` y en Actions → Mediciones.
 - [ ] Revisar el uso de GitHub Actions en github.com/settings/billing (medido ~3.500 min/mes en privado antes de la optimización de SINCA).
 - [x] **Búsqueda por localidades** (implementada 2026-10-03 con L1; evaluada 2026-10-01, ver bitácora): índice estático de localidades OSM → comuna (nivel caseríos + barrios de comunas no urbanas, ~114–176 KB gzip, carga diferida al escribir), mostrar "Loncura · pronóstico de Quintero", desambiguar nombres repetidos, atribución ODbL. Validar contra entidades pobladas INE 2017.
 

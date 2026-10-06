@@ -1,9 +1,13 @@
 # Ingesta liviana de ClimApp cada 15 minutos (código en ClimAppWeb/etl): lluvia medida en las
 # estaciones DMC → Redis `lluvia` y renovación de la web. La ingesta completa sigue cada hora (ingesta.yml).
 #
+# Disparo principal: Supabase (pg_cron, migración 0015) a los minutos 14, 29 y 44; el "schedule" de GitHub
+# es solo respaldo (en este repositorio casi no dispara).
+#
 # Solo corre si la variable del repositorio MEDICIONES_15MIN vale "si" (Settings → Secrets and variables →
-# Actions → Variables). Activarla solo con el repositorio público: en uno privado cada corrida descuenta
-# minutos de GitHub Actions (~2.200 min/mes). Un job omitido no consume minutos.
+# Actions → Variables), también cuando lo dispara Supabase. Activarla solo con el repositorio público: en
+# uno privado cada corrida descuenta minutos de GitHub Actions (~2.200 min/mes). Un job omitido no consume
+# minutos. A mano: "Run workflow" con "forzar" marcado corre aunque la variable no esté.
 #
 # Nota: GitHub solo ejecuta los "schedule" del archivo que está en la rama por defecto (main).
 
@@ -13,6 +17,11 @@ on:
   schedule:
     - cron: "14,29,44 * * * *"   # entre las horarias (minuto 59)
   workflow_dispatch:
+    inputs:
+      forzar:
+        description: "Correr aunque MEDICIONES_15MIN no valga \"si\""
+        type: boolean
+        default: false
 
 concurrency:
   group: mediciones
@@ -20,7 +29,7 @@ concurrency:
 
 jobs:
   mediciones:
-    if: vars.MEDICIONES_15MIN == 'si' || github.event_name == 'workflow_dispatch'
+    if: vars.MEDICIONES_15MIN == 'si' || inputs.forzar
     runs-on: ubuntu-latest
     timeout-minutes: 5
     defaults:
