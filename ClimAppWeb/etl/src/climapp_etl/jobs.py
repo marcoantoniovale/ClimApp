@@ -511,9 +511,11 @@ def dmc_history(conn: psycopg.Connection) -> None:
         log.info("DMC historial: %d estaciones, %d horas nuevas", len(estaciones), total)
 
 
-def dmc_rain(conn: psycopg.Connection) -> None:
+def dmc_rain(conn: psycopg.Connection, guardar: bool = True) -> None:
     """Lluvia medida en las estaciones DMC activas (visor de precipitación de cada una) →
-    observations.precipitacion_1h y clave `lluvia` de Redis, que la web usa en "Ahora"."""
+    observations.precipitacion_1h y clave `lluvia` de Redis, que la web usa en "Ahora".
+
+    guardar=False (comando `mediciones`, cada 15 min): solo Redis; la base guarda una lectura por hora (`auto`)."""
     with track_run(conn, "dmc_lluvia") as run:
         now = datetime.now(timezone.utc)
         estaciones = list(conn.execute("""
@@ -538,11 +540,12 @@ def dmc_rain(conn: psycopg.Connection) -> None:
                 sin_pluviometro += 1
             elif now - LLUVIA_MAX_AGE <= p["hasta"] <= now + timedelta(minutes=30):
                 lecturas.append((sid, nombre, lat, lon, p))
-        with conn.cursor() as cur:
-            cur.executemany("""
-                insert into observations (station_id, observed_at, precipitacion_1h) values (%s, %s, %s)
-                on conflict (station_id, observed_at) do update set precipitacion_1h = excluded.precipitacion_1h""",
-                [(sid, p["hasta"], p["mm"][1]) for sid, _, _, _, p in lecturas])
+        if guardar:
+            with conn.cursor() as cur:
+                cur.executemany("""
+                    insert into observations (station_id, observed_at, precipitacion_1h) values (%s, %s, %s)
+                    on conflict (station_id, observed_at) do update set precipitacion_1h = excluded.precipitacion_1h""",
+                    [(sid, p["hasta"], p["mm"][1]) for sid, _, _, _, p in lecturas])
         payload = {"generado": snapshot._iso_local(now), "estaciones": [
             {"id": sid, "nombre": nombre, "lat": lat, "lon": lon, "hasta": snapshot._iso_local(p["hasta"]),
              "mm_1h": p["mm"].get(1), "mm_3h": p["mm"].get(3), "mm_6h": p["mm"].get(6), "mm_24h": p["mm"].get(24),
@@ -555,6 +558,13 @@ def dmc_rain(conn: psycopg.Connection) -> None:
                            f"({con_lluvia} lloviendo), {sin_pluviometro} sin pluviómetro")
         log.info("DMC lluvia: %d estaciones, %d lecturas, %d con lluvia en la última hora, %d sin pluviómetro, redis=%d",
                  len(estaciones), len(lecturas), con_lluvia, sin_pluviometro, published)
+
+
+def measurements(conn: psycopg.Connection) -> None:
+    """Ingesta liviana entre las horarias (cada 15 min, flujo mediciones.yml): lluvia medida DMC en Redis
+    y renovación de la web. La DMC renueva la lluvia cada ~15 min; temperaturas y modelos siguen en `auto`."""
+    dmc_rain(conn, guardar=False)
+    log.info("web: renovación %s", "ok" if web.revalidar() else "no disponible")
 
 
 def sinca_observations(conn: psycopg.Connection) -> None:

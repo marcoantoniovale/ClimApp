@@ -330,6 +330,12 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Web: [lib/lluvia.ts](ClimAppWeb/web/src/lib/lluvia.ts) (estación más cercana ≤ 15 km; vigente ≤ 2 h). En "Ahora", si llovió en la última hora el cielo pasa a lluvia por intensidad (< 0,5 mm débil, < 4 mm moderada, ≥ 4 mm fuerte) con "(medida)", la tarjeta Lluvia muestra los mm medidos y una línea cita la estación ("Lluvia medida en Quintero, Climatológica (a 1,4 km): 0,1 mm entre las 22:15 y las 23:15 · 2,6 mm en 3 h"). Si no llovió en la última hora pero sí en 3 h, se informa sin cambiar el cielo. Comunas y localidades.
 - Verificado con la web contra un Redis simulado (capturas en Chrome sin interfaz) en los dos casos. Pruebas: ETL 98, web 30; lint, tipos y build sin errores.
 
+### 2026-10-06 — rama `ccr-4fc20060-hdky4r` (costo de GitHub Actions y mediciones cada 15 min)
+- Pregunta del usuario: costo de actualizar más seguido. Medido en 100 corridas (tiempo de ejecución de cada job, no de cola): ~3,9 min facturados por corrida → **~3.500 min/mes**, sobre los 2.000 gratuitos de un repositorio privado (revisar github.com/settings/billing). Típica: 3 min; con descarga de modelos 5–6; `localidades_perfil` (diario) ~9 min.
+- **Optimización (opción 2)**: SINCA se llevaba 75–87 s por corrida porque una consulta se colgaba hasta el plazo de 60 s (mediana real 1,2 s). Plazo de 8 s y 3 intentos en `sinca.fetch_temperaturas` → **16–20 s**, 0 errores, mismas lecturas (3.269). Lluvia DMC con 12 hilos y plazo de 20 s: 35 → 15 s. Más hilos o pedir menos días en SINCA no cambiaba nada (medido).
+- **Repositorio público (opción 1)**: auditado todo el historial (99 commits, todas las ramas): sin contraseñas, tokens ni `.env` (solo las plantillas vacías), sin datos de los redactores DMC; la IP 172.16.0.188 de una muestra de la Armada es privada. El cambio de visibilidad lo debe hacer el usuario (el sistema de permisos lo bloqueó para el agente).
+- **Mediciones cada 15 min**: comando `mediciones` (lluvia DMC solo a Redis + renovar la web; la base guarda una lectura por hora en `auto`) y flujo [mediciones.yml](.github/workflows/mediciones.yml) a los minutos 14, 29 y 44. **Solo corre si la variable del repositorio `MEDICIONES_15MIN` = `si`** (activarla con el repo público; en privado serían ~2.200 min/mes más). Temperaturas DMC/SINCA son horarias en la fuente: no ganan con 15 min.
+
 ---
 
 ## 8. Pendientes
@@ -365,7 +371,8 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Verificar que SINCA responde desde GitHub Actions (job `sinca_obs` en `ingestion_runs`).
 - [ ] INIA (agrometeorologia.cl, 210 estaciones): revisar términos y acceso a datos; sumarla si es posible.
 - [x] SINCA: catálogo renovado cada semana por el job `sinca_catalogo` (2026-10-03).
-- [ ] Mediciones cada 15 min (hoy cada hora, al minuto 59): GitHub Actions privado tiene 2.000 min/mes y ya se usan ~720–1.400; evaluar otro ejecutor (repo público, Supabase Edge Function, Cloudflare Worker).
+- [ ] **Mediciones cada 15 min** (código listo, 2026-10-06): (1) el usuario hace público el repositorio (Settings → General → Danger Zone → Change visibility); (2) fusionar a `main`; (3) crear la variable de Actions `MEDICIONES_15MIN` = `si`; (4) revisar corridas del flujo "Mediciones" (~1 min cada una). Opcional: disparador de Supabase a los minutos 14/29/44 si el cron de GitHub se atrasa.
+- [ ] Revisar el uso de GitHub Actions en github.com/settings/billing (medido ~3.500 min/mes en privado antes de la optimización de SINCA).
 - [x] **Búsqueda por localidades** (implementada 2026-10-03 con L1; evaluada 2026-10-01, ver bitácora): índice estático de localidades OSM → comuna (nivel caseríos + barrios de comunas no urbanas, ~114–176 KB gzip, carga diferida al escribir), mostrar "Loncura · pronóstico de Quintero", desambiguar nombres repetidos, atribución ODbL. Validar contra entidades pobladas INE 2017.
 
 - [x] Retención de observaciones: 180 días (2026-10-01) → **60 días** (2026-10-03, L0). Con el archivo de pronósticos 2 veces al día por 90 días, la base se estabiliza en ~387 MB (77 % de 500 MB).
