@@ -356,6 +356,12 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Reclamo del usuario (captura de Loncura, 06:23): ícono y texto "Lluvia" (pronóstico de la hora: 0,5 mm, 58 %) mientras la línea de abajo decía "Sin lluvia en la última hora en Quintero, Climatológica (a 1,4 km) hasta las 05:45". La medición solo podía poner lluvia, nunca quitarla.
 - [lib/lluvia.ts](ClimAppWeb/web/src/lib/lluvia.ts): `estadoLluvia` agrega `seco` (sin lluvia en la última hora en una estación a ≤ 5 km y con medición de ≤ 75 min; la lluvia es local, por eso el radio es menor que los 15 km para confirmar lluvia) y `cieloAhora`: si llueve en la estación → lluvia "(medida)"; si está seca y el pronóstico decía llovizna/lluvia/chubascos → nublado o parcial según la nubosidad, "(sin lluvia medida)"; nieve y tormenta no se tocan. La tarjeta Lluvia muestra "0,5 mm pronost." y los mm con coma decimal (antes "0.5 mm"); "· 0 mm en 3 h" ya no se muestra. Verificado con Redis simulado (captura). Pruebas web 32.
 
+### 2026-10-06 — rama `chore/migraciones-0015-0016` (pendientes de la sesión del celular)
+- Aprobado por el usuario: aplicar 0015 y 0016. **Aplicadas desde el PC**: tarea `climapp-mediciones` (minutos 14, 29 y 44) activa; GitHub respondió 204 a un disparo manual y la tarea disparó sola la medición de las 11:29 (ambas corridas OK). Antes, el "schedule" de GitHub había corrido "Mediciones" una sola vez en 7 h.
+- UKMO y JMA descargados (`forecast_current`: 5 modelos × 73.536 filas); la lluvia de Quintero ya usa ICON, ECMWF, GFS, UKMO y JMA. Base: 126 MB (`forecast_current` 71 MB); proyección estable ~200 MB (40 %).
+- **Cuota de Open-Meteo**: con UKMO/JMA (~1.500/día) el uso estimado llegaba a ~10.500/día (límite gratuito 10.000). `localidades_perfil` ahora pide ICON y ECMWF en la misma consulta (~2.370 → ~1.180 llamadas/día) → total estimado ~9.300/día.
+- GitHub Actions: el repositorio es público → minutos gratuitos; se cierra el pendiente de facturación.
+
 ---
 
 ## 8. Pendientes
@@ -391,8 +397,8 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Verificar que SINCA responde desde GitHub Actions (job `sinca_obs` en `ingestion_runs`).
 - [ ] INIA (agrometeorologia.cl, 210 estaciones): revisar términos y acceso a datos; sumarla si es posible.
 - [x] SINCA: catálogo renovado cada semana por el job `sinca_catalogo` (2026-10-03).
-- [ ] **Aplicar migraciones 0015 y 0016** (usuario, desde su PC: `python scripts/migrate.py` en `ClimAppWeb/etl`). 0015: mediciones cada 15 min (verificar en `cron.job_run_details` y Actions → Mediciones). 0016: UKMO y JMA en la mediana de lluvia (verificar en el detalle de `open_meteo` en `ingestion_runs`: "modelos: … jma …, ukmo …").
-- [ ] Revisar el uso de GitHub Actions en github.com/settings/billing (medido ~3.500 min/mes en privado antes de la optimización de SINCA).
+- [x] Migraciones 0015 y 0016 aplicadas (2026-10-06): mediciones cada 15 min disparadas desde Supabase; UKMO y JMA en la mediana de lluvia.
+- [x] Uso de GitHub Actions: el repositorio es público (2026-10-06), los minutos son gratuitos.
 - [x] **Búsqueda por localidades** (implementada 2026-10-03 con L1; evaluada 2026-10-01, ver bitácora): índice estático de localidades OSM → comuna (nivel caseríos + barrios de comunas no urbanas, ~114–176 KB gzip, carga diferida al escribir), mostrar "Loncura · pronóstico de Quintero", desambiguar nombres repetidos, atribución ODbL. Validar contra entidades pobladas INE 2017.
 
 - [x] Retención de observaciones: 180 días (2026-10-01) → **60 días** (2026-10-03, L0). Con el archivo de pronósticos 2 veces al día por 90 días, la base se estabiliza en ~387 MB (77 % de 500 MB).
@@ -404,7 +410,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [x] **Localidades** L0, L1 y L2 implementadas (2026-10-03). Pendiente: L3 (memoria del sesgo más corta, según la validación) y que el usuario compare Loncura/Ventanas en terreno.
 - [ ] Localidades: evaluar incluir caseríos (hamlet, 14.578) con gran diferencia de altura con su cabecera (≥ 400 m); requiere la altura de cada uno (~14.600 llamadas a la API de elevación, repartidas en varios días).
 - [ ] Localidades: renovar el catálogo de OSM cada algunos meses (`python scripts/build_localidades.py`; Overpass puede responder 504) y ampliar `localidades_extra.csv` con lugares que pidan los usuarios.
-- [ ] Vigilar la cuota diaria de Open-Meteo (~9.000 de 10.000 estimadas): si aparecen errores 429 en `ingestion_runs`, espaciar `localidades_perfil` o el archivo.
+- [ ] Vigilar la cuota diaria de Open-Meteo (~9.300 de 10.000 estimadas desde el 2026-10-06, con UKMO/JMA): si aparecen errores 429 en `ingestion_runs`, espaciar `localidades_perfil` o el archivo.
 - [ ] **Validar la lluvia**: la lluvia medida DMC ya se guarda (`observations.precipitacion_1h`, job `dmc_lluvia`, 110 estaciones; SINCA no mide lluvia en Quintero/Puchuncaví/Concón). Falta medir inicio y montos de ICON, ECMWF, la mezcla y Yr (ya archivado en `forecast_archive`).
 - [ ] Lluvia medida en "Ahora": tras fusionar a `main`, revisar en `ingestion_runs` el job `dmc_lluvia` (tiempo, estaciones sin pluviómetro) y verificar la página de una comuna con lluvia. Opcional: agregar `dmc_lluvia` a las opciones de `workflow_dispatch` de `ingesta.yml`.
 - [ ] Mostrar el rango de inicio de la lluvia entre modelos ("lluvia probable desde las 19–22 h"), vista de fiabilidad RF05.3.
