@@ -323,6 +323,13 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - ETL: el precálculo se rehace cuando cambia el día aunque no haya corrida nueva (entre 00:00 y 00:59 se ven 6 días hasta la ingesta de las 00:59).
 - Verificado en Chrome con el reloj adelantado a las 00:46: producción mostraba "Lun 5" (día anterior) seleccionado; la versión corregida parte en "Hoy" con la hora 00:00. Pruebas web 24, ETL 95.
 
+### 2026-10-06 — rama `ccr-4fc20060-hdky4r` (lluvia medida en "Ahora")
+- Reclamo del usuario: en Loncura todas las apps decían que llovía y ClimApp, "Nublado". Diagnóstico: el pronóstico sí traía lluvia (57,9 mm para el 6-oct), pero la hora en curso (23–24 h) daba 0 mm en ICON y en ECMWF (corridas de las 15:00), y el cielo de "Ahora" era solo modelo. La estación DMC de Quintero midió 5,4 mm ese día (2,6 mm en 3 h).
+- Fuentes revisadas (desde GitHub Actions; este entorno no tiene red): SINCA no mide lluvia en la zona (solo TEMP, RHUM, WDIR, WSPD, GLOB); el campo de lluvia del mapa nacional de la DMC siempre trae "."; los METAR (`condicionactual.js`) traen lluvia solo en ~30 aeropuertos. **Fuente elegida: visor de precipitación por estación de la DMC** (`visorEmaPrecipitacion/<código>`): tabla de 1/3/6/12/24/36 h renovada cada ~15 min y pluviógrafo minuto a minuto. 149 estaciones, 110 con pluviómetro, 0 errores, 34 s (6 en paralelo).
+- ETL: `dmc_obs.parse_precipitacion` (con muestras reales recortadas en `tests/fixtures/dmc/precipitacion_*.html`); job `dmc_lluvia` cada hora en `auto` (tras `dmc_obs`): guarda `observations.precipitacion_1h` (fila al fin del período, sin temperatura) y publica la clave Redis `lluvia`; renueva la web. Comando manual: `python -m climapp_etl dmc_lluvia`.
+- Web: [lib/lluvia.ts](ClimAppWeb/web/src/lib/lluvia.ts) (estación más cercana ≤ 15 km; vigente ≤ 2 h). En "Ahora", si llovió en la última hora el cielo pasa a lluvia por intensidad (< 0,5 mm débil, < 4 mm moderada, ≥ 4 mm fuerte) con "(medida)", la tarjeta Lluvia muestra los mm medidos y una línea cita la estación ("Lluvia medida en Quintero, Climatológica (a 1,4 km): 0,1 mm entre las 22:15 y las 23:15 · 2,6 mm en 3 h"). Si no llovió en la última hora pero sí en 3 h, se informa sin cambiar el cielo. Comunas y localidades.
+- Verificado con la web contra un Redis simulado (capturas en Chrome sin interfaz) en los dos casos. Pruebas: ETL 98, web 30; lint, tipos y build sin errores.
+
 ---
 
 ## 8. Pendientes
@@ -371,7 +378,8 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Localidades: evaluar incluir caseríos (hamlet, 14.578) con gran diferencia de altura con su cabecera (≥ 400 m); requiere la altura de cada uno (~14.600 llamadas a la API de elevación, repartidas en varios días).
 - [ ] Localidades: renovar el catálogo de OSM cada algunos meses (`python scripts/build_localidades.py`; Overpass puede responder 504) y ampliar `localidades_extra.csv` con lugares que pidan los usuarios.
 - [ ] Vigilar la cuota diaria de Open-Meteo (~9.000 de 10.000 estimadas): si aparecen errores 429 en `ingestion_runs`, espaciar `localidades_perfil` o el archivo.
-- [ ] **Validar la lluvia**: guardar lluvia medida (series RAIN de SINCA; revisar si la DMC la publica) y medir inicio y montos de ICON, ECMWF, la mezcla y Yr (ya archivado en `forecast_archive`).
+- [ ] **Validar la lluvia**: la lluvia medida DMC ya se guarda (`observations.precipitacion_1h`, job `dmc_lluvia`, 110 estaciones; SINCA no mide lluvia en Quintero/Puchuncaví/Concón). Falta medir inicio y montos de ICON, ECMWF, la mezcla y Yr (ya archivado en `forecast_archive`).
+- [ ] Lluvia medida en "Ahora": tras fusionar a `main`, revisar en `ingestion_runs` el job `dmc_lluvia` (tiempo, estaciones sin pluviómetro) y verificar la página de una comuna con lluvia. Opcional: agregar `dmc_lluvia` a las opciones de `workflow_dispatch` de `ingesta.yml`.
 - [ ] Mostrar el rango de inicio de la lluvia entre modelos ("lluvia probable desde las 19–22 h"), vista de fiabilidad RF05.3.
 - [ ] Opcional: Vercel Speed Insights (velocidad real en celulares).
 
