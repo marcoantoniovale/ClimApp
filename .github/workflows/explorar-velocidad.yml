@@ -1,0 +1,14 @@
+# TEMPORAL: medición de velocidad de las fuentes. Se elimina al terminar.
+name: Explorar velocidad
+on:
+  push:
+    paths: [".github/workflows/explorar-velocidad.yml", ".github/explorar/**"]
+jobs:
+  explorar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: bash .github/explorar/velocidad.sh
