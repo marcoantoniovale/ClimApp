@@ -1,27 +1,27 @@
 #!/usr/bin/env bash
-# Exploración temporal: muestra recortada del visor de precipitación DMC (se borra al terminar).
-set -u
-UA="Mozilla/5.0 (ClimApp; https://climapp-chile.vercel.app)"
-for cod in 320056 330020; do
-  curl -sS -m 40 -A "$UA" "https://climatologia.meteochile.gob.cl/application/diariob/visorEmaPrecipitacion/$cod" > /tmp/pp_$cod.html
-  python3 - "$cod" <<'PY'
-import re, sys, gzip, base64
-cod=sys.argv[1]
-p=open(f'/tmp/pp_{cod}.html',encoding='utf-8',errors='replace').read()
-partes=[]
-i=p.find('<table', p.find('Horas </th>')-400); j=p.find('</table>', i)+8
-partes.append(p[i:j])
-k=p.find("Pluviógrafo 48 Horas"); s=p.rfind('<script', 0, k); e=p.find('</script>', k)+9
-chart=p[s:e]
-def corta(m):
-    vals=m.group(2).split(',')
-    return m.group(1)+','.join(vals[-240:])+m.group(3)
-chart=re.sub(r'(categories:\s*\[)(.*?)(\])', corta, chart, count=1, flags=re.S)
-chart=re.sub(r'(data:\s*\[)(.*?)(\])', corta, chart, count=1, flags=re.S)
-partes.append(chart)
-out='\n'.join(partes)
-print(f'### {cod} {len(out)}')
-print(base64.b64encode(gzip.compress(out.encode())).decode())
-print('### fin')
+# Prueba temporal del lector de lluvia DMC en todas las estaciones, sin base de datos (se borra al terminar).
+set -eu
+cd ClimAppWeb/etl && pip install -q -e . && python - <<'PY'
+import time
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
+from climapp_etl import dmc_obs
+t0 = time.time()
+est = dmc_obs.fetch_mapa()
+def leer(e):
+    try:
+        return e, dmc_obs.fetch_precipitacion(e["codigo"]), None
+    except Exception as exc:
+        return e, None, exc
+with ThreadPoolExecutor(max_workers=6) as pool:
+    res = list(pool.map(leer, est))
+now = datetime.now(timezone.utc)
+ok = [(e, p) for e, p, x in res if p]
+print(f"{len(est)} estaciones, {len(ok)} con pluviómetro, {sum(1 for *_, x in res if x)} errores, {time.time()-t0:.0f} s")
+print("edad (min) de 'hasta':", sorted(round((now - p['hasta']).total_seconds() / 60) for _, p in ok)[::10])
+for e, p in ok:
+    if p["mm"].get(3):
+        print(e["codigo"], e["nombre"], p["hasta"].isoformat(), p["mm"], p["ultima"])
+for e, p, x in res:
+    if x: print("ERROR", e["codigo"], x)
 PY
-done
