@@ -177,4 +177,5 @@ def _ultima_lluvia(page: str, hasta: datetime) -> datetime | None:
 
 
 def fetch_precipitacion(codigo: str, get_text=None) -> dict | None:
-    return parse_precipitacion((get_text or http.get_text)(PRECIP_URL.format(codigo)))
+    get_text = get_text or (lambda url: http.get_text(url, timeout=20, attempts=3))   # plazo corto: ~1 s por página
+    return parse_precipitacion(get_text(PRECIP_URL.format(codigo)))

@@ -528,7 +528,7 @@ def dmc_rain(conn: psycopg.Connection) -> None:
             except Exception as exc:  # una estación caída no detiene a las demás
                 return est, None, exc
 
-        with ThreadPoolExecutor(max_workers=6) as pool:
+        with ThreadPoolExecutor(max_workers=12) as pool:   # 12: ~15 s para ~150 estaciones (6: ~35 s)
             resultados = list(pool.map(leer, estaciones))
         lecturas, sin_pluviometro = [], 0
         for (sid, nombre, lat, lon), p, exc in resultados:

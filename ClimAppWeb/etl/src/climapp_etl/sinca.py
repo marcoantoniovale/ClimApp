@@ -17,6 +17,7 @@ Santiago).
 from __future__ import annotations
 
 import csv
+import functools
 import re
 import urllib.parse
 from concurrent.futures import ThreadPoolExecutor
@@ -32,6 +33,9 @@ ESTACION_URL = f"{BASE}/index.php/estacion/index/key/{{key}}"
 EXPORT_URL = f"{BASE}/cgi-bin/APUB-MMA/apub.tsindico2.cgi"
 CATALOGO = Path(__file__).resolve().parents[2] / "data" / "catalog" / "estaciones_sinca.csv"
 HORA_SINCA = timezone(timedelta(hours=-4))
+# La consulta típica tarda ~1 s, pero a veces una queda colgada: con el plazo general (60 s) esa sola
+# estación alargaba sinca_obs de ~15 a ~75 s (medido el 2026-10-06). Plazo corto y reintento.
+_get_rapido = functools.partial(http.get_text, timeout=15, attempts=3)
 
 _SERIE = re.compile(r"macropath=(\./[^&\"']+/Met/TEMP)&(?:amp;)?macro=(horario_\d+)&(?:amp;)?from=\d+&(?:amp;)?to=(\d+)")
 
@@ -118,7 +122,7 @@ def parse_csv(texto: str) -> dict[datetime, float]:
 
 def fetch_temperaturas(estacion: Estacion, desde: datetime, hasta: datetime, get_text=None) -> dict[datetime, float]:
     """Temperatura horaria de una estación entre dos fechas (inclusive, días en hora SINCA)."""
-    get_text = get_text or http.get_text
+    get_text = get_text or _get_rapido
     params = {"outtype": "xcl", "macro": estacion.serie,
               "from": desde.astimezone(HORA_SINCA).strftime("%y%m%d"),
               "to": hasta.astimezone(HORA_SINCA).strftime("%y%m%d"),
