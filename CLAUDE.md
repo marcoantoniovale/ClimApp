@@ -352,6 +352,10 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 ### 2026-10-06 — rama `ccr-4fc20060-hdky4r` (probabilidad de lluvia recalibrada)
 - Pedido del usuario: recalibrar la probabilidad de lluvia. Con 10.433 horas (pluviógrafos DMC + METAR) la media ICON + ECMWF sobreestimaba (50–70 % → llovió 33 %). **Logística** sobre logit(media ICON + ECMWF) y la fracción de modelos con ≥ 0,1 mm (`snapshot.probabilidad_calibrada`, coeficientes para 5 y 3 modelos): BSS +0,23 → +0,37/+0,43 en validación cruzada entre conjuntos; 50–70 % → llovió 59 %. Probabilidad del día: 1 − (Π(1 − p_hora))^0,5 (`probabilidad_del_dia`). Detalle en [docs/precision-evaluacion.md §10](docs/precision-evaluacion.md). Pruebas ETL 106.
 
+### 2026-10-06 — rama `ccr-4fc20060-hdky4r` ("Ahora" coherente con la estación seca)
+- Reclamo del usuario (captura de Loncura, 06:23): ícono y texto "Lluvia" (pronóstico de la hora: 0,5 mm, 58 %) mientras la línea de abajo decía "Sin lluvia en la última hora en Quintero, Climatológica (a 1,4 km) hasta las 05:45". La medición solo podía poner lluvia, nunca quitarla.
+- [lib/lluvia.ts](ClimAppWeb/web/src/lib/lluvia.ts): `estadoLluvia` agrega `seco` (sin lluvia en la última hora en una estación a ≤ 5 km y con medición de ≤ 75 min; la lluvia es local, por eso el radio es menor que los 15 km para confirmar lluvia) y `cieloAhora`: si llueve en la estación → lluvia "(medida)"; si está seca y el pronóstico decía llovizna/lluvia/chubascos → nublado o parcial según la nubosidad, "(sin lluvia medida)"; nieve y tormenta no se tocan. La tarjeta Lluvia muestra "0,5 mm pronost." y los mm con coma decimal (antes "0.5 mm"); "· 0 mm en 3 h" ya no se muestra. Verificado con Redis simulado (captura). Pruebas web 32.
+
 ---
 
 ## 8. Pendientes
