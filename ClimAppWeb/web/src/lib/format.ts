@@ -48,7 +48,7 @@ const WMO: Record<number, [string, Cielo]> = {
   1: ["Mayormente despejado", "despejado"],
   2: ["Parcialmente nublado", "parcial"],
   3: ["Nublado", "nublado"],
-  45: ["Niebla", "niebla"],
+  45: ["Neblina", "niebla"],   // ETL: humedad ≥ 93 % sin lluvia (incluye niebla y neblina, §10)
   48: ["Niebla con escarcha", "niebla"],
   51: ["Llovizna débil", "llovizna"],
   53: ["Llovizna", "llovizna"],

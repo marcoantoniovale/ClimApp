@@ -1,9 +1,16 @@
 """Precálculo: JSON por ubicación listo para la API (docs/fase1-mapeo-requisitos.md §4.6).
 
-Temperatura, sensación térmica, lluvia, su probabilidad y estado del cielo: mezcla de ICON y ECMWF IFS
-(promedio por hora; máximas y mínimas: promedio de las de cada modelo; cielo: el más severo si difieren).
-El resto de las variables vienen de ICON y GFS aporta índice UV y visibilidad (docs/precision-evaluacion.md).
-Las funciones promedian por hora los modelos que traen cada variable.
+Temperatura, sensación térmica y probabilidad de lluvia: mezcla de ICON y ECMWF IFS (promedio por hora;
+máximas y mínimas: promedio de las de cada modelo). El resto de las variables vienen de ICON (humedad: ICON +
+ECMWF) y GFS aporta índice UV y visibilidad (docs/precision-evaluacion.md).
+
+Lluvia y cielo (algoritmo ClimApp, §10, evaluado el 2026-10-06 con pluviógrafos DMC y METAR): la lluvia de
+cada hora es la MEDIANA de ICON, ECMWF, GFS, UKMO y JMA; la hora "llueve" si la mediana es ≥ 0,2 mm, con
+suavizado de 3 h (se rellena una hora seca entre dos de lluvia y se quita la lluvia aislada de una sola
+hora). El código de cielo de los modelos
+solo se usa para nieve, tormenta y el tipo de lluvia (chubasco/llovizna): la intensidad sale de los mm. La
+neblina (código 45) se muestra si la humedad media es ≥ 93 % y no llueve; los códigos 45/48 de los modelos
+no acertaron ninguna hora con niebla observada y se descartan.
 
 Horas de lluvia: Open-Meteo rotula la lluvia (y su probabilidad, la nieve y el código del cielo) con la hora
 en que TERMINA el período (la de 15:00 a 16:00 viene como 16:00). En el JSON cada hora describe el período
@@ -16,7 +23,7 @@ from __future__ import annotations
 import math
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
-from statistics import mean
+from statistics import mean, median
 from zoneinfo import ZoneInfo
 
 from .units import ms_to_kmh
@@ -80,8 +87,58 @@ def a_hora_de_inicio(rows) -> list:
     return out
 
 
+LLUVIA_MM = 0.2          # mediana de modelos para que una hora "llueva" (§10)
+NEBLINA_HR = 93          # humedad media (%) para neblina, sin lluvia (§10)
+_NIEVE_TORMENTA = {71, 73, 75, 77, 85, 86, 95, 96, 99}
+_HELADA = {56, 57, 66, 67}
+_LLUVIA_MODELO = set(range(51, 68)) | {80, 81, 82}
+
+
+def _lluvia_horaria(values):
+    """Lluvia de la hora: mediana de los modelos con dato (con menos de 3, el promedio)."""
+    values = [v for v in values if v is not None]
+    if not values:
+        return None
+    return median(values) if len(values) >= 3 else mean(values)
+
+
+def _nubes(nubosidad) -> int:
+    if nubosidad is None or nubosidad >= 70:
+        return 3
+    return 2 if nubosidad >= 30 else 1
+
+
+def cielo_por_hora(hours: dict[datetime, dict]) -> None:
+    """Ajusta en el lugar `estado_cielo` de cada hora según la lluvia mediana suavizada y la humedad (§10)."""
+    hora = timedelta(hours=1)
+    cruda = {t for t, h in hours.items() if (h["precipitacion"] or 0) >= LLUVIA_MM}
+    # Suavizado en dos pasos: se rellena una hora seca entre dos de lluvia y luego se quita la lluvia de
+    # una hora aislada (rinde como la mayoría de 3 h, pero "lluvia, seca, lluvia" queda como 3 h de lluvia).
+    rellena = cruda | {t for t in hours if t - hora in cruda and t + hora in cruda}
+    lluvia = {t for t in rellena if t - hora in rellena or t + hora in rellena}
+    for t, h in hours.items():
+        llueve = t in lluvia
+        code, mm = h["estado_cielo"], h["precipitacion"] or 0
+        if code in _NIEVE_TORMENTA:
+            continue
+        if llueve:
+            if code in _HELADA:
+                continue
+            if code in (80, 81, 82):
+                h["estado_cielo"] = 80 if mm < 0.5 else 81 if mm < 4 else 82
+            elif code in (51, 53, 55) and mm < 1:
+                h["estado_cielo"] = 51 if mm < 0.5 else 53
+            else:
+                h["estado_cielo"] = 61 if mm < 0.5 else 63 if mm < 4 else 65
+        elif h["humedad"] is not None and h["humedad"] >= NEBLINA_HR and mm < 0.1:
+            h["estado_cielo"] = 45
+        elif code is None or code in _LLUVIA_MODELO or code in (45, 48):
+            h["estado_cielo"] = None if code is None and h["nubosidad"] is None else _nubes(h["nubosidad"])
+
+
 def consensus_hours(rows) -> dict[datetime, dict]:
-    """rows: (modelo, valid_time, valores) → por hora: promedio de modelos y rango de temperatura."""
+    """rows: (modelo, valid_time, valores) → por hora: promedio de modelos y rango de temperatura;
+    lluvia: mediana de modelos; cielo ajustado con cielo_por_hora."""
     by_time: dict[datetime, list[dict]] = defaultdict(list)
     for _, t, values in rows:
         by_time[t].append(values)
@@ -97,7 +154,7 @@ def consensus_hours(rows) -> dict[datetime, dict]:
             "indice_uv": _avg(m.get("indice_uv") for m in models),
             "humedad": _avg(m.get("humedad") for m in models),
             "precip_prob": _avg(m.get("precip_prob") for m in models),
-            "precipitacion": _avg(m.get("precipitacion") for m in models),
+            "precipitacion": _lluvia_horaria(m.get("precipitacion") for m in models),
             "viento_vel": _avg(m.get("viento_vel") for m in models),
             "viento_dir": _circular_mean(m.get("viento_dir") for m in models),
             "viento_rafaga": _avg(m.get("viento_rafaga") for m in models),
@@ -109,6 +166,7 @@ def consensus_hours(rows) -> dict[datetime, dict]:
             "nieve": _avg(m.get("nieve") for m in models),
             "modelos": len(models),
         }
+    cielo_por_hora(hours)
     return hours
 
 
@@ -134,7 +192,7 @@ def daily(rows, start_day, days: int) -> list[dict]:
                 tmax.append(max(temps))
                 tmin.append(min(temps))
             lluvias = [v["precipitacion"] for v in values if v.get("precipitacion") is not None]
-            if lluvias:   # solo modelos que pronostican lluvia (GFS y ECMWF no la aportan: no cuentan como 0)
+            if lluvias:   # solo modelos que pronostican lluvia (los que no la traen no cuentan como 0)
                 rain.append(sum(lluvias))
         hs = hours_by_day.get(day, [])
         if not hs:
@@ -148,7 +206,7 @@ def daily(rows, start_day, days: int) -> list[dict]:
             "rango_min": [_r(min(tmin)), _r(max(tmin))] if tmin else None,
             "estado_cielo": max(codes) if codes else None,     # el más severo del día
             "precip_prob": _r(max((h["precip_prob"] for h in hs if h["precip_prob"] is not None), default=None), 0),
-            "precipitacion": _r(_avg(rain)),
+            "precipitacion": _r(_lluvia_horaria(rain)),   # mediana de los totales de cada modelo
             "viento_max": _kmh(max((h["viento_vel"] for h in hs if h["viento_vel"] is not None), default=None)),
             "rafaga_max": _kmh(max((h["viento_rafaga"] for h in hs if h["viento_rafaga"] is not None), default=None)),
             "indice_uv_max": _r(max((h["indice_uv"] for h in hs if h["indice_uv"] is not None), default=None)),
@@ -200,7 +258,8 @@ def build(location: dict, rows, marine, observation: dict | None, fetched_at: da
         "generado": _iso_local(now),
         "actualizado": _iso_local(fetched_at) if fetched_at else None,
         "provisional": not (correccion and correccion["franjas"]),
-        "fuente": {"modelo": "ICON (DWD) + ECMWF IFS", "complementario": "GFS (índice UV y visibilidad)"},
+        "fuente": {"modelo": "ICON (DWD) + ECMWF IFS",
+                   "complementario": "GFS (índice UV y visibilidad); lluvia: mediana de ICON, ECMWF, GFS, UKMO y JMA"},
         "modelos": models,
         "corridas": {m: corridas[m] for m in models if corridas and m in corridas},  # inicio de cada corrida
         "unidades": {"temperatura": "°C", "precipitacion": "mm", "viento": "km/h", "presion": "hPa",

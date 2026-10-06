@@ -54,7 +54,7 @@ def test_dias_en_hora_de_chile_con_rango_entre_modelos():
     d1 = dias[1]                                   # primer día completo
     assert d1["rango_max"][0] < d1["temperatura_max"] < d1["rango_max"][1]
     assert d1["estado_cielo"] == 1
-    assert d1["precipitacion"] == pytest.approx(0.5 * 24 / 3, abs=0.1)   # solo ICON llueve: promedio de 3
+    assert d1["precipitacion"] == 0      # solo ICON llueve: la mediana de los 3 totales es 0 (§10)
     assert d1["viento_max"] == 18
 
 
@@ -175,4 +175,64 @@ def test_lluvia_de_consenso_entre_modelos():
     h = snapshot.consensus_hours([("icon", t0, {"precipitacion": 0.0, "precip_prob": 10, "estado_cielo": 3}),
                                   ("ecmwf", t0, {"precipitacion": 0.4, "precip_prob": 30, "estado_cielo": 61})])[t0]
     assert h["precipitacion"] == pytest.approx(0.2) and h["precip_prob"] == pytest.approx(20)
-    assert h["estado_cielo"] == 61                                                   # el más severo
+    assert h["estado_cielo"] == 3          # una hora de lluvia aislada no alcanza: nublado (§10, suavizado)
+
+
+def test_modelos_de_lluvia_sin_metadatos_cada_6_horas():
+    from climapp_etl.jobs import pending_models
+    from climapp_etl.open_meteo import Run
+    h = lambda hour: datetime(2026, 10, 6, hour, tzinfo=timezone.utc)
+    runs = {"icon": Run(h(0), h(4))}                        # UKMO y JMA no tienen metadatos
+    modelos = ["icon", "ukmo", "jma"]
+    assert pending_models({"icon": (h(0), h(4))}, runs, now=h(5), modelos=modelos) == ["ukmo", "jma"]   # nunca descargados
+    hecho = {"icon": (h(0), h(4)), "ukmo": (h(4), h(4)), "jma": (h(4), h(4))}
+    assert pending_models(hecho, runs, now=h(8), modelos=modelos) == []                 # hace 4 h
+    assert pending_models(hecho, runs, now=h(10), modelos=modelos) == ["ukmo", "jma"]   # 6 h (con margen)
+
+
+def _horas(precip, humedad=80.0, codigo=3, nubosidad=90.0):
+    """Horas consecutivas ya consolidadas (como las deja consensus_hours) para probar cielo_por_hora."""
+    return {NOW + timedelta(hours=i): {"precipitacion": p, "humedad": humedad, "estado_cielo": codigo,
+                                       "nubosidad": nubosidad} for i, p in enumerate(precip)}
+
+
+def test_lluvia_es_la_mediana_de_los_modelos():
+    rows = [(m, NOW, {"temperatura": 10.0, "precipitacion": p})
+            for m, p in (("icon", 0.0), ("ecmwf", 0.4), ("gfs", 0.3), ("ukmo", 0.0), ("jma", 2.0))]
+    h = snapshot.consensus_hours(rows)[NOW]
+    assert h["precipitacion"] == pytest.approx(0.3)
+    dos = snapshot.consensus_hours([("icon", NOW, {"precipitacion": 0.0}), ("ecmwf", NOW, {"precipitacion": 0.4})])
+    assert dos[NOW]["precipitacion"] == pytest.approx(0.2)        # con 2 modelos, el promedio
+
+
+def test_cielo_suavizado_sin_horas_sueltas():
+    # Lluvia con una hora seca en medio (lo que antes mostraba "nublado" entre dos horas de lluvia).
+    h = _horas([0.0, 0.6, 0.0, 0.8, 0.0, 0.0], codigo=61)
+    snapshot.cielo_por_hora(h)
+    codigos = [x["estado_cielo"] for x in h.values()]
+    assert codigos[1:4] == [63, 61, 63]           # la hora seca del medio se rellena (débil: 0 mm)
+    assert codigos[5] == 3                         # sin lluvia: nublado aunque el modelo dijera 61
+    aislada = _horas([0.0, 0.0, 0.5, 0.0, 0.0], codigo=61)
+    snapshot.cielo_por_hora(aislada)
+    assert all(x["estado_cielo"] == 3 for x in aislada.values())   # una hora suelta no alcanza la mayoría
+
+
+def test_intensidad_por_milimetros_y_tipo_del_modelo():
+    h = _horas([0.3, 2.0, 6.0], codigo=81)
+    snapshot.cielo_por_hora(h)
+    assert [x["estado_cielo"] for x in h.values()] == [80, 81, 82]
+    nieve = _horas([0.0, 0.0, 0.0], codigo=73)
+    snapshot.cielo_por_hora(nieve)
+    assert all(x["estado_cielo"] == 73 for x in nieve.values())    # nieve y tormenta: código del modelo
+
+
+def test_neblina_por_humedad_y_no_por_codigo_del_modelo():
+    h = _horas([0.0, 0.0, 0.0], humedad=95.0, codigo=3)
+    snapshot.cielo_por_hora(h)
+    assert all(x["estado_cielo"] == 45 for x in h.values())
+    seca = _horas([0.0, 0.0, 0.0], humedad=85.0, codigo=45, nubosidad=40.0)
+    snapshot.cielo_por_hora(seca)
+    assert all(x["estado_cielo"] == 2 for x in seca.values())       # código 45 del modelo con HR 85 %: parcial
+    lluvia = _horas([0.5, 0.5, 0.5], humedad=98.0, codigo=61)
+    snapshot.cielo_por_hora(lluvia)
+    assert all(x["estado_cielo"] == 63 for x in lluvia.values())    # con lluvia manda la lluvia

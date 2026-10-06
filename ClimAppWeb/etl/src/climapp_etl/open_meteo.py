@@ -28,7 +28,13 @@ MARINE_VARIABLES = {
 }
 
 # Código interno → nombre del modelo en Open-Meteo.
-MODELS = {"icon": "icon_seamless", "ecmwf": "ecmwf_ifs", "gfs": "gfs_seamless"}
+MODELS = {"icon": "icon_seamless", "ecmwf": "ecmwf_ifs", "gfs": "gfs_seamless",
+          "ukmo": "ukmo_seamless", "jma": "jma_seamless"}
+
+# Modelos que solo aportan lluvia a la mediana (algoritmo ClimApp, docs/precision-evaluacion.md §10): se piden
+# juntos en una petición, sin metadatos de corrida (cada LLUVIA_EXTRA_EVERY en jobs.py) y solo si la base
+# acepta los modelos (migración 0016).
+LLUVIA_EXTRA = ("ukmo", "jma")
 
 # Variables que se piden a cada modelo: variable de Open-Meteo → columna canónica. Open-Meteo entrega
 # ya en °C, %, mm, hPa, m y (con wind_speed_unit=ms) m/s; snowfall en cm.
@@ -50,19 +56,23 @@ MODEL_VARIABLES = {
         "freezing_level_height": "isoterma_0",
     },
     # Mezcla (algoritmo ClimApp): ICON + ECMWF IFS 9 km por partes iguales; el precálculo promedia por hora
-    # los modelos presentes. Temperatura medida en 197 estaciones (docs/precision-evaluacion.md §8); lluvia
-    # en consenso desde el 2026-10-05 (ICON sola atrasaba el inicio respecto de los demás modelos).
+    # los modelos presentes. Temperatura medida en 197 estaciones (docs/precision-evaluacion.md §8). La lluvia
+    # es la mediana de ICON, ECMWF, GFS, UKMO y JMA (§10, evaluada con pluviógrafos DMC y METAR).
     "ecmwf": {
         "temperature_2m": "temperatura",
         "apparent_temperature": "sensacion_termica",
         "precipitation": "precipitacion",
         "precipitation_probability": "precip_prob",
         "weather_code": "estado_cielo",
+        "relative_humidity_2m": "humedad",   # neblina: humedad media ICON + ECMWF (§10)
     },
-    "gfs": {  # complementarias: ICON no las calcula
+    "gfs": {  # complementarias: ICON no las calcula; lluvia para la mediana de modelos
         "uv_index": "indice_uv",
         "visibility": "visibilidad",
+        "precipitation": "precipitacion",
     },
+    "ukmo": {"precipitation": "precipitacion"},
+    "jma": {"precipitation": "precipitacion"},
 }
 
 # Todas las columnas de forecast_current, en orden estable.
