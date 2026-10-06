@@ -136,6 +136,20 @@ def cielo_por_hora(hours: dict[datetime, dict]) -> None:
             h["estado_cielo"] = None if code is None and h["nubosidad"] is None else _nubes(h["nubosidad"])
 
 
+NEBLINA_HORAS_DIA = 8    # horas de neblina para que el resumen del día diga "Neblina"
+
+
+def cielo_del_dia(codes: list[int]) -> int | None:
+    """Cielo del resumen diario: el más severo, salvo la neblina, que solo manda si dura NEBLINA_HORAS_DIA
+    (una hora de neblina de madrugada no convierte el día en "Neblina")."""
+    if not codes:
+        return None
+    resto = [c for c in codes if c not in (45, 48)]
+    if not resto or (sum(c in (45, 48) for c in codes) >= NEBLINA_HORAS_DIA and max(resto) < 51):
+        return 45
+    return max(resto)
+
+
 def consensus_hours(rows) -> dict[datetime, dict]:
     """rows: (modelo, valid_time, valores) → por hora: promedio de modelos y rango de temperatura;
     lluvia: mediana de modelos; cielo ajustado con cielo_por_hora."""
@@ -204,7 +218,7 @@ def daily(rows, start_day, days: int) -> list[dict]:
             "temperatura_min": _r(_avg(tmin)),
             "rango_max": [_r(min(tmax)), _r(max(tmax))] if tmax else None,
             "rango_min": [_r(min(tmin)), _r(max(tmin))] if tmin else None,
-            "estado_cielo": max(codes) if codes else None,     # el más severo del día
+            "estado_cielo": cielo_del_dia(codes),
             "precip_prob": _r(max((h["precip_prob"] for h in hs if h["precip_prob"] is not None), default=None), 0),
             "precipitacion": _r(_lluvia_horaria(rain)),   # mediana de los totales de cada modelo
             "viento_max": _kmh(max((h["viento_vel"] for h in hs if h["viento_vel"] is not None), default=None)),

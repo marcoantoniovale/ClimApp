@@ -236,3 +236,10 @@ def test_neblina_por_humedad_y_no_por_codigo_del_modelo():
     lluvia = _horas([0.5, 0.5, 0.5], humedad=98.0, codigo=61)
     snapshot.cielo_por_hora(lluvia)
     assert all(x["estado_cielo"] == 63 for x in lluvia.values())    # con lluvia manda la lluvia
+
+
+def test_cielo_del_dia_y_neblina():
+    assert snapshot.cielo_del_dia([45, 45, 3, 3, 2] + [1] * 19) == 3          # 2 h de neblina: manda el resto
+    assert snapshot.cielo_del_dia([45] * 8 + [3] * 16) == 45                 # neblina buena parte del día
+    assert snapshot.cielo_del_dia([45] * 10 + [61] * 3 + [3] * 11) == 61     # la lluvia manda sobre la neblina
+    assert snapshot.cielo_del_dia([]) is None
