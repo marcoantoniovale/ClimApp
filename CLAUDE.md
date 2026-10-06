@@ -374,6 +374,11 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Web: `/puerto/<x>` (viento en **nudos** en toda la vista con `VientoEnNudos`, tabla "El mar hora a hora", avisos de la comuna), `/puertos` (por región: viento, olas, ráfagas y olas máximas de hoy, avisos), "Puertos" en la navegación, puertos en el buscador ("Puerto de Quintero"), enlace al puerto desde su comuna. Lluvia del hora a hora con coma decimal. Revisado con capturas (celular).
 - Pruebas: ETL 108, web 35.
 
+### 2026-10-06 — rama `docs/inia` (evaluación de INIA, sin cambios de código)
+- Pedido del usuario: evaluar la red agrometeorológica de INIA. **Sus servidores de datos están caídos** (agrometeorologia.cl, agromet.inia.cl y tizon.inia.cl, en 200.54.96.5–6, rechazan la conexión desde este PC y desde GitHub Actions en EE. UU.; www.inia.cl responde): no es un bloqueo a ClimApp.
+- Con la lista de estaciones descargada el 2026-10-01: 481 estaciones (210 INIA y 271 de otras redes: DMC 112, Servimet 42, CEAZA 34, Arauco 30, MMA-DMC 18, etc.). Sin contar las DMC, hay estaciones en **207 comunas, 119 de ellas hoy sin estación DMC/SINCA propia** (sobre todo rurales del centro y sur: Alhué, Arauco, Bulnes, Calbuco, Cañete, Carahue, Castro, Chonchi, Curacautín, Frutillar, Futrono, Gorbea…).
+- No se encontraron condiciones de uso ni un servicio de datos público (datos.gob.cl: 0 resultados); el portal muestra los datos por variable y descarga por formulario. Varias redes son de terceros (Arauco, Agrichile, APECO): usarlas requiere permiso.
+
 ---
 
 ## 8. Pendientes
@@ -407,7 +412,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [x] Algoritmo ClimApp v2 (2026-10-01): altura, varias estaciones por cuadrante, τ automático, control de calidad, validación diaria.
 - [ ] Algoritmo ClimApp: revisar la validación diaria (`select fecha, metricas from algoritmo_validacion order by fecha desc`) y recalibrar con 2–3 semanas (el sesgo inicial es dentro de muestra); probar el sesgo con `forecast_archive` a 24–72 h.
 - [ ] Verificar que SINCA responde desde GitHub Actions (job `sinca_obs` en `ingestion_runs`).
-- [ ] INIA (agrometeorologia.cl, 210 estaciones): revisar términos y acceso a datos; sumarla si es posible.
+- [ ] **INIA** (evaluada 2026-10-06, ver bitácora): servidores caídos ese día; aportaría estaciones a 119 comunas sin estación propia. Siguiente paso: **solicitud formal a INIA** (acceso a datos/API para un servicio público no comercial, con atribución) y volver a revisar el portal cuando esté en línea.
 - [x] SINCA: catálogo renovado cada semana por el job `sinca_catalogo` (2026-10-03).
 - [x] Migraciones 0015 y 0016 aplicadas (2026-10-06): mediciones cada 15 min disparadas desde Supabase; UKMO y JMA en la mediana de lluvia.
 - [x] Uso de GitHub Actions: el repositorio es público (2026-10-06), los minutos son gratuitos.
