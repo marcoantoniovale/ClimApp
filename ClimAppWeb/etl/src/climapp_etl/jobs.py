@@ -41,7 +41,8 @@ CORRECTION_EVERY = timedelta(hours=3)
 VALIDATION_EVERY = timedelta(hours=20)  # validación del algoritmo ClimApp (una vez al día)
 RESIDUOS_HORAS = 48                    # horas hacia atrás que revisa el registro de errores
 DMC_MAX_AGE = timedelta(hours=3)       # lecturas más antiguas del mapa DMC no se guardan
-PUBLICA_EN_WEB = {"snapshots", "armada_avisos", "pasos_dmc", "residuos", "localidades"}   # tras ellos, renovar la web
+LLUVIA_MAX_AGE = timedelta(hours=3)    # lluvia medida más antigua no se publica
+PUBLICA_EN_WEB = {"snapshots", "armada_avisos", "pasos_dmc", "residuos", "localidades", "dmc_lluvia"}   # tras ellos, renovar la web
 ARCHIVE_EVERY = timedelta(hours=24)
 MAINTENANCE_EVERY = timedelta(hours=1)   # limpieza cada hora: cada historial se borra apenas cumple su plazo
 SINCA_CATALOGO_EVERY = timedelta(days=7)
@@ -510,6 +511,62 @@ def dmc_history(conn: psycopg.Connection) -> None:
         log.info("DMC historial: %d estaciones, %d horas nuevas", len(estaciones), total)
 
 
+def dmc_rain(conn: psycopg.Connection, guardar: bool = True) -> None:
+    """Lluvia medida en las estaciones DMC activas (visor de precipitación de cada una) →
+    observations.precipitacion_1h y clave `lluvia` de Redis, que la web usa en "Ahora".
+
+    guardar=False (comando `mediciones`, cada 15 min): solo Redis; la base guarda una lectura por hora (`auto`)."""
+    with track_run(conn, "dmc_lluvia") as run:
+        now = datetime.now(timezone.utc)
+        estaciones = list(conn.execute("""
+            select s.id, s.nombre, s.lat, s.lon from stations s
+            where s.red = 'dmc' and s.activa and exists (
+                select 1 from observations o where o.station_id = s.id and o.observed_at > now() - interval '6 hours')
+            order by s.id"""))
+
+        def leer(est):
+            try:
+                return est, dmc_obs.fetch_precipitacion(est[0].removeprefix("dmc-")), None
+            except Exception as exc:  # una estación caída no detiene a las demás
+                return est, None, exc
+
+        with ThreadPoolExecutor(max_workers=12) as pool:   # 12: ~15 s para ~150 estaciones (6: ~35 s)
+            resultados = list(pool.map(leer, estaciones))
+        lecturas, sin_pluviometro = [], 0
+        for (sid, nombre, lat, lon), p, exc in resultados:
+            if exc:
+                run.warn(f"{sid}: {exc}")
+            elif p is None:
+                sin_pluviometro += 1
+            elif now - LLUVIA_MAX_AGE <= p["hasta"] <= now + timedelta(minutes=30):
+                lecturas.append((sid, nombre, lat, lon, p))
+        if guardar:
+            with conn.cursor() as cur:
+                cur.executemany("""
+                    insert into observations (station_id, observed_at, precipitacion_1h) values (%s, %s, %s)
+                    on conflict (station_id, observed_at) do update set precipitacion_1h = excluded.precipitacion_1h""",
+                    [(sid, p["hasta"], p["mm"][1]) for sid, _, _, _, p in lecturas])
+        payload = {"generado": snapshot._iso_local(now), "estaciones": [
+            {"id": sid, "nombre": nombre, "lat": lat, "lon": lon, "hasta": snapshot._iso_local(p["hasta"]),
+             "mm_1h": p["mm"].get(1), "mm_3h": p["mm"].get(3), "mm_6h": p["mm"].get(6), "mm_24h": p["mm"].get(24),
+             "ultima": snapshot._iso_local(p["ultima"]) if p["ultima"] else None}
+            for sid, nombre, lat, lon, p in lecturas]}
+        published = redis.publish({"lluvia": payload}) if lecturas else 0
+        con_lluvia = sum(1 for *_, p in lecturas if (p["mm"].get(1) or 0) > 0)
+        run.filas = len(lecturas)
+        run.detalle.append(f"{len(estaciones)} estaciones, {len(lecturas)} con lluvia medida reciente "
+                           f"({con_lluvia} lloviendo), {sin_pluviometro} sin pluviómetro")
+        log.info("DMC lluvia: %d estaciones, %d lecturas, %d con lluvia en la última hora, %d sin pluviómetro, redis=%d",
+                 len(estaciones), len(lecturas), con_lluvia, sin_pluviometro, published)
+
+
+def measurements(conn: psycopg.Connection) -> None:
+    """Ingesta liviana entre las horarias (cada 15 min, flujo mediciones.yml): lluvia medida DMC en Redis
+    y renovación de la web. La DMC renueva la lluvia cada ~15 min; temperaturas y modelos siguen en `auto`."""
+    dmc_rain(conn, guardar=False)
+    log.info("web: renovación %s", "ok" if web.revalidar() else "no disponible")
+
+
 def sinca_observations(conn: psycopg.Connection) -> None:
     """Temperatura horaria de las estaciones SINCA con temperatura (catálogo) → stations + observations."""
     with track_run(conn, "sinca_obs") as run:
@@ -946,6 +1003,7 @@ def auto(conn: psycopg.Connection, with_observations: bool = True) -> None:
     jobs = [("open_meteo", forecast, "por_corrida"),
             ("open_meteo_archivo", archive, ARCHIVE_EVERY),
             ("dmc_obs", dmc_observations, None),
+            ("dmc_lluvia", dmc_rain, None),
             ("sinca_catalogo", sinca_catalog, SINCA_CATALOGO_EVERY),
             ("sinca_obs", sinca_observations, None),
             ("residuos", residuals, None),

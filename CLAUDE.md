@@ -323,6 +323,19 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - ETL: el precálculo se rehace cuando cambia el día aunque no haya corrida nueva (entre 00:00 y 00:59 se ven 6 días hasta la ingesta de las 00:59).
 - Verificado en Chrome con el reloj adelantado a las 00:46: producción mostraba "Lun 5" (día anterior) seleccionado; la versión corregida parte en "Hoy" con la hora 00:00. Pruebas web 24, ETL 95.
 
+### 2026-10-06 — rama `ccr-4fc20060-hdky4r` (lluvia medida en "Ahora")
+- Reclamo del usuario: en Loncura todas las apps decían que llovía y ClimApp, "Nublado". Diagnóstico: el pronóstico sí traía lluvia (57,9 mm para el 6-oct), pero la hora en curso (23–24 h) daba 0 mm en ICON y en ECMWF (corridas de las 15:00), y el cielo de "Ahora" era solo modelo. La estación DMC de Quintero midió 5,4 mm ese día (2,6 mm en 3 h).
+- Fuentes revisadas (desde GitHub Actions; este entorno no tiene red): SINCA no mide lluvia en la zona (solo TEMP, RHUM, WDIR, WSPD, GLOB); el campo de lluvia del mapa nacional de la DMC siempre trae "."; los METAR (`condicionactual.js`) traen lluvia solo en ~30 aeropuertos. **Fuente elegida: visor de precipitación por estación de la DMC** (`visorEmaPrecipitacion/<código>`): tabla de 1/3/6/12/24/36 h renovada cada ~15 min y pluviógrafo minuto a minuto. 149 estaciones, 110 con pluviómetro, 0 errores, 34 s (6 en paralelo).
+- ETL: `dmc_obs.parse_precipitacion` (con muestras reales recortadas en `tests/fixtures/dmc/precipitacion_*.html`); job `dmc_lluvia` cada hora en `auto` (tras `dmc_obs`): guarda `observations.precipitacion_1h` (fila al fin del período, sin temperatura) y publica la clave Redis `lluvia`; renueva la web. Comando manual: `python -m climapp_etl dmc_lluvia`.
+- Web: [lib/lluvia.ts](ClimAppWeb/web/src/lib/lluvia.ts) (estación más cercana ≤ 15 km; vigente ≤ 2 h). En "Ahora", si llovió en la última hora el cielo pasa a lluvia por intensidad (< 0,5 mm débil, < 4 mm moderada, ≥ 4 mm fuerte) con "(medida)", la tarjeta Lluvia muestra los mm medidos y una línea cita la estación ("Lluvia medida en Quintero, Climatológica (a 1,4 km): 0,1 mm entre las 22:15 y las 23:15 · 2,6 mm en 3 h"). Si no llovió en la última hora pero sí en 3 h, se informa sin cambiar el cielo. Comunas y localidades.
+- Verificado con la web contra un Redis simulado (capturas en Chrome sin interfaz) en los dos casos. Pruebas: ETL 98, web 30; lint, tipos y build sin errores.
+
+### 2026-10-06 — rama `ccr-4fc20060-hdky4r` (costo de GitHub Actions y mediciones cada 15 min)
+- Pregunta del usuario: costo de actualizar más seguido. Medido en 100 corridas (tiempo de ejecución de cada job, no de cola): ~3,9 min facturados por corrida → **~3.500 min/mes**, sobre los 2.000 gratuitos de un repositorio privado (revisar github.com/settings/billing). Típica: 3 min; con descarga de modelos 5–6; `localidades_perfil` (diario) ~9 min.
+- **Optimización (opción 2)**: SINCA se llevaba 75–87 s por corrida porque una consulta se colgaba hasta el plazo de 60 s (mediana real 1,2 s). Plazo de 8 s y 3 intentos en `sinca.fetch_temperaturas` → **16–20 s**, 0 errores, mismas lecturas (3.269). Lluvia DMC con 12 hilos y plazo de 20 s: 35 → 15 s. Más hilos o pedir menos días en SINCA no cambiaba nada (medido).
+- **Repositorio público (opción 1)**: auditado todo el historial (99 commits, todas las ramas): sin contraseñas, tokens ni `.env` (solo las plantillas vacías), sin datos de los redactores DMC; la IP 172.16.0.188 de una muestra de la Armada es privada. El cambio de visibilidad lo debe hacer el usuario (el sistema de permisos lo bloqueó para el agente).
+- **Mediciones cada 15 min**: comando `mediciones` (lluvia DMC solo a Redis + renovar la web; la base guarda una lectura por hora en `auto`) y flujo [mediciones.yml](.github/workflows/mediciones.yml) a los minutos 14, 29 y 44. **Solo corre si la variable del repositorio `MEDICIONES_15MIN` = `si`** (activarla con el repo público; en privado serían ~2.200 min/mes más). Temperaturas DMC/SINCA son horarias en la fuente: no ganan con 15 min.
+
 ---
 
 ## 8. Pendientes
@@ -358,7 +371,8 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Verificar que SINCA responde desde GitHub Actions (job `sinca_obs` en `ingestion_runs`).
 - [ ] INIA (agrometeorologia.cl, 210 estaciones): revisar términos y acceso a datos; sumarla si es posible.
 - [x] SINCA: catálogo renovado cada semana por el job `sinca_catalogo` (2026-10-03).
-- [ ] Mediciones cada 15 min (hoy cada hora, al minuto 59): GitHub Actions privado tiene 2.000 min/mes y ya se usan ~720–1.400; evaluar otro ejecutor (repo público, Supabase Edge Function, Cloudflare Worker).
+- [ ] **Mediciones cada 15 min** (código listo, 2026-10-06): (1) el usuario hace público el repositorio (Settings → General → Danger Zone → Change visibility); (2) fusionar a `main`; (3) crear la variable de Actions `MEDICIONES_15MIN` = `si`; (4) revisar corridas del flujo "Mediciones" (~1 min cada una). Opcional: disparador de Supabase a los minutos 14/29/44 si el cron de GitHub se atrasa.
+- [ ] Revisar el uso de GitHub Actions en github.com/settings/billing (medido ~3.500 min/mes en privado antes de la optimización de SINCA).
 - [x] **Búsqueda por localidades** (implementada 2026-10-03 con L1; evaluada 2026-10-01, ver bitácora): índice estático de localidades OSM → comuna (nivel caseríos + barrios de comunas no urbanas, ~114–176 KB gzip, carga diferida al escribir), mostrar "Loncura · pronóstico de Quintero", desambiguar nombres repetidos, atribución ODbL. Validar contra entidades pobladas INE 2017.
 
 - [x] Retención de observaciones: 180 días (2026-10-01) → **60 días** (2026-10-03, L0). Con el archivo de pronósticos 2 veces al día por 90 días, la base se estabiliza en ~387 MB (77 % de 500 MB).
@@ -371,7 +385,8 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Localidades: evaluar incluir caseríos (hamlet, 14.578) con gran diferencia de altura con su cabecera (≥ 400 m); requiere la altura de cada uno (~14.600 llamadas a la API de elevación, repartidas en varios días).
 - [ ] Localidades: renovar el catálogo de OSM cada algunos meses (`python scripts/build_localidades.py`; Overpass puede responder 504) y ampliar `localidades_extra.csv` con lugares que pidan los usuarios.
 - [ ] Vigilar la cuota diaria de Open-Meteo (~9.000 de 10.000 estimadas): si aparecen errores 429 en `ingestion_runs`, espaciar `localidades_perfil` o el archivo.
-- [ ] **Validar la lluvia**: guardar lluvia medida (series RAIN de SINCA; revisar si la DMC la publica) y medir inicio y montos de ICON, ECMWF, la mezcla y Yr (ya archivado en `forecast_archive`).
+- [ ] **Validar la lluvia**: la lluvia medida DMC ya se guarda (`observations.precipitacion_1h`, job `dmc_lluvia`, 110 estaciones; SINCA no mide lluvia en Quintero/Puchuncaví/Concón). Falta medir inicio y montos de ICON, ECMWF, la mezcla y Yr (ya archivado en `forecast_archive`).
+- [ ] Lluvia medida en "Ahora": tras fusionar a `main`, revisar en `ingestion_runs` el job `dmc_lluvia` (tiempo, estaciones sin pluviómetro) y verificar la página de una comuna con lluvia. Opcional: agregar `dmc_lluvia` a las opciones de `workflow_dispatch` de `ingesta.yml`.
 - [ ] Mostrar el rango de inicio de la lluvia entre modelos ("lluvia probable desde las 19–22 h"), vista de fiabilidad RF05.3.
 - [ ] Opcional: Vercel Speed Insights (velocidad real en celulares).
 
