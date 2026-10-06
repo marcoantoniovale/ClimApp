@@ -35,7 +35,7 @@ CATALOGO = Path(__file__).resolve().parents[2] / "data" / "catalog" / "estacione
 HORA_SINCA = timezone(timedelta(hours=-4))
 # La consulta típica tarda ~1 s, pero a veces una queda colgada: con el plazo general (60 s) esa sola
 # estación alargaba sinca_obs de ~15 a ~75 s (medido el 2026-10-06). Plazo corto y reintento.
-_get_rapido = functools.partial(http.get_text, timeout=15, attempts=3)
+_get_rapido = functools.partial(http.get_text, timeout=8, attempts=3)
 
 _SERIE = re.compile(r"macropath=(\./[^&\"']+/Met/TEMP)&(?:amp;)?macro=(horario_\d+)&(?:amp;)?from=\d+&(?:amp;)?to=(\d+)")
 

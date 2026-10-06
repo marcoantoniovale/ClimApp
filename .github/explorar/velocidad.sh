@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Medición temporal de velocidad de SINCA y DMC con el código de la rama (se borra al terminar).
+# Medición temporal (plazo 8 s) de velocidad de SINCA y DMC con el código de la rama (se borra al terminar).
 set -eu
 cd ClimAppWeb/etl && pip install -q -e . && python - <<'PY'
 import time
