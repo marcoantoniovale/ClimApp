@@ -3,6 +3,7 @@ import { cardinal, categoriaUV, cielo, esNoche, grados, hora, proteccionUV, visi
 
 import WeatherIcon from "../WeatherIcon";
 import Flecha from "./Flecha";
+import { useViento } from "./viento";
 
 function Dato({ label, valor, detalle }: { label: string; valor: string; detalle?: string }) {
   return (
@@ -20,6 +21,7 @@ function Dato({ label, valor, detalle }: { label: string; valor: string; detalle
  * presión, isoterma 0 °C y nieve.
  */
 export default function Horas({ horas, id, etiquetaId }: { horas: Hora[]; id: string; etiquetaId: string }) {
+  const viento = useViento();
   if (horas.length === 0) {
     return <p id={id} role="tabpanel" aria-labelledby={etiquetaId} className="px-1 py-4 text-sm text-slate-400">Sin datos para este día.</p>;
   }
@@ -36,13 +38,13 @@ export default function Horas({ horas, id, etiquetaId }: { horas: Hora[]; id: st
                 <span className="text-lg font-semibold text-white">{grados(h.temperatura)}</span>
                 <span className={`text-sm ${lluvia ? "text-sky-300" : "text-slate-400"}`}>
                   {h.precip_prob ?? 0} %
-                  {h.precipitacion ? <span className="text-xs"> · {h.precipitacion} mm</span> : null}
+                  {h.precipitacion ? <span className="text-xs"> · {h.precipitacion.toLocaleString("es-CL")} mm</span> : null}
                   <span className="sr-only">, {cielo(h.estado_cielo).texto}</span>
                 </span>
                 <span className="flex items-center gap-1 text-sm text-slate-300">
                   <Flecha desde={h.viento_dir} />
-                  {h.viento ?? "–"}
-                  <span className="text-xs text-slate-400">km/h</span>
+                  {viento.valor(h.viento)}
+                  <span className="text-xs text-slate-400">{viento.unidad}</span>
                   <svg className="ml-1 h-4 w-4 text-slate-500 transition-transform group-open:rotate-180" viewBox="0 0 24 24"
                     fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
                 </span>
@@ -50,9 +52,9 @@ export default function Horas({ horas, id, etiquetaId }: { horas: Hora[]; id: st
               <dl className="mb-3 grid grid-cols-2 gap-x-4 gap-y-3 rounded-2xl bg-climapp-bg/60 p-3 sm:grid-cols-4">
                 <Dato label="Estado" valor={cielo(h.estado_cielo).texto} />
                 <Dato label="Sensación térmica" valor={grados(h.sensacion_termica)} />
-                <Dato label="Viento" valor={`${h.viento ?? "–"} km/h ${cardinal(h.viento_dir)}`}
-                  detalle={h.rafaga != null ? `ráfagas ${h.rafaga} km/h` : undefined} />
-                <Dato label="Lluvia" valor={`${h.precip_prob ?? 0} % · ${h.precipitacion ?? 0} mm`}
+                <Dato label="Viento" valor={`${viento.valor(h.viento)} ${viento.unidad} ${cardinal(h.viento_dir)}`}
+                  detalle={h.rafaga != null ? `ráfagas ${viento.valor(h.rafaga)} ${viento.unidad}` : undefined} />
+                <Dato label="Lluvia" valor={`${h.precip_prob ?? 0} % · ${(h.precipitacion ?? 0).toLocaleString("es-CL")} mm`}
                   detalle={h.nieve ? `nieve ${h.nieve} cm` : undefined} />
                 <Dato label="Humedad" valor={h.humedad == null ? "–" : `${h.humedad} %`} />
                 <Dato label="Punto de rocío" valor={grados(h.punto_rocio)} />

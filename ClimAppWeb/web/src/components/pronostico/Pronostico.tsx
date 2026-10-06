@@ -13,6 +13,8 @@ import WarningList from "../weather/WarningList";
 import Ahora from "./Ahora";
 import Dias from "./Dias";
 import Horas from "./Horas";
+import MarHoras from "./MarHoras";
+import { VientoEnNudos } from "./viento";
 
 /**
  * Vista completa del pronóstico de una ubicación: ahora, avisos, selector de días (hoy + 5) con su
@@ -36,7 +38,9 @@ export default function Pronostico({ p: recibido, etiqueta }: { p: PronosticoCon
   const ahora = p.horas[0];
   const hoy = dias.find((d) => ahora && d.fecha === fechaLocal(ahora.hora)) ?? dias[0];
 
+  const puerto = p.ubicacion.tipo === "puerto";
   return (
+    <VientoEnNudos activo={puerto}>
     <div className="space-y-4">
       <Ahora nombre={p.ubicacion.nombre} region={p.ubicacion.region} comuna={p.ubicacion.comuna?.nombre} etiqueta={etiqueta}
         ahora={ahora} horas={base} hoy={hoy} observacion={p.observacion} ancla={p.ancla} lluvia={p.lluvia} proxima={p.proxima_lluvia} />
@@ -71,7 +75,24 @@ export default function Pronostico({ p: recibido, etiqueta }: { p: PronosticoCon
         )}
       </section>
 
+      {puerto && <MarHoras marino={p.marino} horas={horas} />}
       {p.ubicacion.es_costera && <MarineForecast marino={p.marino} />}
+
+      {p.puertos && p.puertos.length > 0 && (
+        <section aria-labelledby="puertos-comuna">
+          <h2 id="puertos-comuna" className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-400">Puertos</h2>
+          <ul className="flex flex-wrap gap-2">
+            {p.puertos.map((x) => (
+              <li key={x.slug}>
+                <Link href={`/puerto/${x.slug}`}
+                  className="block rounded-full border border-climapp-line bg-climapp-card/70 px-3 py-1.5 text-sm hover:border-climapp-teal hover:text-white">
+                  ⚓ {x.nombre} <span className="text-xs text-slate-400">viento en nudos y olas hora a hora</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {p.localidades && p.localidades.length > 0 && (
         <section aria-labelledby="localidades">
@@ -116,5 +137,6 @@ export default function Pronostico({ p: recibido, etiqueta }: { p: PronosticoCon
       )}
 
     </div>
+    </VientoEnNudos>
   );
 }

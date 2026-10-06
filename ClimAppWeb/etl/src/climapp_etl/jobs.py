@@ -39,7 +39,8 @@ LLUVIA_EXTRA_EVERY = timedelta(hours=6)
 MIGRACION_LLUVIA = "0016_modelos_lluvia.sql"   # permite guardar ukmo/jma en forecast_current y model_runs
 STATION_FORECAST_MAX_AGE = timedelta(hours=6)   # respaldo si no hay registro de corridas
 LOCALIDADES_PERFIL_EVERY = timedelta(hours=24)
-MARINE_EVERY = timedelta(hours=3)
+MARINE_EVERY = timedelta(hours=6)    # el modelo de oleaje se renueva cada 6–12 h (antes 3 h: ahorra cuota)
+MODELOS_PUERTO = ("icon", "ecmwf")
 PASOS_DMC_EVERY = timedelta(hours=3)   # la DMC emite ~2 veces al día
 CORRECTION_EVERY = timedelta(hours=3)
 VALIDATION_EVERY = timedelta(hours=20)  # validación del algoritmo ClimApp (una vez al día)
@@ -93,14 +94,17 @@ def forecast(conn: psycopg.Connection, models: list[str] | None = None,
         fetched_at = datetime.now(timezone.utc)
         budget = open_meteo.MinuteBudget()
         records = []
-        location_ids = [p.key for p in comunas + pasos]
+        # Puertos: solo ICON y ECMWF (viento, temperatura, lluvia, cielo); sin GFS, UKMO ni JMA por la cuota.
+        puertos = [open_meteo.Point(*r) for r in conn.execute(
+            "select id, lat, lon from locations where tipo = 'puerto' order by id")]
+        location_ids = [p.key for p in comunas + pasos + puertos]
         # Una petición por modelo (y grupo), cada modelo con sus variables; los de solo lluvia, juntos.
         extra = [m for m in models if m in open_meteo.LLUVIA_EXTRA]
         peticiones = [[m] for m in models if m not in extra] + ([extra] if extra else [])
         for grupo_modelos in peticiones:
             variables = open_meteo.MODEL_VARIABLES[grupo_modelos[0]]
-            for group in (comunas, pasos):
-                if not group:
+            for group in (comunas, pasos, puertos):
+                if not group or (group is puertos and not set(grupo_modelos) <= set(MODELOS_PUERTO)):
                     continue
                 try:
                     responses = open_meteo.fetch(group, variables, FORECAST_DAYS, past_days=1, models=grupo_modelos,
@@ -328,9 +332,13 @@ def snapshots(conn: psycopg.Connection) -> None:
         now = datetime.now(timezone.utc)
         cols = list(open_meteo.COLUMNS)
         locations = [dict(zip(("id", "slug", "nombre", "alias", "region", "tipo", "lat", "lon", "es_costera",
-                               "altura_m", "elevacion_m"), r))
-                     for r in conn.execute("""select id, slug, nombre, alias, region, tipo, lat, lon, es_costera,
-                                                     altura_m, elevacion_m from locations order by id""")]
+                               "altura_m", "elevacion_m", "comuna"), r))
+                     for r in conn.execute("""select l.id, l.slug, l.nombre, l.alias, l.region, l.tipo, l.lat, l.lon,
+                                                     l.es_costera, l.altura_m, l.elevacion_m,
+                                                     case when c.id is null then null
+                                                          else json_build_object('slug', c.slug, 'nombre', c.nombre) end
+                                              from locations l left join locations c on c.id = l.comuna_id
+                                              order by l.id""")]
         rows, fetched = defaultdict(list), {}
         for r in conn.execute(f"""select location_id, modelo, valid_time, fetched_at, {', '.join(cols)}
                                   from forecast_current where valid_time >= now() - interval '30 hours'"""):
@@ -355,7 +363,7 @@ def snapshots(conn: psycopg.Connection) -> None:
             if not rows.get(loc["id"]):
                 run.warn(f"Sin pronóstico: {loc['slug']}")
                 continue
-            corr = ({"franjas": {}, "estaciones": []} if loc["tipo"] != "comuna" else
+            corr = ({"franjas": {}, "estaciones": []} if loc["tipo"] not in ("comuna", "puerto") else
                     correccion.correccion(loc["lat"], loc["lon"], loc["elevacion_m"], loc["es_costera"],
                                           estaciones_sesgo))
             corregidas += bool(corr["franjas"])
@@ -380,6 +388,7 @@ def snapshots(conn: psycopg.Connection) -> None:
         items = {f"loc:{p['ubicacion']['slug']}": p for p in payloads.values()}
         items["indice"] = index
         items["pasos"] = _pasos_payload(locations, payloads, now)
+        items["puertos"] = _puertos_payload(locations, payloads, now)
         items["meta"] = {"generado": snapshot._iso_local(now), "ubicaciones": len(payloads)}
         published = redis.publish(items)
         if not redis.configured():
@@ -394,7 +403,7 @@ def _mediciones(conn: psycopg.Connection, locations: list[dict]) -> dict[int, di
     lecturas = _lecturas(conn)
     out = {}
     for loc in locations:
-        if loc["tipo"] != "comuna":
+        if loc["tipo"] not in ("comuna", "puerto"):
             continue
         m = correccion.medicion_cercana(loc["lat"], loc["lon"], loc["es_costera"], lecturas)
         if m:
@@ -434,6 +443,36 @@ def _pasos_payload(locations: list[dict], payloads: dict[int, dict], now: dateti
         })
     pasos.sort(key=lambda x: -x["lat"])   # de norte a sur
     return {"generado": snapshot._iso_local(now), "pasos": pasos}
+
+
+def _puertos_payload(locations: list[dict], payloads: dict[int, dict], now: datetime) -> dict:
+    """Resumen de los puertos para la página /puertos: viento y oleaje de ahora y máximos de hoy."""
+    puertos = []
+    for loc in locations:
+        p = payloads.get(loc["id"])
+        if loc["tipo"] != "puerto" or not p:
+            continue
+        ahora = p["horas"][0] if p["horas"] else {}
+        hoy = p["dias"][0] if p["dias"] else {}
+        mar = (p.get("marino") or {})
+        ola = (mar.get("horas") or [{}])[0]
+        mar_hoy = (mar.get("dias") or [{}])[0]
+        puertos.append({
+            "slug": loc["slug"], "nombre": loc["nombre"], "region": loc["region"], "comuna": loc.get("comuna"),
+            "lat": loc["lat"], "lon": loc["lon"],
+            "ahora": {k: ahora.get(k) for k in ("estado_cielo", "temperatura", "viento", "viento_dir", "rafaga")}
+                     | {"ola": ola.get("altura"), "periodo": ola.get("periodo"), "ola_dir": ola.get("direccion")},
+            "hoy": {k: hoy.get(k) for k in ("viento_max", "rafaga_max", "precip_prob")} | {"ola_max": mar_hoy.get("altura_max")},
+        })
+    # De norte a sur por región (según sus puertos continentales) y, dentro de la región, las islas al final:
+    # Hanga Roa está más al norte que Coquimbo, pero es de la Región de Valparaíso.
+    isla = lambda x: x["lon"] < -76
+    norte = {}
+    for x in puertos:
+        if not isla(x):
+            norte[x["region"]] = max(norte.get(x["region"], -90), x["lat"])
+    puertos.sort(key=lambda x: (-norte.get(x["region"], x["lat"]), isla(x), -x["lat"]))
+    return {"generado": snapshot._iso_local(now), "puertos": puertos}
 
 
 def _nearest_locations(locations: list[dict], n: int) -> dict[int, list[dict]]:
@@ -656,7 +695,7 @@ def sinca_catalog(conn: psycopg.Connection) -> None:
 
 def _completar_alturas(conn: psycopg.Connection, budget: open_meteo.MinuteBudget) -> None:
     """Altura del terreno de estaciones y comunas que aún no la tienen (una vez por punto)."""
-    for tabla, columna, filtro in (("stations", "altura_m", "true"), ("locations", "elevacion_m", "tipo = 'comuna'")):
+    for tabla, columna, filtro in (("stations", "altura_m", "true"), ("locations", "elevacion_m", "tipo in ('comuna', 'puerto')")):
         puntos = [open_meteo.Point(r[0], r[1], r[2]) for r in conn.execute(
             f"select id, lat, lon from {tabla} where {columna} is null and {filtro}")]
         if not puntos:
@@ -836,7 +875,7 @@ def _publicar_algoritmo(conn: psycopg.Connection) -> int:
     su hora, las estaciones usadas y la medición más cercana para mostrar; además τ y la última validación."""
     anomalias = _anomalias(conn)
     locations = [dict(zip(("id", "slug", "tipo", "lat", "lon", "es_costera", "elevacion_m"), r)) for r in conn.execute(
-        "select id, slug, tipo, lat, lon, es_costera, elevacion_m from locations where tipo = 'comuna'")]
+        "select id, slug, tipo, lat, lon, es_costera, elevacion_m from locations where tipo in ('comuna', 'puerto')")]
     mediciones = _mediciones(conn, locations)
     _, validacion = _ultima_validacion(conn)
     tau = validacion.get("tau_h") or correccion.TAU_H

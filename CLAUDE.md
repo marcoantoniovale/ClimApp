@@ -367,6 +367,13 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - **Vigilancia de fallas**: `/api/health` revisa cada dato con su plazo (pronóstico 8 h, ajuste del momento 3 h, lluvia medida 2 h, avisos 3 h) y responde 503 con los atrasados. Flujo [vigilancia.yml](.github/workflows/vigilancia.yml) cada hora: si la salud no es 200, la corrida falla y GitHub avisa por correo. Disparo desde Supabase: migración [0017](ClimAppWeb/db/migrations/0017_disparador_vigilancia.sql) (minuto 37).
 - Pruebas: ETL 107, web 35.
 
+### 2026-10-06 — rama `feature/puertos`
+- Migración 0017 (vigilancia) aplicada y verificada: tarea `climapp-vigilancia` (minuto 37); primera corrida OK.
+- **Puertos** (pedido del usuario, sección 3 de pendientes): **44 puertos** curados a mano en [puertos_fuente.csv](ClimAppWeb/etl/data/catalog/puertos_fuente.csv) (capitanías y estaciones de la Armada con nombre real + Antofagasta, Castro, Punta Arenas, Porvenir y Puerto Williams); [build_puertos.py](ClimAppWeb/etl/scripts/build_puertos.py) asigna la comuna por polígono (Lirquén → Penco, Chacao → Ancud, Puerto Edén → Natales) y genera `puertos.csv` y `web/public/puertos.json`. Semilla: `locations` tipo `puerto` (slug `puerto-<x>`), migración [0018](ClimAppWeb/db/migrations/0018_puertos.sql) (`comuna_id`).
+- ETL: pronóstico propio en el punto del puerto solo con ICON y ECMWF (`MODELOS_PUERTO`, por cuota); oleaje propio; **oleaje de todos cada 6 h en vez de 3 h** (el modelo de oleaje se renueva cada 6–12 h; compensa la cuota de los puertos); corrección del algoritmo, medición cercana y ajuste del momento también en puertos; oleaje hora a hora (48 h) en el JSON del puerto; clave `puertos` (resumen para `/puertos`, de norte a sur por región, islas al final).
+- Web: `/puerto/<x>` (viento en **nudos** en toda la vista con `VientoEnNudos`, tabla "El mar hora a hora", avisos de la comuna), `/puertos` (por región: viento, olas, ráfagas y olas máximas de hoy, avisos), "Puertos" en la navegación, puertos en el buscador ("Puerto de Quintero"), enlace al puerto desde su comuna. Lluvia del hora a hora con coma decimal. Revisado con capturas (celular).
+- Pruebas: ETL 108, web 35.
+
 ---
 
 ## 8. Pendientes
@@ -415,7 +422,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [x] **Localidades** L0, L1 y L2 implementadas (2026-10-03). Pendiente: L3 (memoria del sesgo más corta, según la validación) y que el usuario compare Loncura/Ventanas en terreno.
 - [ ] Localidades: evaluar incluir caseríos (hamlet, 14.578) con gran diferencia de altura con su cabecera (≥ 400 m); requiere la altura de cada uno (~14.600 llamadas a la API de elevación, repartidas en varios días).
 - [ ] Localidades: renovar el catálogo de OSM cada algunos meses (`python scripts/build_localidades.py`; Overpass puede responder 504) y ampliar `localidades_extra.csv` con lugares que pidan los usuarios.
-- [ ] Vigilar la cuota diaria de Open-Meteo (~9.300 de 10.000 estimadas desde el 2026-10-06, con UKMO/JMA): si aparecen errores 429 en `ingestion_runs`, espaciar `localidades_perfil` o el archivo.
+- [ ] Vigilar la cuota diaria de Open-Meteo (~9.300–9.600 de 10.000 estimadas desde el 2026-10-06, con UKMO/JMA y los puertos; el oleaje pasó a cada 6 h): si aparecen errores 429 en `ingestion_runs`, espaciar `localidades_perfil` o el archivo.
 - [ ] **Validar la lluvia**: la lluvia medida DMC ya se guarda (`observations.precipitacion_1h`, job `dmc_lluvia`, 110 estaciones; SINCA no mide lluvia en Quintero/Puchuncaví/Concón). Falta medir inicio y montos de ICON, ECMWF, la mezcla y Yr (ya archivado en `forecast_archive`).
 - [ ] Lluvia medida en "Ahora": tras fusionar a `main`, revisar en `ingestion_runs` el job `dmc_lluvia` (tiempo, estaciones sin pluviómetro) y verificar la página de una comuna con lluvia. Opcional: agregar `dmc_lluvia` a las opciones de `workflow_dispatch` de `ingesta.yml`.
 - [x] Rango de inicio de la lluvia entre modelos (2026-10-06): línea de próxima lluvia en "Ahora".
@@ -437,7 +444,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [x] Semana 1: spikes, estructura del monorepo, catálogo geográfico, esquema de BD v1 aplicado en Supabase, repositorio remoto. (2026-10-01)
 - [ ] Seguridad: cambiar la contraseña de la base de datos de Supabase y rotar el token de Upstash (ambos se compartieron en el chat); actualizar `ClimAppWeb/.env`, `web/.env.local` y los secretos de GitHub.
 - [x] Comunas costeras marcadas (106) con geometría; zonas de avisos → comunas con nomenclátor. (2026-10-01)
-- [ ] Catálogo de puertos/sectores costeros como ubicaciones propias (`tipo = 'puerto'`), con viento en nudos. Por ahora solo comunas.
+- [x] Puertos como ubicaciones propias (2026-10-06): 44 puertos con viento en nudos y oleaje hora a hora. Pendiente opcional: caletas de pescadores y sectores costeros.
 - [x] Semana 2 (código): conector Open-Meteo (11 variables, 3 modelos), unidades canónicas con pruebas, `forecast_current` / `forecast_archive`, conector de observaciones Armada (adelantado de la semana 3), `ingestion_runs`, retención, flujo de GitHub Actions. (2026-10-01)
 - [ ] Semana 2 (cierre): verificar 3 días seguidos de corridas automáticas del cron (criterio de cierre; revisar `ingestion_runs` o la pestaña Actions). Fusionado a `main` el 2026-10-01.
 - [x] Oleaje (API marina de Open-Meteo) para las 106 comunas costeras en `forecast_marine`. (2026-10-01)

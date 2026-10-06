@@ -58,6 +58,17 @@ def main() -> None:
     ) + "\non conflict (slug) do update set nombre = excluded.nombre, lat = excluded.lat, lon = excluded.lon,"
         " altura_m = excluded.altura_m, region = excluded.region, region_id = excluded.region_id;")
 
+    puertos = read_csv("puertos.csv")
+    lines += ["", "-- Puertos (catálogo puertos.csv, scripts/build_puertos.py); slug con prefijo, ligados a su comuna.",
+              "insert into locations (tipo, slug, nombre, region_id, region, lat, lon, es_costera, comuna_id)",
+              "select 'puerto', v.slug, v.nombre, c.region_id, c.region, v.lat, v.lon, true, c.id from (values"]
+    lines.append(",\n".join(
+        f"  ({sql_str('puerto-' + p['slug'])}, {sql_str(p['nombre'])}, {sql_str(p['comuna'])}, {p['lat']}, {p['lon']})"
+        for p in puertos
+    ) + ") as v (slug, nombre, comuna, lat, lon)\njoin locations c on c.slug = v.comuna and c.tipo = 'comuna'"
+        "\non conflict (slug) do update set nombre = excluded.nombre, lat = excluded.lat, lon = excluded.lon,"
+        " region = excluded.region, region_id = excluded.region_id, comuna_id = excluded.comuna_id;")
+
     lines += ["", "insert into stations (id, red, nombre, lat, lon, location_id) values"]
     lines.append(",\n".join(
         f"  ({sql_str(s['id'])}, {sql_str(s['red'])}, {sql_str(s['nombre'])}, {s['lat']}, {s['lon']}, "
@@ -71,7 +82,7 @@ def main() -> None:
     out = SEEDS / "0001_catalogo.sql"
     out.write_text("\n".join(lines), encoding="utf-8")
     print(f"{out.relative_to(ROOT.parent)}: {len(comunas)} comunas ({len(costeras)} costeras), "
-          f"{len(pasos)} pasos, {len(estaciones)} estaciones")
+          f"{len(pasos)} pasos, {len(puertos)} puertos, {len(estaciones)} estaciones")
 
 
 if __name__ == "__main__":

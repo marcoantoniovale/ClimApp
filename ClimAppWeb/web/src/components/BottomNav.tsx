@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const ITEMS = [
   { href: "/", label: "Inicio", icon: "M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" },
   { href: "/pasos", label: "Pasos", icon: "M2 20l7-12 4 6 3-4 6 10z" },
+  { href: "/puertos", label: "Puertos", icon: "M12 3v18M12 5a2 2 0 1 0 0-.01M5 13a7 7 0 0 0 14 0M8 9h8" },
   { href: "/avisos", label: "Avisos", icon: "M12 3l10 18H2zM12 10v5M12 18h.01" },
 ];
 
@@ -20,7 +21,8 @@ export default function BottomNav() {
     >
       <ul className="mx-auto flex max-w-md justify-around">
         {ITEMS.map((item) => {
-          const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href) || (item.href === "/pasos" && pathname.startsWith("/paso/"));
+          const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href) || (item.href === "/pasos" && pathname.startsWith("/paso/"))
+            || (item.href === "/puertos" && pathname.startsWith("/puerto/"));
           return (
             <li key={item.href}>
               <Link

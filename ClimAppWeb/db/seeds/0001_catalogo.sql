@@ -391,6 +391,56 @@ insert into locations (tipo, slug, nombre, region_id, region, lat, lon, altura_m
   ('paso', 'paso-rio-bellavista', 'Río Bellavista', '12', 'Magallanes y de la Antartica Chilena', -54.000, -68.617, 113, false)
 on conflict (slug) do update set nombre = excluded.nombre, lat = excluded.lat, lon = excluded.lon, altura_m = excluded.altura_m, region = excluded.region, region_id = excluded.region_id;
 
+-- Puertos (catálogo puertos.csv, scripts/build_puertos.py); slug con prefijo, ligados a su comuna.
+insert into locations (tipo, slug, nombre, region_id, region, lat, lon, es_costera, comuna_id)
+select 'puerto', v.slug, v.nombre, c.region_id, c.region, v.lat, v.lon, true, c.id from (values
+  ('puerto-arica', 'Arica', 'arica', -18.47692, -70.32194),
+  ('puerto-pisagua', 'Pisagua', 'huara', -19.59594, -70.21120),
+  ('puerto-iquique', 'Iquique', 'iquique', -20.21128, -70.15343),
+  ('puerto-patache', 'Patache', 'iquique', -20.79975, -70.18801),
+  ('puerto-tocopilla', 'Tocopilla', 'tocopilla', -22.09409, -70.20578),
+  ('puerto-mejillones', 'Mejillones', 'mejillones', -23.09889, -70.45278),
+  ('puerto-antofagasta', 'Antofagasta', 'antofagasta', -23.64600, -70.40400),
+  ('puerto-taltal', 'Taltal', 'taltal', -25.40759, -70.48841),
+  ('puerto-chanaral', 'Chañaral', 'chanaral', -26.35111, -70.63770),
+  ('puerto-caldera', 'Caldera', 'caldera', -27.06303, -70.82578),
+  ('puerto-huasco', 'Huasco', 'huasco', -28.46165, -71.22665),
+  ('puerto-coquimbo', 'Coquimbo', 'coquimbo', -29.93544, -71.34220),
+  ('puerto-los-vilos', 'Los Vilos', 'los-vilos', -31.90931, -71.51366),
+  ('puerto-quintero', 'Quintero', 'quintero', -32.77551, -71.52544),
+  ('puerto-valparaiso', 'Valparaíso', 'valparaiso', -33.03798, -71.62734),
+  ('puerto-san-antonio', 'San Antonio', 'san-antonio', -33.57503, -71.62514),
+  ('puerto-pichilemu', 'Pichilemu', 'pichilemu', -34.38495, -72.00851),
+  ('puerto-constitucion', 'Constitución', 'constitucion', -35.32417, -72.40806),
+  ('puerto-lirquen', 'Lirquén', 'penco', -36.71142, -72.97783),
+  ('puerto-talcahuano', 'Talcahuano', 'talcahuano', -36.70806, -73.11278),
+  ('puerto-coronel', 'Coronel', 'coronel', -37.02722, -73.14861),
+  ('puerto-lota', 'Lota', 'lota', -37.09726, -73.15953),
+  ('puerto-lebu', 'Lebu', 'lebu', -37.60467, -73.65370),
+  ('puerto-puerto-saavedra', 'Puerto Saavedra', 'saavedra', -38.78833, -73.39722),
+  ('puerto-corral', 'Corral', 'corral', -39.88771, -73.42778),
+  ('puerto-puerto-montt', 'Puerto Montt', 'puerto-montt', -41.48451, -72.96135),
+  ('puerto-maullin', 'Maullín', 'maullin', -41.61580, -73.59537),
+  ('puerto-chacao', 'Chacao', 'ancud', -41.82947, -73.51869),
+  ('puerto-ancud', 'Ancud', 'ancud', -41.86630, -73.83093),
+  ('puerto-quemchi', 'Quemchi', 'quemchi', -42.14488, -73.47300),
+  ('puerto-castro', 'Castro', 'castro', -42.48100, -73.76200),
+  ('puerto-chonchi', 'Chonchi', 'chonchi', -42.61873, -73.77050),
+  ('puerto-quellon', 'Quellón', 'quellon', -43.12065, -73.62171),
+  ('puerto-chaiten', 'Chaitén', 'chaiten', -42.91462, -72.71182),
+  ('puerto-melinka', 'Melinka', 'guaitecas', -43.89659, -73.74889),
+  ('puerto-puerto-aguirre', 'Puerto Aguirre', 'aysen', -45.16467, -73.52172),
+  ('puerto-puerto-chacabuco', 'Puerto Chacabuco', 'aysen', -45.46505, -72.82149),
+  ('puerto-puerto-eden', 'Puerto Edén', 'natales', -49.12917, -74.42918),
+  ('puerto-puerto-natales', 'Puerto Natales', 'natales', -51.72910, -72.51400),
+  ('puerto-punta-arenas', 'Punta Arenas', 'punta-arenas', -53.16500, -70.90400),
+  ('puerto-porvenir', 'Porvenir', 'porvenir', -53.29600, -70.36900),
+  ('puerto-puerto-williams', 'Puerto Williams', 'cabo-de-hornos', -54.93400, -67.61100),
+  ('puerto-hanga-roa', 'Hanga Roa', 'isla-de-pascua', -27.14987, -109.43702),
+  ('puerto-juan-fernandez', 'Bahía Cumberland', 'juan-fernandez', -33.63604, -78.82943)) as v (slug, nombre, comuna, lat, lon)
+join locations c on c.slug = v.comuna and c.tipo = 'comuna'
+on conflict (slug) do update set nombre = excluded.nombre, lat = excluded.lat, lon = excluded.lon, region = excluded.region, region_id = excluded.region_id, comuna_id = excluded.comuna_id;
+
 insert into stations (id, red, nombre, lat, lon, location_id) values
   ('34646', 'ema', 'Puerto Edén', -49.12917, -74.42918, (select id from locations where cut = '11302')),
   ('66666', 'ema', 'Valparaíso EMA', -33.02, -71.642, (select id from locations where cut = '05101')),
