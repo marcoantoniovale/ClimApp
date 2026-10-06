@@ -33,6 +33,10 @@ MODEL_MAX_AGE = timedelta(hours=9)
 # GFS solo aporta índice UV y visibilidad: 2 veces al día bastan (ahorra cuota de Open-Meteo).
 MODEL_MIN_INTERVAL = {"gfs": timedelta(hours=11)}
 MODEL_MAX_AGE_POR_MODELO = {"gfs": timedelta(hours=15)}
+# UKMO y JMA (solo lluvia, open_meteo.LLUVIA_EXTRA): sin metadatos de corrida, se renuevan por tiempo.
+# Una petición conjunta por renovación (~380 llamadas): ~1.500 al día.
+LLUVIA_EXTRA_EVERY = timedelta(hours=6)
+MIGRACION_LLUVIA = "0016_modelos_lluvia.sql"   # permite guardar ukmo/jma en forecast_current y model_runs
 STATION_FORECAST_MAX_AGE = timedelta(hours=6)   # respaldo si no hay registro de corridas
 LOCALIDADES_PERFIL_EVERY = timedelta(hours=24)
 MARINE_EVERY = timedelta(hours=3)
@@ -73,7 +77,7 @@ def forecast(conn: psycopg.Connection, models: list[str] | None = None,
              runs: dict[str, open_meteo.Run] | None = None) -> None:
     """Pronóstico de todas las comunas → forecast_current. Reemplaza solo los modelos pedidos
     (por defecto, todos) y registra su corrida en model_runs."""
-    models = models or list(open_meteo.MODELS)
+    models = models or modelos_activos(conn)
     with track_run(conn, "open_meteo") as run:
         if runs is None:
             try:
@@ -90,17 +94,26 @@ def forecast(conn: psycopg.Connection, models: list[str] | None = None,
         budget = open_meteo.MinuteBudget()
         records = []
         location_ids = [p.key for p in comunas + pasos]
-        for model in models:  # una petición por modelo (y grupo), cada modelo con sus variables
-            variables = open_meteo.MODEL_VARIABLES[model]
+        # Una petición por modelo (y grupo), cada modelo con sus variables; los de solo lluvia, juntos.
+        extra = [m for m in models if m in open_meteo.LLUVIA_EXTRA]
+        peticiones = [[m] for m in models if m not in extra] + ([extra] if extra else [])
+        for grupo_modelos in peticiones:
+            variables = open_meteo.MODEL_VARIABLES[grupo_modelos[0]]
             for group in (comunas, pasos):
                 if not group:
                     continue
-                responses = open_meteo.fetch(group, variables, FORECAST_DAYS, past_days=1, models=[model],
-                                             budget=budget)
+                try:
+                    responses = open_meteo.fetch(group, variables, FORECAST_DAYS, past_days=1, models=grupo_modelos,
+                                                 budget=budget)
+                except Exception as exc:
+                    if grupo_modelos != extra:
+                        raise
+                    run.warn(f"Lluvia de {', '.join(extra)}: {exc}")   # complementarios: el resto sigue
+                    continue
                 records += [
                     (point.key, m, valid_time, fetched_at, *(values.get(c) for c in open_meteo.COLUMNS))
                     for point, data in responses
-                    for m, valid_time, values in open_meteo.rows(data, variables, models=[model])
+                    for m, valid_time, values in open_meteo.rows(data, variables, models=grupo_modelos)
                 ]
         received = {r[1] for r in records}
         if set(models) - received:
@@ -111,6 +124,8 @@ def forecast(conn: psycopg.Connection, models: list[str] | None = None,
                          (location_ids, sorted(received)))
             _copy(conn, "forecast_current", CURRENT_COLUMNS, records)
             for model in sorted(received):
+                if model in open_meteo.LLUVIA_EXTRA:   # sin metadatos: se registra la hora de descarga
+                    runs = {**runs, model: open_meteo.Run(init=fetched_at, available=fetched_at)}
                 if model in runs:
                     conn.execute("""
                         insert into model_runs (modelo, run_init, available_at, fetched_at) values (%s, %s, %s, %s)
@@ -135,23 +150,37 @@ def due_models(conn: psycopg.Connection, now: datetime) -> tuple[list[str], dict
     """Modelos con una corrida más nueva que la descargada (o demasiado antiguos). Si los metadatos
     no responden, vuelve al criterio de tiempo (FORECAST_EVERY) para todos los modelos."""
     state = {r[0]: (r[1], r[2]) for r in conn.execute("select modelo, run_init, fetched_at from model_runs")}
+    modelos = modelos_activos(conn)
     try:
         runs = open_meteo.latest_runs()
     except Exception:
         log.exception("metadatos de corridas no disponibles; se usa el criterio de tiempo")
         last = last_success(conn, "open_meteo")
-        return (list(open_meteo.MODELS) if not last or now - last >= FORECAST_EVERY - MARGIN else []), {}
-    return pending_models(state, runs, now), runs
+        return (modelos if not last or now - last >= FORECAST_EVERY - MARGIN else []), {}
+    return pending_models(state, runs, now, modelos), runs
+
+
+def modelos_activos(conn: psycopg.Connection) -> list[str]:
+    """Modelos a descargar: UKMO y JMA solo si la base ya los acepta (migración MIGRACION_LLUVIA)."""
+    aplicada = conn.execute("select 1 from schema_migrations where nombre = %s", (MIGRACION_LLUVIA,)).fetchone()
+    return [m for m in open_meteo.MODELS if aplicada or m not in open_meteo.LLUVIA_EXTRA]
 
 
 def pending_models(state: dict[str, tuple[datetime, datetime]], runs: dict[str, open_meteo.Run],
-                   now: datetime) -> list[str]:
+                   now: datetime, modelos: list[str] | None = None) -> list[str]:
     """state: modelo → (run_init descargada, fetched_at). Pendiente si no hay registro, si hay una
-    corrida más nueva o si la descarga es más antigua que MODEL_MAX_AGE."""
-    return [m for m in open_meteo.MODELS
-            if m not in state
-            or (runs[m].init > state[m][0] and now - state[m][1] >= MODEL_MIN_INTERVAL.get(m, timedelta(0)))
-            or now - state[m][1] >= MODEL_MAX_AGE_POR_MODELO.get(m, MODEL_MAX_AGE)]
+    corrida más nueva o si la descarga es más antigua que MODEL_MAX_AGE. Los modelos sin metadatos
+    (LLUVIA_EXTRA) se renuevan cada LLUVIA_EXTRA_EVERY."""
+    def pendiente(m: str) -> bool:
+        if m not in state:
+            return True
+        if m not in runs:
+            return now - state[m][1] >= LLUVIA_EXTRA_EVERY - MARGIN
+        return ((runs[m].init > state[m][0] and now - state[m][1] >= MODEL_MIN_INTERVAL.get(m, timedelta(0)))
+                or now - state[m][1] >= MODEL_MAX_AGE_POR_MODELO.get(m, MODEL_MAX_AGE))
+    if modelos is None:
+        modelos = [m for m in open_meteo.MODELS if m not in open_meteo.LLUVIA_EXTRA]
+    return [m for m in modelos if pendiente(m)]
 
 
 def _marine(conn: psycopg.Connection, fetched_at: datetime) -> int:

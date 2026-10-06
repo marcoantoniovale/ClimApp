@@ -341,6 +341,13 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - **El "schedule" de GitHub no disparó ninguna medición** (03:14, 03:29, 03:44 UTC). En este repositorio casi no dispara: la ingesta horaria se lanzó por "schedule" solo 10 veces en 2 días (cada 4–6 h, hasta 40 min tarde).
 - [0015_disparador_mediciones.sql](ClimAppWeb/db/migrations/0015_disparador_mediciones.sql): `ops.disparar_mediciones()` + tarea `climapp-mediciones` (`14,29,44 * * * *`), mismo token del Vault que la ingesta. `mediciones.yml` ahora respeta `MEDICIONES_15MIN` también cuando lo dispara Supabase (antes todo `workflow_dispatch` corría); a mano, entrada "forzar". SQL validado con pglast.
 
+### 2026-10-06 — rama `ccr-4fc20060-hdky4r` (lluvia por mediana de modelos y neblina)
+- Reclamo del usuario: la temperatura está bien, pero la lluvia hora a hora alterna entre horas con y sin lluvia y la neblina no es fiable. **Primera evaluación contra mediciones** ([docs/precision-evaluacion.md §10](docs/precision-evaluacion.md)): pluviógrafos de 111 estaciones DMC (48 h, 5.548 horas) y METAR de 14 aeropuertos (15 días, 4.885 horas) contra 7 modelos de Open-Meteo (corridas previas, plazos 0–24 y 24–48 h). Datos recolectados desde GitHub Actions con un flujo temporal (ya eliminado).
+- Hallazgos: el esquema anterior pronosticaba el doble de horas de lluvia (sesgo 2,0–2,4, 60 % de falsas alarmas); la probabilidad está mal calibrada (90–100 % → llovió 65 %); los códigos 45/48 de los modelos acertaron 10 % de las horas con niebla/neblina (CSI 0,08).
+- **Lluvia**: mediana de ICON, ECMWF, GFS, UKMO y JMA; la hora llueve si es ≥ 0,2 mm, con suavizado de 3 h en dos pasos; intensidad por mm (`snapshot.cielo_por_hora`). CSI 0,36 → 0,47 (pluviógrafos) y 0,36 → 0,43 (METAR); falsas alarmas 62 % → 38–45 %; la mitad de cambios llueve/no llueve. Lluvia diaria: mediana de los totales de cada modelo.
+- **Neblina**: humedad media ICON + ECMWF ≥ 93 % sin lluvia → código 45, rotulado "Neblina" en la web (antes "Niebla"); los códigos 45/48 de los modelos se descartan. CSI 0,08 → 0,18 (detecta 33 % de las horas). ECMWF ahora entrega humedad.
+- ETL: GFS agrega lluvia; UKMO y JMA (solo lluvia, una petición conjunta cada 6 h, ~1.500 llamadas/día a Open-Meteo) se descargan solo con la migración [0016](ClimAppWeb/db/migrations/0016_modelos_lluvia.sql) aplicada (`jobs.modelos_activos`); sin ella la mediana usa ICON, ECMWF y GFS (CSI 0,47 / 0,39). Pruebas ETL 103, web 30.
+
 ---
 
 ## 8. Pendientes
@@ -376,7 +383,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Verificar que SINCA responde desde GitHub Actions (job `sinca_obs` en `ingestion_runs`).
 - [ ] INIA (agrometeorologia.cl, 210 estaciones): revisar términos y acceso a datos; sumarla si es posible.
 - [x] SINCA: catálogo renovado cada semana por el job `sinca_catalogo` (2026-10-03).
-- [ ] **Mediciones cada 15 min**: repo público, PR #38 fusionado y variable `MEDICIONES_15MIN` creados (2026-10-06). Falta aplicar la migración 0015 en Supabase (`python scripts/migrate.py`) y verificar en `cron.job_run_details` y en Actions → Mediciones.
+- [ ] **Aplicar migraciones 0015 y 0016** (usuario, desde su PC: `python scripts/migrate.py` en `ClimAppWeb/etl`). 0015: mediciones cada 15 min (verificar en `cron.job_run_details` y Actions → Mediciones). 0016: UKMO y JMA en la mediana de lluvia (verificar en el detalle de `open_meteo` en `ingestion_runs`: "modelos: … jma …, ukmo …").
 - [ ] Revisar el uso de GitHub Actions en github.com/settings/billing (medido ~3.500 min/mes en privado antes de la optimización de SINCA).
 - [x] **Búsqueda por localidades** (implementada 2026-10-03 con L1; evaluada 2026-10-01, ver bitácora): índice estático de localidades OSM → comuna (nivel caseríos + barrios de comunas no urbanas, ~114–176 KB gzip, carga diferida al escribir), mostrar "Loncura · pronóstico de Quintero", desambiguar nombres repetidos, atribución ODbL. Validar contra entidades pobladas INE 2017.
 
@@ -393,6 +400,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] **Validar la lluvia**: la lluvia medida DMC ya se guarda (`observations.precipitacion_1h`, job `dmc_lluvia`, 110 estaciones; SINCA no mide lluvia en Quintero/Puchuncaví/Concón). Falta medir inicio y montos de ICON, ECMWF, la mezcla y Yr (ya archivado en `forecast_archive`).
 - [ ] Lluvia medida en "Ahora": tras fusionar a `main`, revisar en `ingestion_runs` el job `dmc_lluvia` (tiempo, estaciones sin pluviómetro) y verificar la página de una comuna con lluvia. Opcional: agregar `dmc_lluvia` a las opciones de `workflow_dispatch` de `ingesta.yml`.
 - [ ] Mostrar el rango de inicio de la lluvia entre modelos ("lluvia probable desde las 19–22 h"), vista de fiabilidad RF05.3.
+- [ ] Lluvia y neblina (§10): repetir la evaluación con 2–3 semanas de `observations.precipitacion_1h` (DMC) y METAR; recalibrar la probabilidad de lluvia (sobreestima) y revisar los umbrales `LLUVIA_MM` (0,2 mm) y `NEBLINA_HR` (93 %) de `snapshot.py`. Vigilar errores 429 de Open-Meteo con UKMO/JMA.
 - [ ] Opcional: Vercel Speed Insights (velocidad real en celulares).
 
 ### Investigación

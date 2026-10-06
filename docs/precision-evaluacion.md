@@ -168,3 +168,29 @@ Corregido además: la lluvia diaria promediaba como 0 mm los modelos que no la p
 - Open-Meteo entrega `precipitation`, `precipitation_probability`, `snowfall` y `weather_code` como valores de la **hora anterior** (la lluvia de 15 a 16 h viene rotulada 16:00). Yr (`next_1_hours`) y Meteored rotulan por la hora que empieza. Desde ahora el JSON usa la hora de inicio (`snapshot.a_hora_de_inicio`).
 - La lluvia era solo de ICON. Ejemplo del 5 oct en Loncura (inicio ≥ 0,2 mm): ECMWF 17 h (aislado), Météo-France 19, GFS 20, ICON 22, JMA 22, GEM 23, UKMO 00; Yr: chubasco de 0,3 mm entre las 15–17 h y lluvia desde las 21 h. Ahora la lluvia es el promedio de ICON y ECMWF (probabilidad promedio; cielo: el código más severo).
 - Pendiente: validar con lluvia medida (no hay mediciones de lluvia guardadas todavía).
+
+## 10. Lluvia por mediana de modelos y neblina por humedad (2026-10-06)
+
+Reclamo del usuario: la temperatura está bien, pero la lluvia hora a hora alterna entre horas con y sin lluvia, y la neblina no es fiable. Evaluado por primera vez contra mediciones.
+
+**Datos** (recolectados desde GitHub Actions, sin la base):
+- Lluvia medida hora a hora: pluviógrafo minuto a minuto de **111 estaciones DMC**, 48 h (4–6 oct, un frente): 5.548 horas, 872 con ≥ 0,2 mm.
+- METAR de **14 aeropuertos, 15 días** (21 sep – 6 oct): 4.885 horas, 511 con lluvia (RA/DZ/SN) y 275 con niebla o neblina (FG, BR o visibilidad < 5 km sin lluvia).
+- Pronósticos: API de corridas previas de Open-Meteo (plazo 0–24 h y 24–48 h) para ICON, ECMWF IFS, GFS, Météo-France, UKMO, GEM y JMA, y la última corrida (con humedad) para los aeropuertos.
+- Métricas: CSI (aciertos / (aciertos + falsas alarmas + fallas)), sesgo (horas pronosticadas / observadas) y cambios llueve/no llueve por día.
+
+**Lluvia.** El esquema anterior (código de cielo de ICON + ECMWF, el más severo) pronosticaba el **doble de horas de lluvia** de las medidas (sesgo 2,0–2,4) con 60 % de falsas alarmas. Con umbral 0,1 mm todos los modelos sobrepronostican la duración. La mediana de modelos con umbral 0,2 mm fue la mejor regla estable en ambos conjuntos y plazos; 5 modelos (ICON, ECMWF, GFS, UKMO, JMA) rinden como 7. Suavizado de 3 h en dos pasos (rellenar una hora seca entre dos de lluvia; quitar la lluvia aislada de una hora): mismo CSI que sin suavizar y la mitad de los cambios llueve/no llueve.
+
+| Código implementado (`snapshot.consensus_hours`) | Pluviógrafos 0–24 h | Pluviógrafos 24–48 h | METAR 15 días |
+|---|---|---|---|
+| Antes (código ICON + ECMWF) | CSI 0,364 · sesgo 2,29 · f. alarma 0,62 | 0,351 · 2,31 · 0,63 | 0,359 · 2,02 · 0,60 |
+| Mediana ICON + ECMWF + GFS (sin migración 0016) | 0,471 · 1,44 · 0,46 | 0,439 · 1,35 · 0,47 | 0,387 · 0,93 · 0,42 |
+| **Mediana de 5 modelos (con 0016)** | **0,470 · 1,41 · 0,45** | **0,444 · 1,35 · 0,46** | **0,433 · 0,96 · 0,38** |
+
+**Probabilidad de lluvia.** Mal calibrada (en las horas con 90–100 % llovió el 65 %; con 50–60 %, el 19 %). El acuerdo entre modelos como probabilidad fue peor (Brier 0,147 vs 0,121 de ICON). Se mantiene la de ICON + ECMWF; recalibrar con más eventos queda pendiente.
+
+**Neblina.** Los códigos 45/48 de los modelos no sirven: con METAR acertaron 29 de 275 horas (10 %), CSI 0,08; ECMWF nunca emitió 45/48; la visibilidad de GFS tampoco (CSI 0,03). La mejor regla fue **humedad media de ICON y ECMWF ≥ 93 % sin lluvia**: CSI 0,18, detecta el 33 % (sesgo 1,2). Con solo la humedad de ICON, CSI 0,09: por eso ECMWF ahora entrega humedad. Sigue siendo una señal débil (la niebla es difícil de pronosticar con modelos globales); se muestra como "Neblina".
+
+**Implementación** (`snapshot.cielo_por_hora`): lluvia de la hora = mediana de los modelos con dato (con 2, el promedio); llueve si es ≥ 0,2 mm, con el suavizado; intensidad por mm (< 0,5 débil, < 4 moderada, ≥ 4 fuerte), conservando chubasco o llovizna si el modelo lo indica; nieve, tormenta y lluvia helada siguen el código del modelo; sin lluvia y humedad ≥ 93 % → neblina; un código de lluvia o niebla del modelo que no cumple las reglas pasa a nubosidad (según `nubosidad`). Lluvia diaria: mediana de los totales de cada modelo. UKMO y JMA (solo lluvia, una petición conjunta cada 6 h, ~1.500 llamadas/día) se descargan cuando está aplicada la migración 0016.
+
+**Limitaciones**: un solo frente para los pluviógrafos y 14 aeropuertos para los METAR; el METAR informa el tiempo presente (instantáneo), no la lluvia de la hora. Repetir la evaluación con la lluvia DMC que guarda `dmc_lluvia` (`observations.precipitacion_1h`) y `forecast_archive` cuando haya 2–3 semanas.
