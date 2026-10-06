@@ -12,6 +12,7 @@ export default function Header() {
         <nav aria-label="Principal" className="hidden gap-1 text-sm font-medium text-slate-300 md:flex">
           <Link href="/" className="rounded-lg px-3 py-2 hover:bg-climapp-card hover:text-white">Inicio</Link>
           <Link href="/pasos" className="rounded-lg px-3 py-2 hover:bg-climapp-card hover:text-white">Pasos fronterizos</Link>
+          <Link href="/puertos" className="rounded-lg px-3 py-2 hover:bg-climapp-card hover:text-white">Puertos</Link>
           <Link href="/avisos" className="rounded-lg px-3 py-2 hover:bg-climapp-card hover:text-white">Avisos marítimos</Link>
         </nav>
       </div>

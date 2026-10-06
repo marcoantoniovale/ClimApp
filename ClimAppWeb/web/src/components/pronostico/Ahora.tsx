@@ -10,6 +10,7 @@ import { textoProximaLluvia, type ProximaLluvia } from "@/lib/proximaLluvia";
 
 import WeatherIcon from "../WeatherIcon";
 import Flecha from "./Flecha";
+import { useViento } from "./viento";
 
 const OBS_MAX_MIN = 120; // una medición más antigua no se muestra como "actual"
 
@@ -44,6 +45,7 @@ export default function Ahora({
   lluvia?: LluviaMedida | null;
   proxima?: ProximaLluvia;
 }) {
+  const viento = useViento();
   // Temperatura actual minuto a minuto (algoritmo ClimApp, lib/ahora.ts); en el servidor, el valor horario.
   const minuto = useSyncExternalStore(suscribirMinuto, minutoActual, minutoServidor);
   // Lluvia medida (lib/lluvia.ts): en el servidor se compara con la mitad de la hora mostrada.
@@ -88,9 +90,9 @@ export default function Ahora({
           <div className="rounded-xl bg-climapp-bg/60 px-3 py-2">
             <dt className="text-xs text-slate-400">Viento</dt>
             <dd className="flex items-center gap-1 text-slate-100">
-              <Flecha desde={ahora.viento_dir} />{ahora.viento ?? "–"} km/h {cardinal(ahora.viento_dir)}
+              <Flecha desde={ahora.viento_dir} />{viento.valor(ahora.viento)} {viento.unidad} {cardinal(ahora.viento_dir)}
             </dd>
-            {ahora.rafaga != null && <dd className="text-xs text-slate-400">ráfagas {ahora.rafaga}</dd>}
+            {ahora.rafaga != null && <dd className="text-xs text-slate-400">ráfagas {viento.valor(ahora.rafaga)}</dd>}
           </div>
           <div className="rounded-xl bg-climapp-bg/60 px-3 py-2">
             <dt className="text-xs text-slate-400">Lluvia</dt>
@@ -133,7 +135,7 @@ export default function Ahora({
           Medido en <strong className="font-semibold text-slate-100">{obsReciente.estacion}</strong>
           {obsReciente.km != null && obsReciente.km >= 1 && ` (a ${obsReciente.km.toLocaleString("es-CL")} km)`} a las {hora(obsReciente.hora)}:{" "}
           {grados1(obsReciente.temperatura)}
-          {obsReciente.viento != null && `, viento ${obsReciente.viento} km/h`}
+          {obsReciente.viento != null && `, viento ${viento.valor(obsReciente.viento)} ${viento.unidad}`}
         </p>
       )}
 

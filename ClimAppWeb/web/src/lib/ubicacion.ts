@@ -23,10 +23,29 @@ let localidades: Promise<LocalidadIndice[]> | null = null;
 export type LocalidadIndice = { s: string; n: string; c: string; la: number; lo: number };
 
 /** A dónde lleva una búsqueda o la ubicación: una comuna o una localidad de una comuna. */
-export type Destino = { slug: string; nombre: string; comuna?: { slug: string; nombre: string } };
+export type Destino = { slug: string; nombre: string; comuna?: { slug: string; nombre: string }; puerto?: boolean };
 
-export const rutaDe = (d: Destino) => (d.comuna ? `/lugar/${d.comuna.slug}/${d.slug}` : `/comuna/${d.slug}`);
-export const apiDe = (d: Destino) => (d.comuna ? `/api/lugar/${d.comuna.slug}/${d.slug}` : `/api/forecast/${d.slug}`);
+export const rutaDe = (d: Destino) =>
+  d.puerto ? `/puerto/${d.slug}` : d.comuna ? `/lugar/${d.comuna.slug}/${d.slug}` : `/comuna/${d.slug}`;
+export const apiDe = (d: Destino) =>
+  d.puerto ? `/api/forecast/puerto-${d.slug}` : d.comuna ? `/api/lugar/${d.comuna.slug}/${d.slug}` : `/api/forecast/${d.slug}`;
+
+/** Puerto en el índice estático /puertos.json (lo genera etl/scripts/build_puertos.py). */
+export type PuertoIndice = { s: string; n: string; c: string };
+let puertos: Promise<PuertoIndice[]> | null = null;
+
+export function cargarPuertos(): Promise<PuertoIndice[]> {
+  puertos ??= fetch("/puertos.json")
+    .then((res) => {
+      if (!res.ok) throw new Error(String(res.status));
+      return res.json() as Promise<PuertoIndice[]>;
+    })
+    .catch((e) => {
+      puertos = null;
+      throw e;
+    });
+  return puertos;
+}
 
 /** Localidades y barrios (~75 KB comprimido), cargados una sola vez y solo cuando se necesitan. */
 export function cargarLocalidades(): Promise<LocalidadIndice[]> {

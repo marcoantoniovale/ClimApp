@@ -166,3 +166,6 @@ export const duracion = (min: number) => `${Math.floor(min / 60)} h ${String(min
 /** Temperatura con un decimal y coma decimal: "14,8°" (para la temperatura actual). */
 export const grados1 = (v: number | null | undefined) =>
   v == null ? "–" : `${v.toLocaleString("es-CL", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}°`;
+
+/** Viento de km/h a nudos (puertos), sin unidad: "12" o "–". */
+export const nudos = (kmh: number | null | undefined) => (kmh == null ? "–" : String(Math.round(kmh * 0.539957)));

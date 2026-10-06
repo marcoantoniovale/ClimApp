@@ -5,6 +5,7 @@ import { cardinal, cielo, diaLargo, grados, nombreDia } from "@/lib/format";
 
 import WeatherIcon from "../WeatherIcon";
 import Flecha from "./Flecha";
+import { useViento } from "./viento";
 
 /** Nombre corto para tarjetas angostas: "Hoy", "Mañ", "Sáb 3". */
 function nombreCorto(fecha: string) {
@@ -27,6 +28,7 @@ export default function Dias({
   onSeleccionar: (i: number) => void;
   panelId: string;
 }) {
+  const viento = useViento();
   return (
     <div role="tablist" aria-label="Días" className="grid gap-1 sm:gap-2" style={{ gridTemplateColumns: `repeat(${dias.length}, minmax(0, 1fr))` }}>
       {dias.map((d, i) => {
@@ -58,7 +60,7 @@ export default function Dias({
             {d.precipitacion ? <span className="hidden text-xs text-sky-300 sm:block">{d.precipitacion} mm</span> : null}
             <span className="mt-0.5 hidden items-center gap-1 text-xs text-slate-400 sm:flex">
               <Flecha desde={d.viento_dir} size={12} />
-              {d.viento_max ?? "–"} {cardinal(d.viento_dir)}
+              {viento.valor(d.viento_max)} {cardinal(d.viento_dir)}
             </span>
           </button>
         );

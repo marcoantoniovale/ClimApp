@@ -134,6 +134,8 @@ export type PronosticoConAvisos = Pronostico & {
   ancla?: AnclaUbicacion | null;
   /** Localidades y barrios de la comuna (para navegar entre ellas). */
   localidades?: LocalidadEnlace[];
+  /** Puertos de la comuna (slug sin prefijo, para /puerto/<slug>). */
+  puertos?: LocalidadEnlace[];
   /** Lluvia medida en la estación DMC más cercana (lib/lluvia.ts). */
   lluvia?: LluviaMedida | null;
 };
@@ -159,16 +161,18 @@ function avisosDe(avisos: AvisosPayload | null, slug: string): AvisoUbicacion[] 
 
 /** Pronóstico de una ubicación con sus avisos vigentes, o null si no existe. */
 export async function getPronostico(slug: string, options?: ReadOptions): Promise<PronosticoConAvisos | null> {
-  const [pronostico, avisos, algoritmo, lugares, lluvia] = await getJson<
-    [Pronostico, AvisosPayload, AlgoritmoPayload, LugaresPayload, LluviaPayload]>(
-    [`loc:${slug}`, "avisos", "algoritmo", `lugares:${slug}`, "lluvia"], options);
+  const [pronostico, avisos, algoritmo, lugares, lluvia, puertos] = await getJson<
+    [Pronostico, AvisosPayload, AlgoritmoPayload, LugaresPayload, LluviaPayload, PuertosPayload]>(
+    [`loc:${slug}`, "avisos", "algoritmo", `lugares:${slug}`, "lluvia", "puertos"], options);
   if (!pronostico) return null;
   const ajuste = algoritmo?.comunas?.[slug];
   const ancla = ajuste?.anomalia != null && ajuste.hora
     ? { anomalia: ajuste.anomalia, hora: ajuste.hora, tau_h: algoritmo!.tau_h, estaciones: ajuste.estaciones ?? [] }
     : null;
   return { ...pronostico, observacion: masReciente(pronostico.observacion, ajuste?.medicion), ancla,
-           avisos: avisosDe(avisos, slug), localidades: enlaces(lugares),
+           avisos: avisosDe(avisos, pronostico.ubicacion.comuna?.slug ?? slug), localidades: enlaces(lugares),
+           puertos: (puertos?.puertos ?? []).filter((x) => x.comuna?.slug === slug)
+             .map((x) => ({ slug: rutaPuerto(x.slug), nombre: x.nombre })),
            lluvia: lluviaCercana(lluvia, pronostico.ubicacion.lat, pronostico.ubicacion.lon) };
 }
 
@@ -228,6 +232,31 @@ export async function getMeta(options?: ReadOptions) {
 }
 
 export { desdeAhora } from "./vigencia";
+
+// ---------------------------------------------------------------------------
+// Puertos (tipo 'puerto' en el ETL; slug "puerto-<nombre>", página /puerto/<nombre>)
+
+export type PuertoResumen = {
+  slug: string;              // "puerto-quintero"
+  nombre: string;
+  region: string;
+  comuna: { slug: string; nombre: string } | null;
+  lat: number;
+  lon: number;
+  ahora: { estado_cielo: number | null; temperatura: number | null; viento: number | null; viento_dir: number | null;
+           rafaga: number | null; ola: number | null; periodo: number | null; ola_dir: number | null };
+  hoy: { viento_max: number | null; rafaga_max: number | null; precip_prob: number | null; ola_max: number | null };
+};
+type PuertosPayload = { generado: string; puertos: PuertoResumen[] };
+
+export const slugPuerto = (ruta: string) => `puerto-${ruta}`;
+export const rutaPuerto = (slug: string) => slug.replace(/^puerto-/, "");
+
+/** Resumen de todos los puertos (página /puertos) con los avisos vigentes de su comuna. */
+export async function getPuertos(options?: ReadOptions) {
+  const [puertos, avisos] = await getJson<[PuertosPayload, AvisosPayload]>(["puertos", "avisos"], options);
+  return (puertos?.puertos ?? []).map((p) => ({ ...p, avisos: p.comuna ? avisosDe(avisos, p.comuna.slug).length : 0 }));
+}
 
 // ---------------------------------------------------------------------------
 // Pasos fronterizos

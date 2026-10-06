@@ -289,7 +289,8 @@ def daily(rows, start_day, days: int) -> list[dict]:
     return result
 
 
-def marine_summary(marine, now: datetime) -> dict | None:
+def marine_summary(marine, now: datetime, cada: int = 3) -> dict | None:
+    """Oleaje: horas (cada `cada` h, 48 h; los puertos la muestran hora a hora) y resumen por día."""
     if not marine:
         return None
     future = [(t, v) for t, v in sorted(marine) if t >= now.replace(minute=0, second=0, microsecond=0)]
@@ -299,7 +300,7 @@ def marine_summary(marine, now: datetime) -> dict | None:
     return {
         "horas": [{"hora": _iso_local(t), "altura": _r(v["oleaje_altura"]), "periodo": _r(v["oleaje_periodo"], 0),
                    "direccion": _r(v["oleaje_dir"], 0), "marejada": _r(v["marejada_altura"])}
-                  for t, v in future[:HOURS_AHEAD:3]],
+                  for t, v in future[:HOURS_AHEAD:cada]],
         "dias": [{"fecha": d.isoformat(),
                   "altura_max": _r(max((v["oleaje_altura"] for v in vs if v["oleaje_altura"] is not None), default=None)),
                   "periodo_max": _r(max((v["oleaje_periodo"] for v in vs if v["oleaje_periodo"] is not None), default=None), 0),
@@ -325,7 +326,8 @@ def build(location: dict, rows, marine, observation: dict | None, fetched_at: da
     return {
         "version": SCHEMA_VERSION,
         "ubicacion": {**{k: location[k] for k in ("slug", "nombre", "region", "tipo", "lat", "lon", "es_costera")},
-                      "altura_m": location.get("altura_m")},
+                      "altura_m": location.get("altura_m"),
+                      **({"comuna": location["comuna"]} if location.get("comuna") else {})},
         "generado": _iso_local(now),
         "actualizado": _iso_local(fetched_at) if fetched_at else None,
         "provisional": not (correccion and correccion["franjas"]),
@@ -358,7 +360,8 @@ def build(location: dict, rows, marine, observation: dict | None, fetched_at: da
         "dias": dias,
         "proxima_lluvia": proxima_lluvia(rows, hours, current_hour),
         "alertas": alertas_paso(dias, location.get("altura_m")) if location.get("tipo") == "paso" else [],
-        "marino": marine_summary(marine, now) if location.get("es_costera") else None,
+        "marino": (marine_summary(marine, now, cada=1 if location.get("tipo") == "puerto" else 3)
+                   if location.get("es_costera") else None),
         "observacion": observation,
         "cercanas": cercanas or [],
         "correccion": {  # algoritmo ClimApp: temperatura de ICON corregida con estaciones DMC cercanas

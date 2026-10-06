@@ -5,7 +5,7 @@ import { type KeyboardEvent, useId, useMemo, useRef, useState } from "react";
 
 import { region } from "@/lib/format";
 import {
-  type Destino, ErrorUbicacion, cargarIndice, cargarLocalidades, guardarUbicacion, rutaDe, ubicar,
+  type Destino, ErrorUbicacion, cargarIndice, cargarLocalidades, cargarPuertos, guardarUbicacion, rutaDe, ubicar,
 } from "@/lib/ubicacion";
 
 const normalize = (s: string) =>
@@ -33,13 +33,17 @@ export default function Search({ autoFocus = false, size = "lg" }: { autoFocus?:
 
   /** Carga comunas y localidades (compartido con "Usar mi ubicación"). Sin localidades, quedan las comunas. */
   function load(): Promise<Entry[] | null> {
-    pending.current ??= Promise.all([cargarIndice(), cargarLocalidades().catch(() => [])])
-      .then(([comunas, lugares]) => {
+    pending.current ??= Promise.all([cargarIndice(), cargarLocalidades().catch(() => []), cargarPuertos().catch(() => [])])
+      .then(([comunas, lugares, puertos]) => {
         const nombres = new Map(comunas.map((c) => [c.slug, c.nombre]));
         const list: Entry[] = [
           ...comunas.map((u) => ({
             destino: { slug: u.slug, nombre: u.nombre }, nombre: u.nombre, detalle: region(u.region), costera: u.costera,
             esComuna: true, key: normalize(u.nombre), aliasKey: normalize(u.alias ?? ""),
+          })),
+          ...puertos.filter((x) => nombres.has(x.c)).map((x) => ({
+            destino: { slug: x.s, nombre: `Puerto de ${x.n}`, puerto: true }, nombre: `Puerto de ${x.n}`,
+            detalle: `Puerto · ${nombres.get(x.c)!}`, esComuna: false, key: normalize(`puerto ${x.n}`), aliasKey: normalize(x.n),
           })),
           ...lugares.filter((l) => nombres.has(l.c)).map((l) => ({
             destino: { slug: l.s, nombre: l.n, comuna: { slug: l.c, nombre: nombres.get(l.c)! } }, nombre: l.n,

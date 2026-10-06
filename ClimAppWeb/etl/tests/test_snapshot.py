@@ -277,3 +277,13 @@ def test_proxima_lluvia_consenso_y_rango_entre_modelos():
     assert p["inicio"] == snapshot._iso_local(h(5)) and p["fin"] == snapshot._iso_local(h(9))
     secos = [(m, h(n), {"precipitacion": 0.0}) for m in ("icon", "ecmwf") for n in range(12)]
     assert snapshot.proxima_lluvia(secos, {h(n): {"estado_cielo": 1} for n in range(12)}, t0) is None
+
+
+def test_puertos_de_norte_a_sur_con_islas_al_final_de_su_region():
+    from climapp_etl.jobs import _puertos_payload
+    locs = [{"id": i, "tipo": "puerto", "slug": f"puerto-{n}", "nombre": n, "region": r, "lat": la, "lon": lo, "comuna": None}
+            for i, (n, r, la, lo) in enumerate([("Coquimbo", "Coquimbo", -29.9, -71.3), ("Hanga Roa", "Valparaiso", -27.1, -109.4),
+                                                ("Valparaíso", "Valparaiso", -33.0, -71.6), ("Arica", "Arica", -18.5, -70.3)])]
+    payloads = {l["id"]: {"horas": [], "dias": [], "marino": None} for l in locs}
+    orden = [p["nombre"] for p in _puertos_payload(locs, payloads, NOW)["puertos"]]
+    assert orden == ["Arica", "Coquimbo", "Valparaíso", "Hanga Roa"]
