@@ -87,7 +87,7 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Ramas: `main` es la rama estable; el trabajo nuevo sale de `main` en ramas `feature/…` o `docs/…` y entra por pull request.
 - El flujo de GitHub Actions vive en `.github/` en la raíz (requisito de GitHub), aunque ejecuta código de `ClimAppWeb/`.
 - Base de datos: Supabase, proyecto `drtgaltvmwbqffbsjaiw`, región São Paulo, PostgreSQL 17. Conexión por Session pooler en `ClimAppWeb/.env` (no versionado).
-- Repositorio: https://github.com/marcoantoniovale/ClimApp (privado). `gh` instalado en `C:\Program Files\GitHub CLI\`.
+- Repositorio: https://github.com/marcoantoniovale/ClimApp (público desde el 2026-10-06). `gh` instalado en `C:\Program Files\GitHub CLI\`.
 - Diseño de la Fase 1: [docs/fase1-mapeo-requisitos.md](docs/fase1-mapeo-requisitos.md).
 - Referencia visual del frontend: [Template/](Template/) (aportada por el usuario) con ajustes en [docs/frontend-template-analisis.md](docs/frontend-template-analisis.md). Paleta: fondo `#0F172A`, turquesa `#0EA5E9`, naranja `#F97316`.
 
@@ -362,6 +362,11 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - **Cuota de Open-Meteo**: con UKMO/JMA (~1.500/día) el uso estimado llegaba a ~10.500/día (límite gratuito 10.000). `localidades_perfil` ahora pide ICON y ECMWF en la misma consulta (~2.370 → ~1.180 llamadas/día) → total estimado ~9.300/día.
 - GitHub Actions: el repositorio es público → minutos gratuitos; se cierra el pendiente de facturación.
 
+### 2026-10-06 — rama `feature/vigilancia-rango-lluvia` (pendientes, sección 3)
+- **Rango de inicio de la lluvia (RF05.3)**: `snapshot.proxima_lluvia` (48 h): primer tramo de lluvia de consenso (`inicio`/`fin`) y hora en que la empieza cada modelo (`desde`/`hasta`, `modelos_con_lluvia` de `modelos`). Web: [lib/proximaLluvia.ts](ClimAppWeb/web/src/lib/proximaLluvia.ts) arma el texto con la hora real ("Lluvia probable desde las 15:00 · los modelos la empiezan entre las 14:00 y las 21:00 (5 de 5 modelos)", "Lluvia hasta cerca de las 02:00 de mañana", "Posible lluvia … (solo 2 de 5 modelos)"); se muestra en "Ahora" salvo que la estación cercana mida lluvia. Verificado en Chrome (Loncura lloviendo, Puerto Montt, Punta Arenas sin lluvia).
+- **Vigilancia de fallas**: `/api/health` revisa cada dato con su plazo (pronóstico 8 h, ajuste del momento 3 h, lluvia medida 2 h, avisos 3 h) y responde 503 con los atrasados. Flujo [vigilancia.yml](.github/workflows/vigilancia.yml) cada hora: si la salud no es 200, la corrida falla y GitHub avisa por correo. Disparo desde Supabase: migración [0017](ClimAppWeb/db/migrations/0017_disparador_vigilancia.sql) (minuto 37).
+- Pruebas: ETL 107, web 35.
+
 ---
 
 ## 8. Pendientes
@@ -413,7 +418,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Vigilar la cuota diaria de Open-Meteo (~9.300 de 10.000 estimadas desde el 2026-10-06, con UKMO/JMA): si aparecen errores 429 en `ingestion_runs`, espaciar `localidades_perfil` o el archivo.
 - [ ] **Validar la lluvia**: la lluvia medida DMC ya se guarda (`observations.precipitacion_1h`, job `dmc_lluvia`, 110 estaciones; SINCA no mide lluvia en Quintero/Puchuncaví/Concón). Falta medir inicio y montos de ICON, ECMWF, la mezcla y Yr (ya archivado en `forecast_archive`).
 - [ ] Lluvia medida en "Ahora": tras fusionar a `main`, revisar en `ingestion_runs` el job `dmc_lluvia` (tiempo, estaciones sin pluviómetro) y verificar la página de una comuna con lluvia. Opcional: agregar `dmc_lluvia` a las opciones de `workflow_dispatch` de `ingesta.yml`.
-- [ ] Mostrar el rango de inicio de la lluvia entre modelos ("lluvia probable desde las 19–22 h"), vista de fiabilidad RF05.3.
+- [x] Rango de inicio de la lluvia entre modelos (2026-10-06): línea de próxima lluvia en "Ahora".
 - [ ] Lluvia y neblina (§10): repetir la evaluación con 2–3 semanas de `observations.precipitacion_1h` (DMC) y METAR; reajustar `PROB_CALIBRACION` (calibrada el 2026-10-06 con un frente y 15 días de METAR; revisar en invierno y verano) y revisar los umbrales `LLUVIA_MM` (0,2 mm) y `NEBLINA_HR` (93 %) de `snapshot.py`. Vigilar errores 429 de Open-Meteo con UKMO/JMA.
 - [ ] Opcional: Vercel Speed Insights (velocidad real en celulares).
 
@@ -443,5 +448,5 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Confirmar que la variable `UPSTASH_REDIS_REST_READONLY_TOKEN` de Vercel tiene el token de **solo lectura**.
 - [x] Semana 4 (interfaz): buscador, página por comuna (actual, 48 h, métricas, 7 días, oleaje, avisos), página de avisos, PWA, atribución. (2026-10-01)
 - [x] Semana 4: fusionada (PR #5) y verificada en producción: todas las páginas 200, comuna inexistente 404, páginas de comuna servidas desde caché de CDN tras la primera visita (~1,4 s la primera vez por ISR). (2026-10-01)
-- [ ] Alertas de fallas de ingesta (hoy: correo de GitHub cuando falla el cron + `/api/health` devuelve 503 si los datos tienen más de 8 h; falta un monitor externo que lo consulte).
+- [x] Alertas de fallas de ingesta (2026-10-06): flujo `vigilancia.yml` cada hora (Supabase, minuto 37) contra `/api/health` por componente; falla → correo de GitHub. Verificar que llegan los correos (Settings → Notifications → Actions).
 - [x] Atribución CC BY 4.0 y ajustes de la plantilla aplicados sobre `Template/` con los 13 ajustes de [docs/frontend-template-analisis.md](docs/frontend-template-analisis.md) (Server Components, Tailwind v4, íconos PWA desde SVG con `sharp`, sin `radar/` hasta Fase 3).

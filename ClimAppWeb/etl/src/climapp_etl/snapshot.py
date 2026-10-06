@@ -161,6 +161,37 @@ def cielo_por_hora(hours: dict[datetime, dict]) -> None:
             h["estado_cielo"] = None if code is None and h["nubosidad"] is None else _nubes(h["nubosidad"])
 
 
+PROXIMA_HORAS = 48       # horizonte de "próxima lluvia"
+_ES_LLUVIA = set(range(51, 68)) | {80, 81, 82, 95, 96, 99}
+
+
+def proxima_lluvia(rows, hours: dict[datetime, dict], desde: datetime) -> dict | None:
+    """Próxima lluvia en PROXIMA_HORAS (vista de fiabilidad, RF05.3).
+    - inicio/fin: primer tramo continuo de horas con lluvia de consenso (cielo de cielo_por_hora).
+    - desde/hasta: rango de la hora en que la empieza cada modelo (primera hora ≥ LLUVIA_MM), con cuántos
+      modelos la traen. rows ya en hora de inicio (a_hora_de_inicio). None si ningún modelo da lluvia."""
+    hasta = desde + timedelta(hours=PROXIMA_HORAS)
+    hora = timedelta(hours=1)
+    lluvia = sorted(t for t, h in hours.items() if desde <= t < hasta and h["estado_cielo"] in _ES_LLUVIA)
+    por_modelo: dict[str, list[tuple[datetime, float]]] = defaultdict(list)
+    for m, t, v in rows:
+        if desde <= t < hasta and v.get("precipitacion") is not None:
+            por_modelo[m].append((t, v["precipitacion"]))
+    inicios = [t0 for serie in por_modelo.values()
+               if (t0 := next((t for t, mm in sorted(serie) if mm >= LLUVIA_MM), None)) is not None]
+    if not lluvia and not inicios:
+        return None
+    out = {"modelos": len(por_modelo), "modelos_con_lluvia": len(inicios)}
+    if inicios:
+        out |= {"desde": _iso_local(min(inicios)), "hasta": _iso_local(max(inicios))}
+    if lluvia:
+        fin, tramo = lluvia[0], set(lluvia)
+        while fin + hora in tramo:
+            fin += hora
+        out |= {"inicio": _iso_local(lluvia[0]), "fin": _iso_local(fin + hora)}
+    return out
+
+
 NEBLINA_HORAS_DIA = 8    # horas de neblina para que el resumen del día diga "Neblina"
 
 
@@ -325,6 +356,7 @@ def build(location: dict, rows, marine, observation: dict | None, fetched_at: da
             "nieve": _r(h["nieve"]),
         } for t, h in upcoming],
         "dias": dias,
+        "proxima_lluvia": proxima_lluvia(rows, hours, current_hour),
         "alertas": alertas_paso(dias, location.get("altura_m")) if location.get("tipo") == "paso" else [],
         "marino": marine_summary(marine, now) if location.get("es_costera") else None,
         "observacion": observation,

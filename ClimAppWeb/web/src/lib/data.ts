@@ -2,6 +2,7 @@
 
 import { lluviaCercana, type LluviaMedida, type LluviaPayload } from "./lluvia";
 import { diasDe, horasDe, type LugaresPayload } from "./lugar";
+import type { ProximaLluvia } from "./proximaLluvia";
 import { getJson, type ReadOptions } from "./redis";
 
 export type Aviso = {
@@ -122,6 +123,8 @@ export type Pronostico = {
   cercanas?: { slug: string; nombre: string; km: number }[];
   /** Algoritmo ClimApp: temperatura de ICON corregida con estaciones DMC cercanas. */
   correccion?: { aplicada: boolean; estaciones: { nombre: string; km: number }[]; franjas: Record<string, number> };
+  /** Próxima lluvia en 48 h y rango de inicio entre modelos (RF05.3; lib/proximaLluvia.ts). */
+  proxima_lluvia?: ProximaLluvia;
 };
 
 export type LocalidadEnlace = { slug: string; nombre: string };

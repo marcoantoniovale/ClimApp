@@ -1,0 +1,27 @@
+# Vigilancia de ClimApp: revisa cada hora que todos los datos estén al día (GET /api/health). Si alguno
+# se atrasa (o la web no responde), la corrida FALLA y GitHub envía un correo a quien la disparó (el dueño
+# del token del disparador): Settings → Notifications → Actions → "Send notifications for failed workflows".
+#
+# Disparo principal: Supabase (pg_cron, migración 0017) al minuto 37; el "schedule" de GitHub es respaldo.
+
+name: Vigilancia
+
+on:
+  schedule:
+    - cron: "37 * * * *"
+  workflow_dispatch:
+
+jobs:
+  vigilancia:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Revisar /api/health
+        run: |
+          codigo=$(curl -s -o salud.json -w "%{http_code}" --max-time 30 --retry 2 --retry-delay 20 \
+            "https://climapp-chile.vercel.app/api/health")
+          cat salud.json; echo
+          if [ "$codigo" != "200" ]; then
+            echo "::error::ClimApp con datos atrasados o sin respuesta (HTTP $codigo): $(cat salud.json)"
+            exit 1
+          fi
