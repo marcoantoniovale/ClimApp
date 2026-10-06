@@ -44,26 +44,49 @@ export function lluviaCercana(payload: LluviaPayload | null | undefined, lat: nu
   return mejor;
 }
 
+export const SECO_MAX_KM = 5;      // una estación seca solo desmiente la lluvia pronosticada si está cerca
+export const SECO_MAX_MIN = 75;    // ... y si su última hora medida es reciente
+
 export type EstadoLluvia = {
   /** Llovió en la última hora medida: el cielo de "Ahora" pasa a lluvia. */
   lloviendo: boolean;
   /** Código WMO equivalente a la intensidad medida (61 débil, 63 moderada, 65 fuerte), si llueve. */
   codigo: number | null;
+  /** No llovió en la última hora en una estación cercana y reciente: desmiente la lluvia pronosticada. */
+  seco: boolean;
   medida: LluviaMedida;
 };
 
 /**
  * Estado de la lluvia medida en el instante `ahoraMs`, o null si no hay medición vigente
- * (más de LLUVIA_MAX_MIN desde el fin del período) o si no hay nada que contar (sin lluvia en 3 h).
+ * (más de LLUVIA_MAX_MIN desde el fin del período) o nada que contar (sin lluvia en 3 h y sin `seco`).
  */
 export function estadoLluvia(medida: LluviaMedida | null | undefined, ahoraMs: number): EstadoLluvia | null {
   if (!medida) return null;
   const edad = (ahoraMs - Date.parse(medida.hasta)) / 60_000;
   if (!(edad <= LLUVIA_MAX_MIN && edad >= -30)) return null;
   const mm1 = medida.mm_1h ?? 0;
-  if (mm1 > 0) return { lloviendo: true, codigo: mm1 >= 4 ? 65 : mm1 >= 0.5 ? 63 : 61, medida };
-  if ((medida.mm_3h ?? 0) > 0) return { lloviendo: false, codigo: null, medida };
+  if (mm1 > 0) return { lloviendo: true, codigo: mm1 >= 4 ? 65 : mm1 >= 0.5 ? 63 : 61, seco: false, medida };
+  const seco = medida.mm_1h != null && edad <= SECO_MAX_MIN && medida.km <= SECO_MAX_KM;
+  if (seco || (medida.mm_3h ?? 0) > 0) return { lloviendo: false, codigo: null, seco, medida };
   return null;
+}
+
+/** Códigos WMO de llovizna, lluvia y chubascos (no nieve ni tormenta). */
+const esLluvia = (c: number | null | undefined) => c != null && ((c >= 51 && c <= 67) || (c >= 80 && c <= 82));
+
+/**
+ * Cielo de "Ahora": manda la medición cercana. Si llueve en la estación, lluvia (medida); si la estación
+ * cercana está seca y el pronóstico decía lluvia, nublado (o parcial, según la nubosidad).
+ */
+export function cieloAhora(codigo: number | null | undefined, nubosidad: number | null | undefined,
+                           estado: EstadoLluvia | null): { codigo: number | null; nota: string | null } {
+  if (estado?.lloviendo) return { codigo: estado.codigo, nota: "medida" };
+  if (estado?.seco && esLluvia(codigo)) {
+    return { codigo: nubosidad != null && nubosidad < 30 ? 1 : nubosidad != null && nubosidad < 70 ? 2 : 3,
+             nota: "sin lluvia medida" };
+  }
+  return { codigo: codigo ?? null, nota: null };
 }
 
 /** "0,1 mm" (con espacio duro: el número no queda separado de su unidad). */

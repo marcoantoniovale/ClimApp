@@ -5,7 +5,7 @@ import { useSyncExternalStore } from "react";
 import { estimacionActual, minutoActual, minutoServidor, suscribirMinuto } from "@/lib/ahora";
 import type { AnclaUbicacion, Dia, Hora, Observacion } from "@/lib/data";
 import { cardinal, cielo, esNoche, fechaHora, grados, grados1, hora, region as nombreRegion } from "@/lib/format";
-import { estadoLluvia, mm, type LluviaMedida } from "@/lib/lluvia";
+import { cieloAhora, estadoLluvia, mm, type LluviaMedida } from "@/lib/lluvia";
 
 import WeatherIcon from "../WeatherIcon";
 import Flecha from "./Flecha";
@@ -14,7 +14,8 @@ const OBS_MAX_MIN = 120; // una medición más antigua no se muestra como "actua
 
 /**
  * Bloque superior: el tiempo de la hora actual (pronóstico ICON + ECMWF) y, si es reciente, la medición
- * cercana. Si la estación DMC cercana midió lluvia en la última hora, el cielo muestra la medición.
+ * cercana. Manda la lluvia medida en la estación DMC cercana: si llovió en la última hora, el cielo es
+ * lluvia; si una estación cercana estuvo seca y el pronóstico decía lluvia, el cielo pasa a nublado.
  */
 export default function Ahora({
   nombre,
@@ -44,7 +45,7 @@ export default function Ahora({
   const minuto = useSyncExternalStore(suscribirMinuto, minutoActual, minutoServidor);
   // Lluvia medida (lib/lluvia.ts): en el servidor se compara con la mitad de la hora mostrada.
   const medida = ahora ? estadoLluvia(lluvia, minuto ?? Date.parse(ahora.hora) + 30 * 60_000) : null;
-  const codigo = medida?.codigo ?? ahora?.estado_cielo;
+  const { codigo, nota } = cieloAhora(ahora?.estado_cielo, ahora?.nubosidad, medida);
   const estado = cielo(codigo);
   const estimada = minuto != null ? estimacionActual(horas, ancla, minuto) : null;
   const temperatura = estimada?.temperatura ?? ahora?.temperatura;
@@ -70,7 +71,7 @@ export default function Ahora({
           <div className="min-w-0">
             <p className="text-6xl font-extralight leading-none tracking-tighter">{grados1(temperatura)}</p>
             <p className="mt-1 text-lg font-medium text-slate-100">
-              {estado.texto}{medida?.lloviendo && <span className="text-sm font-normal text-slate-400"> (medida)</span>}
+              {estado.texto}{nota && <span className="text-sm font-normal text-slate-400"> ({nota})</span>}
             </p>
             <p className="text-sm text-slate-400">Sensación {grados(sensacion)}</p>
           </div>
@@ -92,7 +93,8 @@ export default function Ahora({
             <dt className="text-xs text-slate-400">Lluvia</dt>
             <dd className="text-slate-100">{ahora.precip_prob ?? "–"} %</dd>
             <dd className="text-xs text-slate-400">
-              {medida?.lloviendo ? `${mm(medida.medida.mm_1h)} medidos` : `${ahora.precipitacion ?? 0} mm`}
+              {medida?.lloviendo ? `${mm(medida.medida.mm_1h)} medidos`
+                : nota ? `${mm(ahora.precipitacion)} pronost.` : mm(ahora.precipitacion)}
             </dd>
           </div>
           <div className="rounded-xl bg-climapp-bg/60 px-3 py-2">
@@ -111,7 +113,7 @@ export default function Ahora({
           {medida.lloviendo
             ? `: ${mm(medida.medida.mm_1h)} entre las ${hora(new Date(Date.parse(medida.medida.hasta) - 3_600_000).toISOString())} y las ${hora(medida.medida.hasta)}`
             : ` hasta las ${hora(medida.medida.hasta)}`}
-          {` · ${mm(medida.medida.mm_3h)} en 3 h`}
+          {(medida.medida.mm_3h ?? 0) > 0 && ` · ${mm(medida.medida.mm_3h)} en 3 h`}
         </p>
       )}
 
