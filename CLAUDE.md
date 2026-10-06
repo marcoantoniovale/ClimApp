@@ -347,6 +347,7 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - **Lluvia**: mediana de ICON, ECMWF, GFS, UKMO y JMA; la hora llueve si es ≥ 0,2 mm, con suavizado de 3 h en dos pasos; intensidad por mm (`snapshot.cielo_por_hora`). CSI 0,36 → 0,47 (pluviógrafos) y 0,36 → 0,43 (METAR); falsas alarmas 62 % → 38–45 %; la mitad de cambios llueve/no llueve. Lluvia diaria: mediana de los totales de cada modelo.
 - **Neblina**: humedad media ICON + ECMWF ≥ 93 % sin lluvia → código 45, rotulado "Neblina" en la web (antes "Niebla"); los códigos 45/48 de los modelos se descartan. CSI 0,08 → 0,18 (detecta 33 % de las horas). ECMWF ahora entrega humedad.
 - ETL: GFS agrega lluvia; UKMO y JMA (solo lluvia, una petición conjunta cada 6 h, ~1.500 llamadas/día a Open-Meteo) se descargan solo con la migración [0016](ClimAppWeb/db/migrations/0016_modelos_lluvia.sql) aplicada (`jobs.modelos_activos`); sin ella la mediana usa ICON, ECMWF y GFS (CSI 0,47 / 0,39). Pruebas ETL 103, web 30.
+- Fusionado (PR #40) y aplicado en producción (descarga de pronóstico + precálculo manual): en Loncura la lluvia del evento quedó continua (sin horas sueltas). Ajuste (PR siguiente): el resumen diario mostraba "Neblina" en casi todos los días secos (máximo de los códigos) → `cielo_del_dia`: la neblina solo manda con ≥ 8 h. Pruebas ETL 104.
 
 ---
 
