@@ -349,6 +349,9 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - ETL: GFS agrega lluvia; UKMO y JMA (solo lluvia, una petición conjunta cada 6 h, ~1.500 llamadas/día a Open-Meteo) se descargan solo con la migración [0016](ClimAppWeb/db/migrations/0016_modelos_lluvia.sql) aplicada (`jobs.modelos_activos`); sin ella la mediana usa ICON, ECMWF y GFS (CSI 0,47 / 0,39). Pruebas ETL 103, web 30.
 - Fusionado (PR #40) y aplicado en producción (descarga de pronóstico + precálculo manual): en Loncura la lluvia del evento quedó continua (sin horas sueltas). Ajuste (PR siguiente): el resumen diario mostraba "Neblina" en casi todos los días secos (máximo de los códigos) → `cielo_del_dia`: la neblina solo manda con ≥ 8 h. Pruebas ETL 104.
 
+### 2026-10-06 — rama `ccr-4fc20060-hdky4r` (probabilidad de lluvia recalibrada)
+- Pedido del usuario: recalibrar la probabilidad de lluvia. Con 10.433 horas (pluviógrafos DMC + METAR) la media ICON + ECMWF sobreestimaba (50–70 % → llovió 33 %). **Logística** sobre logit(media ICON + ECMWF) y la fracción de modelos con ≥ 0,1 mm (`snapshot.probabilidad_calibrada`, coeficientes para 5 y 3 modelos): BSS +0,23 → +0,37/+0,43 en validación cruzada entre conjuntos; 50–70 % → llovió 59 %. Probabilidad del día: 1 − (Π(1 − p_hora))^0,5 (`probabilidad_del_dia`). Detalle en [docs/precision-evaluacion.md §10](docs/precision-evaluacion.md). Pruebas ETL 106.
+
 ---
 
 ## 8. Pendientes
@@ -401,7 +404,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] **Validar la lluvia**: la lluvia medida DMC ya se guarda (`observations.precipitacion_1h`, job `dmc_lluvia`, 110 estaciones; SINCA no mide lluvia en Quintero/Puchuncaví/Concón). Falta medir inicio y montos de ICON, ECMWF, la mezcla y Yr (ya archivado en `forecast_archive`).
 - [ ] Lluvia medida en "Ahora": tras fusionar a `main`, revisar en `ingestion_runs` el job `dmc_lluvia` (tiempo, estaciones sin pluviómetro) y verificar la página de una comuna con lluvia. Opcional: agregar `dmc_lluvia` a las opciones de `workflow_dispatch` de `ingesta.yml`.
 - [ ] Mostrar el rango de inicio de la lluvia entre modelos ("lluvia probable desde las 19–22 h"), vista de fiabilidad RF05.3.
-- [ ] Lluvia y neblina (§10): repetir la evaluación con 2–3 semanas de `observations.precipitacion_1h` (DMC) y METAR; recalibrar la probabilidad de lluvia (sobreestima) y revisar los umbrales `LLUVIA_MM` (0,2 mm) y `NEBLINA_HR` (93 %) de `snapshot.py`. Vigilar errores 429 de Open-Meteo con UKMO/JMA.
+- [ ] Lluvia y neblina (§10): repetir la evaluación con 2–3 semanas de `observations.precipitacion_1h` (DMC) y METAR; reajustar `PROB_CALIBRACION` (calibrada el 2026-10-06 con un frente y 15 días de METAR; revisar en invierno y verano) y revisar los umbrales `LLUVIA_MM` (0,2 mm) y `NEBLINA_HR` (93 %) de `snapshot.py`. Vigilar errores 429 de Open-Meteo con UKMO/JMA.
 - [ ] Opcional: Vercel Speed Insights (velocidad real en celulares).
 
 ### Investigación

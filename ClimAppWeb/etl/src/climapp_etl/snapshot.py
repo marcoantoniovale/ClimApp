@@ -1,7 +1,7 @@
 """Precálculo: JSON por ubicación listo para la API (docs/fase1-mapeo-requisitos.md §4.6).
 
-Temperatura, sensación térmica y probabilidad de lluvia: mezcla de ICON y ECMWF IFS (promedio por hora;
-máximas y mínimas: promedio de las de cada modelo). El resto de las variables vienen de ICON (humedad: ICON +
+Temperatura y sensación térmica: mezcla de ICON y ECMWF IFS (promedio por hora; máximas y mínimas: promedio
+de las de cada modelo). Probabilidad de lluvia: la media de ICON y ECMWF, calibrada con mediciones (§10). El resto de las variables vienen de ICON (humedad: ICON +
 ECMWF) y GFS aporta índice UV y visibilidad (docs/precision-evaluacion.md).
 
 Lluvia y cielo (algoritmo ClimApp, §10, evaluado el 2026-10-06 con pluviógrafos DMC y METAR): la lluvia de
@@ -87,6 +87,31 @@ def a_hora_de_inicio(rows) -> list:
     return out
 
 
+# Probabilidad de lluvia calibrada (§10): logística sobre la probabilidad media de ICON + ECMWF (logit) y la
+# fracción de modelos con ≥ 0,1 mm. Ajustada con 10.433 horas (pluviógrafos DMC y METAR); validación cruzada
+# entre conjuntos: BSS +0,23 → +0,37/+0,43. Coeficientes (a, b, c) según los modelos con lluvia en la hora.
+PROB_CALIBRACION = {5: (-2.463, 0.427, 2.04), 3: (-1.935, 0.536, 1.145)}
+PROB_DIA_EXPONENTE = 0.5   # día: 1 − (Π(1 − p_hora))^0,5 (las horas de un mismo día no son independientes)
+
+
+def probabilidad_calibrada(prob_media: float | None, mm_modelos: list[float]) -> float | None:
+    """Probabilidad (%) de lluvia en la hora a partir de la media de ICON + ECMWF (%) y la lluvia de cada modelo."""
+    if prob_media is None or not mm_modelos:
+        return prob_media
+    a, b, c = PROB_CALIBRACION[5 if len(mm_modelos) >= 5 else 3]
+    raw = min(max(prob_media / 100, 0.01), 0.99)
+    fraccion = sum(v >= 0.1 for v in mm_modelos) / len(mm_modelos)
+    return 100 / (1 + math.exp(-(a + b * math.log(raw / (1 - raw)) + c * fraccion)))
+
+
+def probabilidad_del_dia(probs: list[float]) -> float | None:
+    """Probabilidad (%) de que llueva en algún momento del día, desde las probabilidades calibradas por hora."""
+    probs = [p for p in probs if p is not None]
+    if not probs:
+        return None
+    return 100 * (1 - math.prod(1 - p / 100 for p in probs) ** PROB_DIA_EXPONENTE)
+
+
 LLUVIA_MM = 0.2          # mediana de modelos para que una hora "llueva" (§10)
 NEBLINA_HR = 93          # humedad media (%) para neblina, sin lluvia (§10)
 _NIEVE_TORMENTA = {71, 73, 75, 77, 85, 86, 95, 96, 99}
@@ -167,7 +192,8 @@ def consensus_hours(rows) -> dict[datetime, dict]:
             "estado_cielo": _consensus_code(m.get("estado_cielo") for m in models),
             "indice_uv": _avg(m.get("indice_uv") for m in models),
             "humedad": _avg(m.get("humedad") for m in models),
-            "precip_prob": _avg(m.get("precip_prob") for m in models),
+            "precip_prob": probabilidad_calibrada(_avg(m.get("precip_prob") for m in models),
+                                                  [m["precipitacion"] for m in models if m.get("precipitacion") is not None]),
             "precipitacion": _lluvia_horaria(m.get("precipitacion") for m in models),
             "viento_vel": _avg(m.get("viento_vel") for m in models),
             "viento_dir": _circular_mean(m.get("viento_dir") for m in models),
@@ -219,7 +245,7 @@ def daily(rows, start_day, days: int) -> list[dict]:
             "rango_max": [_r(min(tmax)), _r(max(tmax))] if tmax else None,
             "rango_min": [_r(min(tmin)), _r(max(tmin))] if tmin else None,
             "estado_cielo": cielo_del_dia(codes),
-            "precip_prob": _r(max((h["precip_prob"] for h in hs if h["precip_prob"] is not None), default=None), 0),
+            "precip_prob": _r(probabilidad_del_dia([h["precip_prob"] for h in hs]), 0),
             "precipitacion": _r(_lluvia_horaria(rain)),   # mediana de los totales de cada modelo
             "viento_max": _kmh(max((h["viento_vel"] for h in hs if h["viento_vel"] is not None), default=None)),
             "rafaga_max": _kmh(max((h["viento_rafaga"] for h in hs if h["viento_rafaga"] is not None), default=None)),

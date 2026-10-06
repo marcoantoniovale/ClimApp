@@ -187,7 +187,16 @@ Reclamo del usuario: la temperatura está bien, pero la lluvia hora a hora alter
 | Mediana ICON + ECMWF + GFS (sin migración 0016) | 0,471 · 1,44 · 0,46 | 0,439 · 1,35 · 0,47 | 0,387 · 0,93 · 0,42 |
 | **Mediana de 5 modelos (con 0016)** | **0,470 · 1,41 · 0,45** | **0,444 · 1,35 · 0,46** | **0,433 · 0,96 · 0,38** |
 
-**Probabilidad de lluvia.** Mal calibrada (en las horas con 90–100 % llovió el 65 %; con 50–60 %, el 19 %). El acuerdo entre modelos como probabilidad fue peor (Brier 0,147 vs 0,121 de ICON). Se mantiene la de ICON + ECMWF; recalibrar con más eventos queda pendiente.
+**Probabilidad de lluvia (recalibrada el 2026-10-06).** La media de ICON + ECMWF estaba mal calibrada: con 50–70 % llovió el 33 % de las horas; con 90–100 %, el 71 %. Tabla de 10.433 horas (5.548 de pluviógrafos con ≥ 0,1 mm en la hora y 4.885 de METAR con lluvia presente; 1.526 con lluvia). Se compararon: la media cruda; una calibración isotónica; y regresiones logísticas con logit(media ICON + ECMWF), la fracción de modelos con ≥ 0,1 mm y la mediana de mm (la mediana no aportó). Validación cruzada (entrenar en un conjunto y medir en el otro, y 5 grupos por estación):
+
+| Brier Skill Score (más alto es mejor) | METAR → pluviógrafos | pluviógrafos → METAR | por estaciones |
+|---|---|---|---|
+| Antes: media ICON + ECMWF | +0,226 | +0,225 | +0,235 |
+| Isotónica sobre la media | +0,397 | +0,350 | +0,395 |
+| **Logística: media + fracción de modelos (5)** | **+0,427** | **+0,367** | **+0,418** |
+| Ídem con 3 modelos (sin migración 0016) | +0,426 | +0,348 | +0,408 |
+
+Calibración resultante (por estaciones): 10–30 % → llovió 21 %; 30–50 % → 43 %; 50–70 % → 59 %; 70–90 % → 76 %. Coeficientes finales con todos los datos (`snapshot.PROB_CALIBRACION`): 5 modelos (−2,463; 0,427; 2,04), 3 modelos (−1,935; 0,536; 1,145). La probabilidad casi nunca supera ~80 %: en un frente la lluvia en un punto es intermitente y eso es lo observado. Probabilidad del día: antes la máxima horaria; ahora 1 − (Π(1 − p_hora))^0,5 sobre las horas calibradas (419 estación-días: BSS +0,536 → +0,554; la máxima calibrada sola bajaba a +0,390). Comprobado con el código del ETL (METAR): BSS horario +0,225 → +0,376 (5 modelos) y +0,355 (3 modelos).
 
 **Neblina.** Los códigos 45/48 de los modelos no sirven: con METAR acertaron 29 de 275 horas (10 %), CSI 0,08; ECMWF nunca emitió 45/48; la visibilidad de GFS tampoco (CSI 0,03). La mejor regla fue **humedad media de ICON y ECMWF ≥ 93 % sin lluvia**: CSI 0,18, detecta el 33 % (sesgo 1,2). Con solo la humedad de ICON, CSI 0,09: por eso ECMWF ahora entrega humedad. Sigue siendo una señal débil (la niebla es difícil de pronosticar con modelos globales); se muestra como "Neblina".
 

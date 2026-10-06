@@ -174,7 +174,8 @@ def test_lluvia_de_consenso_entre_modelos():
     t0 = NOW.replace(minute=0)
     h = snapshot.consensus_hours([("icon", t0, {"precipitacion": 0.0, "precip_prob": 10, "estado_cielo": 3}),
                                   ("ecmwf", t0, {"precipitacion": 0.4, "precip_prob": 30, "estado_cielo": 61})])[t0]
-    assert h["precipitacion"] == pytest.approx(0.2) and h["precip_prob"] == pytest.approx(20)
+    assert h["precipitacion"] == pytest.approx(0.2)
+    assert h["precip_prob"] == pytest.approx(snapshot.probabilidad_calibrada(20, [0.0, 0.4]))   # media 20 %, calibrada
     assert h["estado_cielo"] == 3          # una hora de lluvia aislada no alcanza: nublado (§10, suavizado)
 
 
@@ -243,3 +244,20 @@ def test_cielo_del_dia_y_neblina():
     assert snapshot.cielo_del_dia([45] * 8 + [3] * 16) == 45                 # neblina buena parte del día
     assert snapshot.cielo_del_dia([45] * 10 + [61] * 3 + [3] * 11) == 61     # la lluvia manda sobre la neblina
     assert snapshot.cielo_del_dia([]) is None
+
+
+def test_probabilidad_calibrada():
+    # Media ICON + ECMWF de 90 %: con todos los modelos con lluvia ~63–80 %; si casi ninguno llueve, ~25 %.
+    assert 60 < snapshot.probabilidad_calibrada(90, [0.5] * 5) < 70
+    assert 20 < snapshot.probabilidad_calibrada(90, [0.5, 0, 0, 0, 0]) < 30
+    assert snapshot.probabilidad_calibrada(10, [0] * 5) < 5
+    sube = [snapshot.probabilidad_calibrada(p, [0.3, 0.3, 0.0, 0.0, 0.0]) for p in (10, 30, 50, 70, 90)]
+    assert sube == sorted(sube)                                       # monótona en la probabilidad de los modelos
+    assert snapshot.probabilidad_calibrada(None, [0.3] * 5) is None
+    assert snapshot.probabilidad_calibrada(40, [0.3, 0.3, 0.3]) != snapshot.probabilidad_calibrada(40, [0.3] * 5)
+
+
+def test_probabilidad_del_dia():
+    assert snapshot.probabilidad_del_dia([50, 50, 50, 50]) == pytest.approx(100 * (1 - (0.5 ** 4) ** 0.5))   # 75 %
+    assert snapshot.probabilidad_del_dia([5] * 24) > max([5] * 24)    # varias horas suman
+    assert snapshot.probabilidad_del_dia([None, None]) is None
