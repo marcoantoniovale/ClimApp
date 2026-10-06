@@ -6,6 +6,7 @@ import { estimacionActual, minutoActual, minutoServidor, suscribirMinuto } from 
 import type { AnclaUbicacion, Dia, Hora, Observacion } from "@/lib/data";
 import { cardinal, cielo, esNoche, fechaHora, grados, grados1, hora, region as nombreRegion } from "@/lib/format";
 import { cieloAhora, estadoLluvia, mm, type LluviaMedida } from "@/lib/lluvia";
+import { textoProximaLluvia, type ProximaLluvia } from "@/lib/proximaLluvia";
 
 import WeatherIcon from "../WeatherIcon";
 import Flecha from "./Flecha";
@@ -28,6 +29,7 @@ export default function Ahora({
   observacion,
   ancla,
   lluvia,
+  proxima,
 }: {
   nombre: string;
   region: string;
@@ -40,6 +42,7 @@ export default function Ahora({
   observacion: Observacion | null;
   ancla?: AnclaUbicacion | null;
   lluvia?: LluviaMedida | null;
+  proxima?: ProximaLluvia;
 }) {
   // Temperatura actual minuto a minuto (algoritmo ClimApp, lib/ahora.ts); en el servidor, el valor horario.
   const minuto = useSyncExternalStore(suscribirMinuto, minutoActual, minutoServidor);
@@ -114,6 +117,14 @@ export default function Ahora({
             ? `: ${mm(medida.medida.mm_1h)} entre las ${hora(new Date(Date.parse(medida.medida.hasta) - 3_600_000).toISOString())} y las ${hora(medida.medida.hasta)}`
             : ` hasta las ${hora(medida.medida.hasta)}`}
           {(medida.medida.mm_3h ?? 0) > 0 && ` · ${mm(medida.medida.mm_3h)} en 3 h`}
+        </p>
+      )}
+
+      {/* Próxima lluvia (en el navegador, con la hora real); no se muestra si la estación cercana mide lluvia ahora. */}
+      {minuto != null && !medida?.lloviendo && textoProximaLluvia(proxima, minuto) && (
+        <p className="mt-3 flex gap-2 rounded-xl bg-climapp-bg/60 px-3 py-2 text-sm text-slate-300">
+          <span aria-hidden="true" className="text-climapp-rain">☂</span>
+          <span>{textoProximaLluvia(proxima, minuto)}</span>
         </p>
       )}
 

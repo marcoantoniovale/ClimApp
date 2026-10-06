@@ -261,3 +261,19 @@ def test_probabilidad_del_dia():
     assert snapshot.probabilidad_del_dia([50, 50, 50, 50]) == pytest.approx(100 * (1 - (0.5 ** 4) ** 0.5))   # 75 %
     assert snapshot.probabilidad_del_dia([5] * 24) > max([5] * 24)    # varias horas suman
     assert snapshot.probabilidad_del_dia([None, None]) is None
+
+
+def test_proxima_lluvia_consenso_y_rango_entre_modelos():
+    t0 = NOW.replace(minute=0)
+    h = lambda n: t0 + timedelta(hours=n)
+    rows = []
+    for m, empieza in (("icon", 6), ("ecmwf", 3), ("gfs", 5), ("ukmo", 9)):
+        rows += [(m, h(n), {"precipitacion": 1.0 if n >= empieza else 0.0}) for n in range(12)]
+    rows += [("jma", h(n), {"precipitacion": 0.0}) for n in range(12)]
+    hours = {h(n): {"estado_cielo": 63 if 5 <= n <= 8 else 3} for n in range(12)}
+    p = snapshot.proxima_lluvia(rows, hours, t0)
+    assert p["modelos"] == 5 and p["modelos_con_lluvia"] == 4
+    assert p["desde"] == snapshot._iso_local(h(3)) and p["hasta"] == snapshot._iso_local(h(9))
+    assert p["inicio"] == snapshot._iso_local(h(5)) and p["fin"] == snapshot._iso_local(h(9))
+    secos = [(m, h(n), {"precipitacion": 0.0}) for m in ("icon", "ecmwf") for n in range(12)]
+    assert snapshot.proxima_lluvia(secos, {h(n): {"estado_cielo": 1} for n in range(12)}, t0) is None
