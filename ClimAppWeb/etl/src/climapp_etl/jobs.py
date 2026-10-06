@@ -866,12 +866,13 @@ def localities_profiles(conn: psycopg.Connection) -> None:
         variables = {"temperature_2m": "temperatura"}
         curvas: dict[tuple[int, int], dict[datetime, list[float]]] = defaultdict(lambda: defaultdict(list))
         alturas: dict[tuple[int, int], float] = {}
-        for m in base:
-            for p, data in open_meteo.fetch(centros, variables, FORECAST_DAYS, models=[m]):
-                alturas[p.key] = data.get("elevation")
-                for _, t, v in open_meteo.rows(data, variables, models=[m]):
-                    if v["temperatura"] is not None:
-                        curvas[p.key][t].append(v["temperatura"])
+        # Ambos modelos en la misma consulta: 1 variable × 2 modelos cuenta como una llamada por punto
+        # (por separado eran dos): ~2.370 → ~1.180 llamadas al día.
+        for p, data in open_meteo.fetch(centros, variables, FORECAST_DAYS, models=base):
+            alturas[p.key] = data.get("elevation")
+            for _, t, v in open_meteo.rows(data, variables, models=base):
+                if v["temperatura"] is not None:
+                    curvas[p.key][t].append(v["temperatura"])
         comunas: dict[str, dict[datetime, float]] = defaultdict(dict)
         for slug, t, v in conn.execute("""
                 select l.slug, f.valid_time, avg(f.temperatura) from forecast_current f
