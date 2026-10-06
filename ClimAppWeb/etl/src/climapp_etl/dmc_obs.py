@@ -6,6 +6,10 @@ Fuentes (datos de "acceso y uso público" según el portal; responden desde GitH
   (hora local, temperatura, humedad, viento en grados/nudos, presión). Se lee cada hora.
 - Visor por estación: …/application/diariob/visorDeDatosEma/<código>
   Temperatura minuto a minuto de hoy y ayer. Se usa para cargar historia al empezar.
+- Visor de precipitación por estación: …/application/diariob/visorEmaPrecipitacion/<código>
+  Lluvia acumulada en las últimas 1, 3, 6, 12, 24 y 36 h (tabla, cada ~15 min) y pluviógrafo minuto a
+  minuto de 48 h (acumulado del día). El campo de lluvia del mapa nacional siempre trae "." (verificado
+  el 2026-10-05 con lluvia en Quintero y Santiago), por eso se lee estación por estación.
 """
 
 from __future__ import annotations
@@ -20,6 +24,7 @@ from .units import plausible, to_ms
 
 MAPA_URL = "https://climatologia.meteochile.gob.cl/application/index/menuTematicoEmas"
 VISOR_URL = "https://climatologia.meteochile.gob.cl/application/diariob/visorDeDatosEma/{}"
+PRECIP_URL = "https://climatologia.meteochile.gob.cl/application/diariob/visorEmaPrecipitacion/{}"
 CHILE = ZoneInfo("America/Santiago")
 
 
@@ -106,3 +111,70 @@ def fetch_historial(codigo: str, get_text=None, now: datetime | None = None) -> 
     now = now or datetime.now(timezone.utc)
     serie = parse_historial((get_text or http.get_text)(VISOR_URL.format(codigo)), now.astimezone(CHILE).date())
     return {t: v for t, v in serie.items() if t <= now}
+
+
+def _mm(texto: str) -> float | None:
+    """Milímetros de una celda: "s/p" (sin precipitación) = 0."""
+    texto = texto.strip().lower()
+    if texto in ("s/p", "sp"):
+        return 0.0
+    valor = _num(texto)
+    return valor if valor is not None and 0 <= valor < 500 else None
+
+
+def parse_precipitacion(page: str) -> dict | None:
+    """Lluvia medida reciente del visor de precipitación de una estación, o None si no tiene pluviómetro.
+
+    {"hasta": instante UTC del fin de los períodos, "mm": {horas: mm} (1, 3, 6, 12, 24, 36),
+     "ultima": instante UTC del último minuto con lluvia según el pluviógrafo (o None)}."""
+    i = page.find("> Horas </th>")
+    if i < 0:
+        return None
+    tabla = page[i:page.find("</table>", i)]
+    mm, hasta = {}, None
+    for fila in re.findall(r"<tr>(.*?)</tr>", tabla, re.S):
+        celdas = [re.sub(r"<[^>]+>", " ", c).strip() for c in re.findall(r"<td[^>]*>(.*?)</td>", fila, re.S)]
+        if len(celdas) < 4 or not celdas[0].isdigit():
+            continue
+        fin = _hora_local(celdas[2])
+        valor = _mm(celdas[3])
+        if fin is None or valor is None:
+            continue
+        hasta = max(hasta, fin) if hasta else fin
+        mm[int(celdas[0])] = valor
+    if hasta is None or 1 not in mm:
+        return None
+    return {"hasta": hasta, "mm": mm, "ultima": _ultima_lluvia(page, hasta)}
+
+
+def _ultima_lluvia(page: str, hasta: datetime) -> datetime | None:
+    """Último minuto en que subió el acumulado del pluviógrafo. Las categorías son "DD (HH:MM)" en hora
+    de Chile; el mes y el año se toman de la fecha más cercana hacia atrás desde `hasta`."""
+    i = page.find("Pluviógrafo 48 Horas")
+    if i < 0:
+        return None
+    cats = re.search(r"categories:\s*\[(.*?)\]", page[i:], re.S)
+    data = re.search(r"data:\s*\[(.*?)\]", page[i:], re.S)
+    if not cats or not data:
+        return None
+    rotulos = re.findall(r'"(\d\d) \((\d\d):(\d\d)\)"', cats.group(1))
+    valores = [_num(v) for v in data.group(1).split(",")]
+    ultima, anterior = None, None
+    for (dia, hh, mi), valor in zip(rotulos, valores):
+        if valor is None:
+            continue
+        if anterior is not None and valor > anterior:
+            ultima = (int(dia), int(hh), int(mi))
+        anterior = valor
+    if ultima is None:
+        return None
+    referencia = hasta.astimezone(CHILE).date()
+    for atras in range(4):
+        fecha = referencia - timedelta(days=atras)
+        if fecha.day == ultima[0]:
+            return datetime(fecha.year, fecha.month, fecha.day, ultima[1], ultima[2], tzinfo=CHILE).astimezone(timezone.utc)
+    return None
+
+
+def fetch_precipitacion(codigo: str, get_text=None) -> dict | None:
+    return parse_precipitacion((get_text or http.get_text)(PRECIP_URL.format(codigo)))

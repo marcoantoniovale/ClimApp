@@ -9,6 +9,7 @@ Uso:
   python -m climapp_etl precalculo                  # JSON por ubicación → location_snapshots + Redis
   python -m climapp_etl pasos                       # pronóstico DMC de pasos fronterizos → Redis
   python -m climapp_etl dmc                         # mediciones DMC (todas las estaciones)
+  python -m climapp_etl dmc_lluvia                  # lluvia medida en las estaciones DMC → Redis `lluvia`
   python -m climapp_etl dmc_historial               # carga inicial: 48 h por estación DMC
   python -m climapp_etl correccion                  # sesgos de ICON por estación (algoritmo ClimApp)
   python -m climapp_etl revalidar                   # pedir a la web que renueve sus páginas
@@ -36,6 +37,7 @@ COMMANDS = {
     "precalculo": jobs.snapshots,
     "pasos": jobs.dmc_passes,
     "dmc": jobs.dmc_observations,
+    "dmc_lluvia": jobs.dmc_rain,
     "dmc_historial": jobs.dmc_history,
     "sinca": jobs.sinca_observations,
     "sinca_catalogo": jobs.sinca_catalog,

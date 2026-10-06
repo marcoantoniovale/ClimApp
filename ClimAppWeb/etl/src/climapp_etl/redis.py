@@ -8,6 +8,7 @@ Claves (prefijo climapp:v1):
   avisos       avisos vigentes y su asignación a ubicaciones
   indice       lista de ubicaciones para el buscador
   meta         fecha de generación y conteos
+  lluvia       lluvia medida en las estaciones DMC (cada hora; job dmc_lluvia)
 """
 
 from __future__ import annotations

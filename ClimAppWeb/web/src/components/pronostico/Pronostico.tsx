@@ -39,7 +39,7 @@ export default function Pronostico({ p: recibido, etiqueta }: { p: PronosticoCon
   return (
     <div className="space-y-4">
       <Ahora nombre={p.ubicacion.nombre} region={p.ubicacion.region} comuna={p.ubicacion.comuna?.nombre} etiqueta={etiqueta}
-        ahora={ahora} horas={base} hoy={hoy} observacion={p.observacion} ancla={p.ancla} />
+        ahora={ahora} horas={base} hoy={hoy} observacion={p.observacion} ancla={p.ancla} lluvia={p.lluvia} />
 
       <WarningList avisos={p.avisos} />
 

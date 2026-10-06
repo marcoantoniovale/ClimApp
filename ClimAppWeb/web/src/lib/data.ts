@@ -1,5 +1,6 @@
 // Tipos y acceso a los datos precalculados por el ETL (ver ClimAppWeb/etl/src/climapp_etl/snapshot.py).
 
+import { lluviaCercana, type LluviaMedida, type LluviaPayload } from "./lluvia";
 import { diasDe, horasDe, type LugaresPayload } from "./lugar";
 import { getJson, type ReadOptions } from "./redis";
 
@@ -130,6 +131,8 @@ export type PronosticoConAvisos = Pronostico & {
   ancla?: AnclaUbicacion | null;
   /** Localidades y barrios de la comuna (para navegar entre ellas). */
   localidades?: LocalidadEnlace[];
+  /** Lluvia medida en la estación DMC más cercana (lib/lluvia.ts). */
+  lluvia?: LluviaMedida | null;
 };
 
 const enlaces = (lugares: LugaresPayload | null): LocalidadEnlace[] =>
@@ -153,15 +156,17 @@ function avisosDe(avisos: AvisosPayload | null, slug: string): AvisoUbicacion[] 
 
 /** Pronóstico de una ubicación con sus avisos vigentes, o null si no existe. */
 export async function getPronostico(slug: string, options?: ReadOptions): Promise<PronosticoConAvisos | null> {
-  const [pronostico, avisos, algoritmo, lugares] = await getJson<[Pronostico, AvisosPayload, AlgoritmoPayload, LugaresPayload]>(
-    [`loc:${slug}`, "avisos", "algoritmo", `lugares:${slug}`], options);
+  const [pronostico, avisos, algoritmo, lugares, lluvia] = await getJson<
+    [Pronostico, AvisosPayload, AlgoritmoPayload, LugaresPayload, LluviaPayload]>(
+    [`loc:${slug}`, "avisos", "algoritmo", `lugares:${slug}`, "lluvia"], options);
   if (!pronostico) return null;
   const ajuste = algoritmo?.comunas?.[slug];
   const ancla = ajuste?.anomalia != null && ajuste.hora
     ? { anomalia: ajuste.anomalia, hora: ajuste.hora, tau_h: algoritmo!.tau_h, estaciones: ajuste.estaciones ?? [] }
     : null;
   return { ...pronostico, observacion: masReciente(pronostico.observacion, ajuste?.medicion), ancla,
-           avisos: avisosDe(avisos, slug), localidades: enlaces(lugares) };
+           avisos: avisosDe(avisos, slug), localidades: enlaces(lugares),
+           lluvia: lluviaCercana(lluvia, pronostico.ubicacion.lat, pronostico.ubicacion.lon) };
 }
 
 /**
@@ -169,8 +174,8 @@ export async function getPronostico(slug: string, options?: ReadOptions): Promis
  * (lib/lugar.ts). null si la comuna o la localidad no existen.
  */
 export async function getLugar(comuna: string, slug: string, options?: ReadOptions): Promise<PronosticoConAvisos | null> {
-  const [pronostico, avisos, lugares] = await getJson<[Pronostico, AvisosPayload, LugaresPayload]>(
-    [`loc:${comuna}`, "avisos", `lugares:${comuna}`], options);
+  const [pronostico, avisos, lugares, lluvia] = await getJson<[Pronostico, AvisosPayload, LugaresPayload, LluviaPayload]>(
+    [`loc:${comuna}`, "avisos", `lugares:${comuna}`, "lluvia"], options);
   const l = lugares?.lugares?.[slug];
   if (!pronostico || !l) return null;
   return {
@@ -186,6 +191,7 @@ export async function getLugar(comuna: string, slug: string, options?: ReadOptio
       ? { anomalia: l.anomalia, hora: l.hora, tau_h: lugares!.tau_h, estaciones: l.estaciones ?? [] } : null,
     avisos: avisosDe(avisos, comuna),
     localidades: enlaces(lugares).filter((x) => x.slug !== slug),
+    lluvia: lluviaCercana(lluvia, l.lat, l.lon),
   };
 }
 
