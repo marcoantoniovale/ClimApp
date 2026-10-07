@@ -101,6 +101,12 @@ export default function Ahora({
               {medida?.lloviendo ? `${mm(medida.medida.mm_1h)} medidos`
                 : nota ? `${mm(ahora.precipitacion)} pronost.` : mm(ahora.precipitacion)}
             </dd>
+            {medida && medida.medida.mm_24h != null && (
+              <dd className={`text-xs ${medida.medida.mm_24h > 0 ? "text-sky-300" : "text-slate-400"}`}
+                title={`Lluvia caída en las últimas 24 h en ${medida.medida.nombre}`}>
+                24&nbsp;h: {mm(medida.medida.mm_24h)}
+              </dd>
+            )}
           </div>
           <div className="rounded-xl bg-climapp-bg/60 px-3 py-2">
             <dt className="text-xs text-slate-400">Hoy</dt>
@@ -118,7 +124,8 @@ export default function Ahora({
           {medida.lloviendo
             ? `: ${mm(medida.medida.mm_1h)} entre las ${hora(new Date(Date.parse(medida.medida.hasta) - 3_600_000).toISOString())} y las ${hora(medida.medida.hasta)}`
             : ` hasta las ${hora(medida.medida.hasta)}`}
-          {(medida.medida.mm_3h ?? 0) > 0 && ` · ${mm(medida.medida.mm_3h)} en 3 h`}
+          {(medida.medida.mm_3h ?? 0) > 0 && medida.medida.mm_3h !== medida.medida.mm_24h && ` · ${mm(medida.medida.mm_3h)} en 3 h`}
+          {(medida.medida.mm_24h ?? 0) > 0 && ` · ${mm(medida.medida.mm_24h)} en 24 h`}
         </p>
       )}
 
