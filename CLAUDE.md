@@ -379,6 +379,9 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Con la lista de estaciones descargada el 2026-10-01: 481 estaciones (210 INIA y 271 de otras redes: DMC 112, Servimet 42, CEAZA 34, Arauco 30, MMA-DMC 18, etc.). Sin contar las DMC, hay estaciones en **207 comunas, 119 de ellas hoy sin estación DMC/SINCA propia** (sobre todo rurales del centro y sur: Alhué, Arauco, Bulnes, Calbuco, Cañete, Carahue, Castro, Chonchi, Curacautín, Frutillar, Futrono, Gorbea…).
 - No se encontraron condiciones de uso ni un servicio de datos público (datos.gob.cl: 0 resultados); el portal muestra los datos por variable y descarga por formulario. Varias redes son de terceros (Arauco, Agrichile, APECO): usarlas requiere permiso.
 
+### 2026-10-06 — rama `feature/lluvia-24h`
+- Pedido del usuario: lluvia caída en las últimas 24 h. El dato ya venía en la clave `lluvia` (visor de precipitación DMC: 1/3/6/12/24/36 h, cada 15 min; 108 estaciones con dato de 24 h, 69 con lluvia el 6-oct). Web ([lib/lluvia.ts](ClimAppWeb/web/src/lib/lluvia.ts), "Ahora"): la tarjeta Lluvia agrega "24 h: X mm" de la estación cercana (≤ 15 km) y la línea de la estación suma "· X mm en 24 h"; también se informa si llovió en 24 h aunque no en las últimas 3 h. Verificado con captura de Loncura (Quintero Climatológica: 37,3 mm en 24 h). Pruebas web 36.
+
 ---
 
 ## 8. Pendientes

@@ -59,7 +59,7 @@ export type EstadoLluvia = {
 
 /**
  * Estado de la lluvia medida en el instante `ahoraMs`, o null si no hay medición vigente
- * (más de LLUVIA_MAX_MIN desde el fin del período) o nada que contar (sin lluvia en 3 h y sin `seco`).
+ * (más de LLUVIA_MAX_MIN desde el fin del período) o nada que contar (sin lluvia en 24 h y sin `seco`).
  */
 export function estadoLluvia(medida: LluviaMedida | null | undefined, ahoraMs: number): EstadoLluvia | null {
   if (!medida) return null;
@@ -68,7 +68,7 @@ export function estadoLluvia(medida: LluviaMedida | null | undefined, ahoraMs: n
   const mm1 = medida.mm_1h ?? 0;
   if (mm1 > 0) return { lloviendo: true, codigo: mm1 >= 4 ? 65 : mm1 >= 0.5 ? 63 : 61, seco: false, medida };
   const seco = medida.mm_1h != null && edad <= SECO_MAX_MIN && medida.km <= SECO_MAX_KM;
-  if (seco || (medida.mm_3h ?? 0) > 0) return { lloviendo: false, codigo: null, seco, medida };
+  if (seco || (medida.mm_3h ?? 0) > 0 || (medida.mm_24h ?? 0) > 0) return { lloviendo: false, codigo: null, seco, medida };
   return null;
 }
 

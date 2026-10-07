@@ -40,7 +40,7 @@ test("sin lluvia en la última hora pero sí en 3 h: se informa sin cambiar el c
 test("medición vieja, o lejana y sin lluvia en 3 h: nada", () => {
   const m = lluviaCercana(PAYLOAD, ...LONCURA)!;
   assert.equal(estadoLluvia(m, t("2026-10-06T01:30-03:00")), null);   // 2 h 15 min después
-  assert.equal(estadoLluvia({ ...m, mm_1h: 0, mm_3h: 0, km: 8 }, t("2026-10-05T23:40-03:00")), null);
+  assert.equal(estadoLluvia({ ...m, mm_1h: 0, mm_3h: 0, mm_24h: 0, km: 8 }, t("2026-10-05T23:40-03:00")), null);
 });
 
 test("estación cercana seca desmiente la lluvia pronosticada (captura del 6-oct, 06:23)", () => {
@@ -65,4 +65,10 @@ test("lluvia medida manda sobre el pronóstico", () => {
 test("milímetros con coma decimal", () => {
   assert.equal(mm(2.6), "2,6\u00a0mm");
   assert.equal(mm(0), "0\u00a0mm");
+});
+
+test("lluvia de las últimas 24 h aunque no haya llovido en 3 h", () => {
+  const m = { ...lluviaCercana(PAYLOAD, ...LONCURA)!, mm_1h: 0, mm_3h: 0, mm_24h: 37.3, km: 8 };
+  const e = estadoLluvia(m, t("2026-10-05T23:40-03:00"));
+  assert.deepEqual([e?.lloviendo, e?.seco, e?.medida.mm_24h], [false, false, 37.3]);
 });
