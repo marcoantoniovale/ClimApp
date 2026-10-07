@@ -46,7 +46,7 @@ export default function Ahora({
   proxima?: ProximaLluvia;
 }) {
   const viento = useViento();
-  // Temperatura actual minuto a minuto (algoritmo ClimApp, lib/ahora.ts); en el servidor, el valor horario.
+  // Temperatura actual cada 5 minutos (algoritmo ClimApp, lib/ahora.ts); en el servidor, el valor horario.
   const minuto = useSyncExternalStore(suscribirMinuto, minutoActual, minutoServidor);
   // Lluvia medida (lib/lluvia.ts): en el servidor se compara con la mitad de la hora mostrada.
   const medida = ahora ? estadoLluvia(lluvia, minuto ?? Date.parse(ahora.hora) + 30 * 60_000) : null;
@@ -149,7 +149,7 @@ export default function Ahora({
       {ahora && (
         <p className="mt-3 text-xs text-slate-400">
           {minuto != null
-            ? <>Estimación ClimApp para las {hora(new Date(minuto).toISOString())}{estimada?.ajustada ? `, con ${ancla!.estaciones.length === 1 ? "1 estación" : `${ancla!.estaciones.length} estaciones`} cercanas` : ""} · se actualiza cada minuto</>
+            ? <>Estimación ClimApp para las {hora(new Date(minuto).toISOString())}{estimada?.ajustada ? `, con ${ancla!.estaciones.length === 1 ? "1 estación" : `${ancla!.estaciones.length} estaciones`} cercanas` : ""} · se actualiza cada 5 minutos</>
             : <>Pronóstico para las {hora(ahora.hora)} · {fechaHora(ahora.hora).split(",")[0]}</>}
         </p>
       )}

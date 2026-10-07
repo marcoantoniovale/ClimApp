@@ -105,7 +105,10 @@ export function ajustarDias<D extends DiaTemp>(dias: D[], horas: Punto[], ancla:
 }
 
 // ---------------------------------------------------------------------------
-// Reloj por minuto para componentes cliente (sin desajustes de hidratación: en el servidor es null).
+// Reloj de la estimación para componentes cliente: avanza cada PASO_MS (5 min, pedido del usuario el
+// 2026-10-07; antes cada minuto). Sin desajustes de hidratación: en el servidor es null.
+
+export const PASO_MS = 5 * 60_000;
 
 const suscriptores = new Set<() => void>();
 let intervalo: ReturnType<typeof setInterval> | null = null;
@@ -122,7 +125,7 @@ function suscribir(cb: () => void) {
   };
 }
 
-/** Minuto actual (ms al inicio del minuto) en el navegador; null durante el render en el servidor. */
-export const minutoActual = () => Math.floor(Date.now() / 60_000) * 60_000;
+/** Inicio del tramo de 5 min actual (ms) en el navegador; null durante el render en el servidor. */
+export const minutoActual = () => Math.floor(Date.now() / PASO_MS) * PASO_MS;
 export const minutoServidor = () => null;
 export { suscribir as suscribirMinuto };
