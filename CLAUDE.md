@@ -382,6 +382,9 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 ### 2026-10-06 — rama `feature/lluvia-24h`
 - Pedido del usuario: lluvia caída en las últimas 24 h. El dato ya venía en la clave `lluvia` (visor de precipitación DMC: 1/3/6/12/24/36 h, cada 15 min; 108 estaciones con dato de 24 h, 69 con lluvia el 6-oct). Web ([lib/lluvia.ts](ClimAppWeb/web/src/lib/lluvia.ts), "Ahora"): la tarjeta Lluvia agrega "24 h: X mm" de la estación cercana (≤ 15 km) y la línea de la estación suma "· X mm en 24 h"; también se informa si llovió en 24 h aunque no en las últimas 3 h. Verificado con captura de Loncura (Quintero Climatológica: 37,3 mm en 24 h). Pruebas web 36.
 
+### 2026-10-07 — rama `chore/estimacion-5min`
+- Pedido del usuario: la estimación de "Ahora" se actualiza **cada 5 minutos** (antes cada minuto). [lib/ahora.ts](ClimAppWeb/web/src/lib/ahora.ts): `PASO_MS` = 5 min; el reloj de la página (temperatura estimada, horas vigentes, lluvia medida, próxima lluvia) avanza en tramos de 5 min. Texto: "… · se actualiza cada 5 minutos".
+
 ---
 
 ## 8. Pendientes

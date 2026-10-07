@@ -8,7 +8,7 @@ const fechaChile = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santiag
 /**
  * El JSON se regenera con cada corrida: separa las horas ya pasadas (antes de la hora actual) y quita
  * los días que ya terminaron (después de medianoche el JSON aún puede empezar en el día anterior).
- * `horasPrevias` (hasta 3) no se muestran, pero la estimación minuto a minuto las usa para comparar
+ * `horasPrevias` (hasta 3) no se muestran, pero la estimación de "Ahora" las usa para comparar
  * la última medición con la curva del pronóstico en ese instante.
  */
 export function desdeAhora<T extends Vigente>(p: T & { horasPrevias?: T["horas"] }, ahora: Date = new Date()): T & { horasPrevias: T["horas"] } {
