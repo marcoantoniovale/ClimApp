@@ -5,7 +5,7 @@ import { useSyncExternalStore } from "react";
 import { estimacionActual, minutoActual, minutoServidor, suscribirMinuto } from "@/lib/ahora";
 import type { AnclaUbicacion, Dia, Hora, Observacion } from "@/lib/data";
 import { cardinal, cielo, esNoche, fechaHora, grados, grados1, hora, region as nombreRegion } from "@/lib/format";
-import { cieloAhora, estadoLluvia, mm, type LluviaMedida } from "@/lib/lluvia";
+import { cieloAhora, estadoLluvia, lluviaRestoDelDia, mm, type LluviaMedida } from "@/lib/lluvia";
 import { textoProximaLluvia, type ProximaLluvia } from "@/lib/proximaLluvia";
 
 import WeatherIcon from "../WeatherIcon";
@@ -60,6 +60,9 @@ export default function Ahora({
     observacion && ahora &&
     Math.abs(new Date(ahora.hora).getTime() - new Date(observacion.hora).getTime()) / 60_000 <= OBS_MAX_MIN
       ? observacion : null;
+  const estacionCercana = obsReciente?.estacion ?? medida?.medida.nombre;
+  // Lluvia acumulada en 24 h: solo si llueve en la estación o queda lluvia pronosticada hoy (pedido del usuario).
+  const mostrar24h = !!medida && (medida.lloviendo || (!!ahora && lluviaRestoDelDia(horas, ahora.hora)));
 
   return (
     <section aria-labelledby="ahora" className="relative overflow-hidden rounded-3xl border border-climapp-line bg-climapp-card/70 p-5 shadow-xl sm:p-7">
@@ -101,7 +104,7 @@ export default function Ahora({
               {medida?.lloviendo ? `${mm(medida.medida.mm_1h)} medidos`
                 : nota ? `${mm(ahora.precipitacion)} pronost.` : mm(ahora.precipitacion)}
             </dd>
-            {medida && medida.medida.mm_24h != null && (
+            {mostrar24h && medida.medida.mm_24h != null && (
               <dd className={`text-xs ${medida.medida.mm_24h > 0 ? "text-sky-300" : "text-slate-400"}`}
                 title={`Lluvia caída en las últimas 24 h en ${medida.medida.nombre}`}>
                 24&nbsp;h: {mm(medida.medida.mm_24h)}
@@ -116,19 +119,6 @@ export default function Ahora({
         </dl>
       )}
 
-      {medida && (
-        <p className="mt-3 rounded-xl bg-climapp-bg/60 px-3 py-2 text-sm text-slate-300">
-          {medida.lloviendo ? "Lluvia medida en " : "Sin lluvia en la última hora en "}
-          <strong className="font-semibold text-slate-100">{medida.medida.nombre}</strong>
-          {medida.medida.km >= 1 && ` (a ${medida.medida.km.toLocaleString("es-CL")} km)`}
-          {medida.lloviendo
-            ? `: ${mm(medida.medida.mm_1h)} entre las ${hora(new Date(Date.parse(medida.medida.hasta) - 3_600_000).toISOString())} y las ${hora(medida.medida.hasta)}`
-            : ` hasta las ${hora(medida.medida.hasta)}`}
-          {(medida.medida.mm_3h ?? 0) > 0 && medida.medida.mm_3h !== medida.medida.mm_24h && ` · ${mm(medida.medida.mm_3h)} en 3 h`}
-          {(medida.medida.mm_24h ?? 0) > 0 && ` · ${mm(medida.medida.mm_24h)} en 24 h`}
-        </p>
-      )}
-
       {/* Próxima lluvia (en el navegador, con la hora real); no se muestra si la estación cercana mide lluvia ahora. */}
       {minuto != null && !medida?.lloviendo && textoProximaLluvia(proxima, minuto) && (
         <p className="mt-3 flex gap-2 rounded-xl bg-climapp-bg/60 px-3 py-2 text-sm text-slate-300">
@@ -137,21 +127,48 @@ export default function Ahora({
         </p>
       )}
 
-      {obsReciente && (
-        <p className="mt-3 rounded-xl bg-climapp-bg/60 px-3 py-2 text-sm text-slate-300">
-          Medido en <strong className="font-semibold text-slate-100">{obsReciente.estacion}</strong>
-          {obsReciente.km != null && obsReciente.km >= 1 && ` (a ${obsReciente.km.toLocaleString("es-CL")} km)`} a las {hora(obsReciente.hora)}:{" "}
-          {grados1(obsReciente.temperatura)}
-          {obsReciente.viento != null && `, viento ${viento.valor(obsReciente.viento)} ${viento.unidad}`}
-        </p>
-      )}
+      {/* Mediciones cercanas y nota de la estimación: plegadas en una fila que se despliega al tocarla. */}
+      {(medida || obsReciente || ahora) && (
+        <details className="group mt-3">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-xl bg-climapp-bg/60 px-3 py-2 text-sm text-slate-300 hover:text-white focus-visible:outline-2 focus-visible:outline-climapp-teal [&::-webkit-details-marker]:hidden">
+            <span className="min-w-0 truncate">
+              {estacionCercana ? <>Mediciones en <strong className="font-semibold text-slate-100">{estacionCercana}</strong></> : "Detalle de la estimación"}
+            </span>
+            <svg className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+          </summary>
+          <div className="mt-2 space-y-2">
+          {medida && (
+            <p className="rounded-xl bg-climapp-bg/60 px-3 py-2 text-sm text-slate-300">
+              {medida.lloviendo ? "Lluvia medida en " : "Sin lluvia en la última hora en "}
+              <strong className="font-semibold text-slate-100">{medida.medida.nombre}</strong>
+              {medida.medida.km >= 1 && ` (a ${medida.medida.km.toLocaleString("es-CL")} km)`}
+              {medida.lloviendo
+                ? `: ${mm(medida.medida.mm_1h)} entre las ${hora(new Date(Date.parse(medida.medida.hasta) - 3_600_000).toISOString())} y las ${hora(medida.medida.hasta)}`
+                : ` hasta las ${hora(medida.medida.hasta)}`}
+              {(medida.medida.mm_3h ?? 0) > 0 && medida.medida.mm_3h !== medida.medida.mm_24h && ` · ${mm(medida.medida.mm_3h)} en 3 h`}
+              {mostrar24h && (medida.medida.mm_24h ?? 0) > 0 && ` · ${mm(medida.medida.mm_24h)} en 24 h`}
+            </p>
+          )}
 
-      {ahora && (
-        <p className="mt-3 text-xs text-slate-400">
-          {minuto != null
-            ? <>Estimación ClimApp para las {hora(new Date(minuto).toISOString())}{estimada?.ajustada ? `, con ${ancla!.estaciones.length === 1 ? "1 estación" : `${ancla!.estaciones.length} estaciones`} cercanas` : ""} · se actualiza cada 5 minutos</>
-            : <>Pronóstico para las {hora(ahora.hora)} · {fechaHora(ahora.hora).split(",")[0]}</>}
-        </p>
+          {obsReciente && (
+            <p className="rounded-xl bg-climapp-bg/60 px-3 py-2 text-sm text-slate-300">
+              Medido en <strong className="font-semibold text-slate-100">{obsReciente.estacion}</strong>
+              {obsReciente.km != null && obsReciente.km >= 1 && ` (a ${obsReciente.km.toLocaleString("es-CL")} km)`} a las {hora(obsReciente.hora)}:{" "}
+              {grados1(obsReciente.temperatura)}
+              {obsReciente.viento != null && `, viento ${viento.valor(obsReciente.viento)} ${viento.unidad}`}
+            </p>
+          )}
+
+          {ahora && (
+            <p className="px-1 text-xs text-slate-400">
+              {minuto != null
+                ? <>Estimación ClimApp para las {hora(new Date(minuto).toISOString())}{estimada?.ajustada ? `, con ${ancla!.estaciones.length === 1 ? "1 estación" : `${ancla!.estaciones.length} estaciones`} cercanas` : ""} · se actualiza cada 5 minutos</>
+                : <>Pronóstico para las {hora(ahora.hora)} · {fechaHora(ahora.hora).split(",")[0]}</>}
+            </p>
+          )}
+          </div>
+        </details>
       )}
     </section>
   );

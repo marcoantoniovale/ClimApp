@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { cieloAhora, estadoLluvia, lluviaCercana, mm, type LluviaEstacion } from "../src/lib/lluvia.ts";
+import { cieloAhora, estadoLluvia, lluviaCercana, lluviaRestoDelDia, mm, type LluviaEstacion } from "../src/lib/lluvia.ts";
 
 // Valores reales del 5-oct a las 23:15: lluvia en Quintero y Quinta Normal (visor de precipitación DMC).
 const QUINTERO: LluviaEstacion = { id: "dmc-320056", nombre: "Quintero, Climatológica", lat: -32.78417, lon: -71.52278,
@@ -71,4 +71,12 @@ test("lluvia de las últimas 24 h aunque no haya llovido en 3 h", () => {
   const m = { ...lluviaCercana(PAYLOAD, ...LONCURA)!, mm_1h: 0, mm_3h: 0, mm_24h: 37.3, km: 8 };
   const e = estadoLluvia(m, t("2026-10-05T23:40-03:00"));
   assert.deepEqual([e?.lloviendo, e?.seco, e?.medida.mm_24h], [false, false, 37.3]);
+});
+
+test("lluvia pronosticada en lo que resta del día", () => {
+  const h = (hh: string, cielo: number, mm: number, dia = "08") => ({ hora: `2026-10-${dia}T${hh}:00-03:00`, estado_cielo: cielo, precipitacion: mm });
+  const seco = [h("08", 63, 2), h("16", 3, 0), h("20", 3, 0.1), h("03", 61, 1, "09")];   // llovió en la mañana y llueve mañana
+  assert.equal(lluviaRestoDelDia(seco, "2026-10-08T16:00-03:00"), false);
+  assert.equal(lluviaRestoDelDia([...seco, h("22", 61, 0.4)], "2026-10-08T16:00-03:00"), true);
+  assert.equal(lluviaRestoDelDia([h("18", 3, 0.3)], "2026-10-08T16:00-03:00"), true);     // ≥ 0,2 mm
 });

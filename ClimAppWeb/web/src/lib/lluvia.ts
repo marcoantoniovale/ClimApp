@@ -89,6 +89,19 @@ export function cieloAhora(codigo: number | null | undefined, nubosidad: number 
   return { codigo: codigo ?? null, nota: null };
 }
 
+/**
+ * ¿Queda lluvia pronosticada en lo que resta del día de `desde` (ISO de una hora del pronóstico)?
+ * Una hora "llueve" si su cielo es llovizna/lluvia/chubascos o tormenta, o si trae ≥ 0,2 mm (el umbral del ETL).
+ * Se usa para no mostrar la lluvia acumulada en 24 h cuando el resto del día viene seco.
+ */
+export function lluviaRestoDelDia(horas: { hora: string; estado_cielo: number | null; precipitacion: number | null }[],
+                                  desde: string): boolean {
+  const t0 = Date.parse(desde);
+  const dia = desde.slice(0, 10);
+  return horas.some((h) => h.hora.slice(0, 10) === dia && Date.parse(h.hora) >= t0
+    && (esLluvia(h.estado_cielo) || [95, 96, 99].includes(h.estado_cielo ?? -1) || (h.precipitacion ?? 0) >= 0.2));
+}
+
 /** "0,1 mm" (con espacio duro: el número no queda separado de su unidad). */
 export const mm = (v: number | null | undefined) =>
   `${(v ?? 0).toLocaleString("es-CL", { maximumFractionDigits: 1 })}\u00a0mm`;
