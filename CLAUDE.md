@@ -385,6 +385,10 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 ### 2026-10-07 — rama `chore/estimacion-5min`
 - Pedido del usuario: la estimación de "Ahora" se actualiza **cada 5 minutos** (antes cada minuto). [lib/ahora.ts](ClimAppWeb/web/src/lib/ahora.ts): `PASO_MS` = 5 min; el reloj de la página (temperatura estimada, horas vigentes, lluvia medida, próxima lluvia) avanza en tramos de 5 min. Texto: "… · se actualiza cada 5 minutos".
 
+### 2026-10-08 — rama `feature/ahora-desplegable`
+- Pedido del usuario: los textos bajo las tarjetas de "Ahora" (lluvia medida, temperatura medida y nota de la estimación) quedan en una fila **plegable** ("Mediciones en <estación>", cerrada por defecto, `<details>`). La línea de próxima lluvia queda visible fuera del pliegue (es aviso de pronóstico).
+- Pedido del usuario: la **lluvia acumulada en 24 h** solo se muestra si llueve en la estación o si queda lluvia pronosticada en lo que resta del día (`lluviaRestoDelDia` en [lib/lluvia.ts](ClimAppWeb/web/src/lib/lluvia.ts): cielo de lluvia/tormenta o ≥ 0,2 mm en alguna hora restante de hoy). Verificado con capturas de Loncura (cerrado, abierto y sin el acumulado). Pruebas web 37.
+
 ---
 
 ## 8. Pendientes
