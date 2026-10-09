@@ -391,6 +391,7 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 
 ### 2026-10-09 — rama `ccr-4fc20060-hdky4r` (créditos en el pie)
 - Pedido del usuario: en el pie, junto a "Marco (sin S)", créditos a JotaPé → "Marco (sin S) · Créditos: JotaPé" ([Footer.tsx](ClimAppWeb/web/src/components/Footer.tsx)).
+- Pedido del usuario (mismo día): se quitó el texto de créditos a JotaPé; el pie vuelve a decir solo "Marco (sin S)".
 
 ---
 
