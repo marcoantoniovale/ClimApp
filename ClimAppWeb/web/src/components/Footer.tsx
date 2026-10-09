@@ -32,6 +32,8 @@ export default function Footer() {
         <Image src="/brand/msins-mark.svg" alt="" width={24} height={24} className="rounded-md ring-1 ring-white/15" />
         <p>
           <span className="font-semibold text-slate-200">Marco (sin S)</span>
+          <span className="text-slate-500"> · </span>
+          Créditos: <span className="font-semibold text-slate-200">JotaPé</span>
         </p>
       </div>
     </footer>

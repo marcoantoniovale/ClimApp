@@ -389,6 +389,9 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Pedido del usuario: los textos bajo las tarjetas de "Ahora" (lluvia medida, temperatura medida y nota de la estimación) quedan en una fila **plegable** ("Mediciones en <estación>", cerrada por defecto, `<details>`). La línea de próxima lluvia queda visible fuera del pliegue (es aviso de pronóstico).
 - Pedido del usuario: la **lluvia acumulada en 24 h** solo se muestra si llueve en la estación o si queda lluvia pronosticada en lo que resta del día (`lluviaRestoDelDia` en [lib/lluvia.ts](ClimAppWeb/web/src/lib/lluvia.ts): cielo de lluvia/tormenta o ≥ 0,2 mm en alguna hora restante de hoy). Verificado con capturas de Loncura (cerrado, abierto y sin el acumulado). Pruebas web 37.
 
+### 2026-10-09 — rama `ccr-4fc20060-hdky4r` (créditos en el pie)
+- Pedido del usuario: en el pie, junto a "Marco (sin S)", créditos a JotaPé → "Marco (sin S) · Créditos: JotaPé" ([Footer.tsx](ClimAppWeb/web/src/components/Footer.tsx)).
+
 ---
 
 ## 8. Pendientes
