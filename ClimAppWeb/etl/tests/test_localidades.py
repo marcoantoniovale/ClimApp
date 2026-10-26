@@ -31,6 +31,6 @@ def test_perfil_por_hora_local_con_mediana():
 def test_ajuste_diferencia_de_sesgo_y_altura():
     lugar = {"nombre": "Loncura", "tipo": "suburb", "lat": -32.78617, "lon": -71.50806, "altura": 32.0}
     a = L.ajuste(lugar, {0: 0.8, 2: 0.4}, {0: 0.3, 2: 0.9}, None, 12.0)
-    assert a["franjas"] == {"0": 0.5, "1": 0.0, "2": -0.5, "3": 0.0}
+    assert a["franjas"] == {str(h): {0: 0.5, 2: -0.5}.get(h, 0.0) for h in range(24)}
     assert a["por_altura"] == pytest.approx(-0.13) and "perfil" not in a
     assert "por_altura" not in L.ajuste(lugar, {}, {}, [0.1] * 24, 12.0)

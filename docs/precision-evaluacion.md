@@ -203,3 +203,39 @@ Calibración resultante (por estaciones): 10–30 % → llovió 21 %; 30–50 % 
 **Implementación** (`snapshot.cielo_por_hora`): lluvia de la hora = mediana de los modelos con dato (con 2, el promedio); llueve si es ≥ 0,2 mm, con el suavizado; intensidad por mm (< 0,5 débil, < 4 moderada, ≥ 4 fuerte), conservando chubasco o llovizna si el modelo lo indica; nieve, tormenta y lluvia helada siguen el código del modelo; sin lluvia y humedad ≥ 93 % → neblina; un código de lluvia o niebla del modelo que no cumple las reglas pasa a nubosidad (según `nubosidad`). Lluvia diaria: mediana de los totales de cada modelo. Resumen del día: el cielo más severo, salvo la neblina, que solo manda con ≥ 8 horas (`cielo_del_dia`; con la regla horaria, una hora de neblina de madrugada convertía casi todos los días secos en "Neblina"). UKMO y JMA (solo lluvia, una petición conjunta cada 6 h, ~1.500 llamadas/día) se descargan cuando está aplicada la migración 0016.
 
 **Limitaciones**: un solo frente para los pluviógrafos y 14 aeropuertos para los METAR; el METAR informa el tiempo presente (instantáneo), no la lluvia de la hora. Repetir la evaluación con la lluvia DMC que guarda `dmc_lluvia` (`observations.precipitacion_1h`) y `forecast_archive` cuando haya 2–3 semanas.
+
+## 11. Recalibración con 4 semanas de datos (2026-10-26)
+
+**Datos**: registro del error (`station_residuals`) del 27-sep al 26-oct: 104.271 horas en 213 estaciones DMC/SINCA; `forecast_archive` (ICON, ECMWF, Yr a 0–48 h, 25 días, 261 estaciones); lluvia medida DMC (`observations.precipitacion_1h`, 127 estaciones, 2–25 oct) y la API de corridas previas de Open-Meteo para los 5 modelos de lluvia en esas estaciones (descargada desde el PC, sin usar la cuota de producción). Todas las pruebas son **fuera de muestra**: el sesgo se aprende con los días anteriores al día evaluado (desde el 4-oct, 81.969 horas).
+
+**Temperatura — sesgo por estación.**
+
+| Variante (error medio, °C; sin corrección 1,227) | Con corrección |
+|---|---|
+| Anterior: 4 franjas de 6 h, K 12, vida media 7 días | 1,043 |
+| Vida media 1 / 3 / 5 / 10 / 14 días | 1,099 / 1,053 / 1,045 / 1,042 / 1,042 |
+| Franjas de 1 / 3 / 4 / 12 h | 1,093 / 1,037 / 1,031 / 1,069 |
+| Hora local con horas vecinas ±1 / ±2 / ±3 (K 12) | 1,030 / 1,016 / 1,015 |
+| **Hora local ±2 h, K 6, vida 7 días (adoptado)** | **1,005** |
+| Ídem + pendiente según la temperatura pronosticada (MOS simple) | 1,001 (no se adopta) |
+
+Con las funciones del ETL (sesgo aprendido hasta el 19-oct, sin renovar, evaluado del 19 al 26-oct): con estación 1,078 → 1,044 °C; ajuste del momento 1 h después 0,629 → 0,589 °C.
+
+**Plazo 1–2 días** (`forecast_archive`, horas 0/6/12/18 UTC): el sesgo aprendido con el registro horario también corrige el pronóstico de mañana y pasado: mezcla 1,26–1,36 → 1,03–1,21 °C. **Yr no aporta**: solo es peor que ICON y ECMWF en todos los plazos (1,47–1,58 °C) y sumarlo a la mezcla la empeora (1,30–1,37 vs 1,26–1,36). Mezcla 60/40 a favor de ICON: igual a 50/50 dentro del ruido. Se mantiene ICON + ECMWF 50/50.
+
+**Comunas sin estación**: interpolar el sesgo casi no ayuda (1,262 → 1,232 °C, dejando cada estación fuera) y ningún parámetro lo cambia: retorno 5–80 km, escala de altura 150 m–sin altura, radio 25–100 km, sin separar costa/interior, sesgo regional por zona o nacional por hora (1,229–1,244). El sesgo es muy local; para esas comunas trabaja el ajuste del momento (≈ 0,99 °C). Sin cambios.
+
+**Lluvia** (105.580 horas, lluvia ≥ 0,2 mm medida en la hora):
+
+| Regla de la hora (mediana de 5 modelos, suavizado 3 h) | 0–24 h | 24–48 h |
+|---|---|---|
+| Anterior: ≥ 0,2 mm | CSI 0,317 · sesgo 2,18 · falsas 65 % | 0,304 · 2,08 · 65 % |
+| ≥ 0,4 mm | 0,354 · 1,42 · 55 % | 0,327 · 1,38 · 57 % |
+| **≥ 0,5 mm (adoptado)** | **0,361 · 1,20 · 51 %** | **0,327 · 1,14 · 54 %** |
+| ≥ 0,7 mm | 0,353 · 0,89 · 45 % | 0,324 · 0,86 · 47 % |
+
+0,5 mm es mejor que 0,2 en ambas mitades del período (2–13 oct: CSI 0,394 → 0,445; 14–25 oct: 0,246 → 0,270). La evaluación del §10 (un solo frente) favorecía 0,2 mm; con 24 días de lluvias variadas, 0,2 mm pronostica el doble de horas de lluvia. Por modelo individual (archivo): todos sobrepronostican 2–3 veces las horas de lluvia con ≥ 0,2 mm; Yr no es mejor que ICON o ECMWF. Intensidad: débil bajo 1 mm (antes 0,5; si no, toda hora de lluvia sería "moderada").
+
+**Probabilidad** (52.790 horas, 4.203 con ≥ 0,1 mm): la calibración del §10 seguía inflada en el medio (40–50 % → llovió 32 %; 50–60 % → 39 %). Logística nueva con logit(media ICON + ECMWF), fracción de modelos con ≥ 0,1 mm y log(mediana de mm + 0,1), entrenada en una mitad del período y medida en la otra: BSS 0,186 → 0,229 (2–13 → 14–25 oct) y 0,390 → 0,363 en el sentido inverso, donde la calibración anterior estaba dentro de muestra (se ajustó con el frente del 4–6 oct). Confiabilidad con todos los datos: 20–30 % → 25 %, 40–50 % → 41 %, 50–60 % → 55 %, 70–80 % → 70 %, 80–90 % → 81 %. Coeficientes: (−1,981; 0,417; 1,169; 0,383).
+
+**Sin cambios**: τ (persistencia de la anomalía 0,77 a 1 h, 0,42 a 3 h, 0,22 a 6 h; τ automático 3,5 h), mezcla 50/50, interpolación espacial. **No evaluable**: neblina (no se guardan METAR).

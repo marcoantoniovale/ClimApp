@@ -87,10 +87,11 @@ def a_hora_de_inicio(rows) -> list:
     return out
 
 
-# Probabilidad de lluvia calibrada (§10): logística sobre la probabilidad media de ICON + ECMWF (logit) y la
-# fracción de modelos con ≥ 0,1 mm. Ajustada con 10.433 horas (pluviógrafos DMC y METAR); validación cruzada
-# entre conjuntos: BSS +0,23 → +0,37/+0,43. Coeficientes (a, b, c) según los modelos con lluvia en la hora.
-PROB_CALIBRACION = {5: (-2.463, 0.427, 2.04), 3: (-1.935, 0.536, 1.145)}
+# Probabilidad de lluvia calibrada: logística sobre la probabilidad media de ICON + ECMWF (logit), la fracción
+# de modelos con ≥ 0,1 mm y, con 5 modelos, log(mediana de mm + 0,1). Con 5 modelos, recalibrada el
+# 2026-10-26 con 52.790 horas de 127 pluviógrafos DMC (§11); con 3, la del 2026-10-06 (§10).
+# Coeficientes (a, b, c[, d]) según los modelos con lluvia en la hora.
+PROB_CALIBRACION = {5: (-1.981, 0.417, 1.169, 0.383), 3: (-1.935, 0.536, 1.145)}
 PROB_DIA_EXPONENTE = 0.5   # día: 1 − (Π(1 − p_hora))^0,5 (las horas de un mismo día no son independientes)
 
 
@@ -98,10 +99,13 @@ def probabilidad_calibrada(prob_media: float | None, mm_modelos: list[float]) ->
     """Probabilidad (%) de lluvia en la hora a partir de la media de ICON + ECMWF (%) y la lluvia de cada modelo."""
     if prob_media is None or not mm_modelos:
         return prob_media
-    a, b, c = PROB_CALIBRACION[5 if len(mm_modelos) >= 5 else 3]
+    a, b, c, *d = PROB_CALIBRACION[5 if len(mm_modelos) >= 5 else 3]
     raw = min(max(prob_media / 100, 0.01), 0.99)
     fraccion = sum(v >= 0.1 for v in mm_modelos) / len(mm_modelos)
-    return 100 / (1 + math.exp(-(a + b * math.log(raw / (1 - raw)) + c * fraccion)))
+    z = a + b * math.log(raw / (1 - raw)) + c * fraccion
+    if d:
+        z += d[0] * math.log(median(mm_modelos) + 0.1)
+    return 100 / (1 + math.exp(-z))
 
 
 def probabilidad_del_dia(probs: list[float]) -> float | None:
@@ -112,7 +116,8 @@ def probabilidad_del_dia(probs: list[float]) -> float | None:
     return 100 * (1 - math.prod(1 - p / 100 for p in probs) ** PROB_DIA_EXPONENTE)
 
 
-LLUVIA_MM = 0.2          # mediana de modelos para que una hora "llueva" (§10)
+LLUVIA_MM = 0.5          # mediana de modelos para que una hora "llueva" (§11; antes 0,2: el doble de horas)
+DEBIL_MM = 1.0           # bajo esto, lluvia (o chubasco) débil
 NEBLINA_HR = 93          # humedad media (%) para neblina, sin lluvia (§10)
 _NIEVE_TORMENTA = {71, 73, 75, 77, 85, 86, 95, 96, 99}
 _HELADA = {56, 57, 66, 67}
@@ -150,11 +155,11 @@ def cielo_por_hora(hours: dict[datetime, dict]) -> None:
             if code in _HELADA:
                 continue
             if code in (80, 81, 82):
-                h["estado_cielo"] = 80 if mm < 0.5 else 81 if mm < 4 else 82
+                h["estado_cielo"] = 80 if mm < DEBIL_MM else 81 if mm < 4 else 82
             elif code in (51, 53, 55) and mm < 1:
                 h["estado_cielo"] = 51 if mm < 0.5 else 53
             else:
-                h["estado_cielo"] = 61 if mm < 0.5 else 63 if mm < 4 else 65
+                h["estado_cielo"] = 61 if mm < DEBIL_MM else 63 if mm < 4 else 65
         elif h["humedad"] is not None and h["humedad"] >= NEBLINA_HR and mm < 0.1:
             h["estado_cielo"] = 45
         elif code is None or code in _LLUVIA_MODELO or code in (45, 48):

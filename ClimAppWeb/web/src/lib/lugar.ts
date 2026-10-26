@@ -10,7 +10,8 @@ export type Lugar = {
   lat: number;
   lon: number;
   altura: number | null;
-  /** °C a sumar por franja de 6 h ("0" = 00–05 h …): sesgo de la comuna − sesgo en la localidad. */
+  /** °C a sumar por hora local ("0" … "23"): sesgo de la comuna − sesgo en la localidad.
+   *  Hasta el 2026-10-26 eran 4 franjas de 6 h ("0" = 00–05 h …); se aceptan ambos formatos. */
   franjas: Record<string, number>;
   /** °C a sumar por hora local (localidades lejanas a la cabecera: otra celda del modelo). */
   perfil?: number[];
@@ -35,7 +36,8 @@ const horaLocal = (iso: string) => Number(iso.slice(11, 13));
 /** °C a sumar a la curva de la comuna a la hora `iso` en esta localidad. */
 export function desfase(l: Lugar, iso: string): number {
   const h = horaLocal(iso);
-  const sesgo = l.franjas[String(Math.floor(h / 6))] ?? 0;
+  const porHora = Object.keys(l.franjas).length > 4;
+  const sesgo = l.franjas[String(porHora ? h : Math.floor(h / 6))] ?? 0;
   return sesgo + (l.perfil ? (l.perfil[h] ?? 0) : (l.por_altura ?? 0));
 }
 

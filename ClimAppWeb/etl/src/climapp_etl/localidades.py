@@ -27,7 +27,7 @@ from datetime import datetime
 from pathlib import Path
 from statistics import median
 
-from .correccion import CHILE
+from .correccion import CHILE, N_FRANJAS
 
 CATALOGO = Path(__file__).resolve().parents[2] / "data" / "catalog" / "localidades.csv"
 LEJOS_KM = 8.0
@@ -74,7 +74,7 @@ def ajuste(lugar: dict, franjas_comuna: dict[int, float], franjas_lugar: dict[in
     """Parte fija del ajuste de una localidad: diferencia de sesgo por franja y perfil (o altura)."""
     out = {"nombre": lugar["nombre"], "tipo": lugar["tipo"], "lat": round(lugar["lat"], 4),
            "lon": round(lugar["lon"], 4), "altura": lugar["altura"],
-           "franjas": {str(f): round(franjas_comuna.get(f, 0.0) - franjas_lugar.get(f, 0.0), 2) for f in range(4)}}
+           "franjas": {str(f): round(franjas_comuna.get(f, 0.0) - franjas_lugar.get(f, 0.0), 2) for f in range(N_FRANJAS)}}
     if perfil:
         out["perfil"] = perfil
     else:
