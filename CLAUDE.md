@@ -400,6 +400,7 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - **Lluvia**: umbral de la mediana 0,2 → 0,5 mm (`LLUVIA_MM`; CSI 0,32 → 0,36, horas de lluvia pronosticadas 2,2 → 1,2 veces las medidas, falsas alarmas 65 → 51 %); débil bajo 1 mm (`DEBIL_MM`). **Probabilidad** recalibrada con 52.790 horas (agrega la mediana de mm): 50–60 % → llovió 55 % (antes 39 %).
 - Sin cambios (probado sin mejora): vida media del sesgo, MOS, parámetros de la interpolación espacial, sesgo por zona, mezcla 60/40. **Yr no entra a la mezcla** (peor que ICON y ECMWF a 0–48 h).
 - Pruebas: ETL 108, web 38.
+- Aplicado en producción (autorizado por el usuario): migración 0019, PR #53 fusionado; `correccion`, `residuos`, `precalculo` y `localidades` ejecutados con el código nuevo (`station_bias`: 213 estaciones × 24 horas; Quintero con 24 horas de corrección); web renovada y `/api/health` OK.
 
 ---
 
