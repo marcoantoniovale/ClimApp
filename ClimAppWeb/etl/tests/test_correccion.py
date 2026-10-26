@@ -14,10 +14,12 @@ def residuos(valor_por_hora, horas=48, desde=T0):
 
 # --- sesgo sistemático -------------------------------------------------------------------------------
 
-def test_sesgo_por_franja_y_atenuacion():
+def test_sesgo_por_hora_con_horas_vecinas_y_atenuacion():
     s = c.sesgos(residuos(lambda i: 3.0 if 12 <= (i % 24) < 18 else 0.0), AHORA)   # ICON +3 °C en la tarde
-    assert s[2]["sesgo_bruto"] == pytest.approx(3.0) and s[2]["n"] == 12
-    assert 0 < s[2]["sesgo"] < 3.0                                   # atenuado: pocas horas
+    assert len(s) == 24
+    assert s[15]["sesgo_bruto"] == pytest.approx(3.0) and s[15]["n"] == 10     # 13–17 h de 2 días
+    assert 0 < s[15]["sesgo"] < 3.0                                  # atenuado: pocas horas
+    assert s[12]["sesgo_bruto"] == pytest.approx(1.8, abs=0.05)              # 10–14 h: 3 de 5 horas con +3 °C
     assert s[0]["sesgo"] == pytest.approx(0.0)
 
 
@@ -72,10 +74,10 @@ def test_correccion_por_franja_y_exclusion():
 
 
 def test_aplicar_solo_a_icon_temperatura():
-    t = T0 + timedelta(hours=15)                                     # 15 h en Chile → franja 2
+    t = T0 + timedelta(hours=15)                                     # 15 h en Chile → franja 15
     rows = [("icon", t, {"temperatura": 20.0, "sensacion_termica": 19.0, "humedad": 60}),
             ("gfs", t, {"indice_uv": 5})]
-    out = c.aplicar(rows, {"franjas": {2: 1.5}, "estaciones": []})
+    out = c.aplicar(rows, {"franjas": {15: 1.5}, "estaciones": []})
     assert out[0][2] == {"temperatura": 18.5, "sensacion_termica": 17.5, "humedad": 60}
     assert out[1][2] == {"indice_uv": 5}
     assert c.aplicar(rows, {"franjas": {}, "estaciones": []}) is rows
@@ -116,7 +118,7 @@ def test_tau_se_ajusta_a_la_persistencia():
 
 def test_validacion_no_usa_la_propia_estacion():
     estaciones = [{"id": i, "nombre": i, "lat": -33.0 - n * 0.05, "lon": -71.6, "costera": False, "altura": None,
-                   "sesgos": {f: 2.0 for f in range(4)}} for n, i in enumerate("ab")]
+                   "sesgos": {f: 2.0 for f in range(24)}} for n, i in enumerate("ab")]
     serie = {T0 + timedelta(hours=h): 2.0 for h in range(48)}       # ICON 2 °C sobre lo medido, siempre
     r = c.validar(estaciones, {"a": serie, "b": serie}, tau=20)
     assert r["icon"] == pytest.approx(2.0)
@@ -140,5 +142,5 @@ def test_medicion_cercana_usa_la_estacion_mas_proxima_de_la_misma_zona():
 def test_aplicar_corrige_toda_la_mezcla():
     t = T0 + timedelta(hours=15)
     rows = [("icon", t, {"temperatura": 20.0}), ("ecmwf", t, {"temperatura": 18.0})]
-    out = c.aplicar(rows, {"franjas": {2: 1.0}, "estaciones": []})
+    out = c.aplicar(rows, {"franjas": {15: 1.0}, "estaciones": []})
     assert [r[2]["temperatura"] for r in out] == [19.0, 17.0]   # el promedio baja 1 °C

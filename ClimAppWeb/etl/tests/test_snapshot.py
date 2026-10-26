@@ -208,18 +208,18 @@ def test_lluvia_es_la_mediana_de_los_modelos():
 
 def test_cielo_suavizado_sin_horas_sueltas():
     # Lluvia con una hora seca en medio (lo que antes mostraba "nublado" entre dos horas de lluvia).
-    h = _horas([0.0, 0.6, 0.0, 0.8, 0.0, 0.0], codigo=61)
+    h = _horas([0.0, 1.2, 0.0, 1.5, 0.0, 0.0], codigo=61)
     snapshot.cielo_por_hora(h)
     codigos = [x["estado_cielo"] for x in h.values()]
     assert codigos[1:4] == [63, 61, 63]           # la hora seca del medio se rellena (débil: 0 mm)
     assert codigos[5] == 3                         # sin lluvia: nublado aunque el modelo dijera 61
-    aislada = _horas([0.0, 0.0, 0.5, 0.0, 0.0], codigo=61)
+    aislada = _horas([0.0, 0.0, 0.8, 0.0, 0.0], codigo=61)
     snapshot.cielo_por_hora(aislada)
     assert all(x["estado_cielo"] == 3 for x in aislada.values())   # una hora suelta no alcanza la mayoría
 
 
 def test_intensidad_por_milimetros_y_tipo_del_modelo():
-    h = _horas([0.3, 2.0, 6.0], codigo=81)
+    h = _horas([0.7, 2.0, 6.0], codigo=81)
     snapshot.cielo_por_hora(h)
     assert [x["estado_cielo"] for x in h.values()] == [80, 81, 82]
     nieve = _horas([0.0, 0.0, 0.0], codigo=73)
@@ -234,7 +234,7 @@ def test_neblina_por_humedad_y_no_por_codigo_del_modelo():
     seca = _horas([0.0, 0.0, 0.0], humedad=85.0, codigo=45, nubosidad=40.0)
     snapshot.cielo_por_hora(seca)
     assert all(x["estado_cielo"] == 2 for x in seca.values())       # código 45 del modelo con HR 85 %: parcial
-    lluvia = _horas([0.5, 0.5, 0.5], humedad=98.0, codigo=61)
+    lluvia = _horas([1.5, 1.5, 1.5], humedad=98.0, codigo=61)
     snapshot.cielo_por_hora(lluvia)
     assert all(x["estado_cielo"] == 63 for x in lluvia.values())    # con lluvia manda la lluvia
 
@@ -247,9 +247,10 @@ def test_cielo_del_dia_y_neblina():
 
 
 def test_probabilidad_calibrada():
-    # Media ICON + ECMWF de 90 %: con todos los modelos con lluvia ~63–80 %; si casi ninguno llueve, ~25 %.
-    assert 60 < snapshot.probabilidad_calibrada(90, [0.5] * 5) < 70
-    assert 20 < snapshot.probabilidad_calibrada(90, [0.5, 0, 0, 0, 0]) < 30
+    # Media ICON + ECMWF de 90 %: todos los modelos con 0,5 mm ~48 %, con 3 mm ~63 %; si casi ninguno llueve, ~15 %.
+    assert 45 < snapshot.probabilidad_calibrada(90, [0.5] * 5) < 52
+    assert 60 < snapshot.probabilidad_calibrada(90, [3.0] * 5) < 66
+    assert 10 < snapshot.probabilidad_calibrada(90, [0.5, 0, 0, 0, 0]) < 20
     assert snapshot.probabilidad_calibrada(10, [0] * 5) < 5
     sube = [snapshot.probabilidad_calibrada(p, [0.3, 0.3, 0.0, 0.0, 0.0]) for p in (10, 30, 50, 70, 90)]
     assert sube == sorted(sube)                                       # monótona en la probabilidad de los modelos

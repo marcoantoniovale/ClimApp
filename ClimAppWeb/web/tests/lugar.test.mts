@@ -12,6 +12,13 @@ test("desfase = diferencia de sesgo de la franja + altura", () => {
   assert.ok(Math.abs(desfase(BASE, h("15:00")) + 0.5) < 1e-9);    // franja 2: −0,4 − 0,1
 });
 
+test("sesgo por hora local (formato desde el 2026-10-26)", () => {
+  const franjas = Object.fromEntries(Array.from({ length: 24 }, (_, i) => [String(i), i === 15 ? 0.7 : 0]));
+  const porHora = { ...BASE, franjas };
+  assert.ok(Math.abs(desfase(porHora, h("15:00")) - 0.6) < 1e-9);   // hora 15: 0,7 − 0,1
+  assert.ok(Math.abs(desfase(porHora, h("02:00")) + 0.1) < 1e-9);   // hora 2 (no la franja 2 de 6 h)
+});
+
 test("con perfil propio se usa la hora local, no la altura", () => {
   const perfil = Array.from({ length: 24 }, (_, i) => (i === 14 ? -2 : 0));
   const lejana = { ...BASE, perfil, franjas: {} };

@@ -393,6 +393,14 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Pedido del usuario: en el pie, junto a "Marco (sin S)", créditos a JotaPé → "Marco (sin S) · Créditos: JotaPé" ([Footer.tsx](ClimAppWeb/web/src/components/Footer.tsx)).
 - Pedido del usuario (mismo día): se quitó el texto de créditos a JotaPé; el pie vuelve a decir solo "Marco (sin S)".
 
+### 2026-10-26 — rama `feature/recalibracion-octubre`
+- Pregunta del usuario sobre los correos "Ingesta: All jobs have failed": casi todas las fallas del 13 y 14-oct fueron SINCA sin responder (una del 11-oct, la DMC); el resto de la ingesta corrió y la web siguió al día. Decisión del usuario: **mantener** el correo ante cualquier fuente caída.
+- Pedido del usuario: recalibrar el algoritmo con los datos acumulados. Evaluación fuera de muestra con 4 semanas (104 mil horas de error en 213 estaciones, archivo a 0–48 h, lluvia DMC de 127 estaciones y corridas previas de los 5 modelos de lluvia). Detalle en [docs/precision-evaluacion.md §11](docs/precision-evaluacion.md).
+- **Sesgo de temperatura por hora local con las horas vecinas (±2 h)** en vez de 4 franjas de 6 h, K 12 → 6 ([correccion.py](ClimAppWeb/etl/src/climapp_etl/correccion.py), `N_FRANJAS`, `VENTANA_HORAS`): error con corrección 1,043 → 1,005 °C; ajuste del momento 1 h después 0,629 → 0,589 °C. Migración [0019](ClimAppWeb/db/migrations/0019_sesgo_por_hora.sql) (`station_bias.franja` 0–23). Localidades: `franjas` con 24 horas; [lugar.ts](ClimAppWeb/web/src/lib/lugar.ts) acepta ambos formatos.
+- **Lluvia**: umbral de la mediana 0,2 → 0,5 mm (`LLUVIA_MM`; CSI 0,32 → 0,36, horas de lluvia pronosticadas 2,2 → 1,2 veces las medidas, falsas alarmas 65 → 51 %); débil bajo 1 mm (`DEBIL_MM`). **Probabilidad** recalibrada con 52.790 horas (agrega la mediana de mm): 50–60 % → llovió 55 % (antes 39 %).
+- Sin cambios (probado sin mejora): vida media del sesgo, MOS, parámetros de la interpolación espacial, sesgo por zona, mezcla 60/40. **Yr no entra a la mezcla** (peor que ICON y ECMWF a 0–48 h).
+- Pruebas: ETL 108, web 38.
+
 ---
 
 ## 8. Pendientes
@@ -424,7 +432,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [x] Ingerir observaciones DMC (2026-10-01).
 - [ ] Recalibrar el algoritmo ClimApp con 2–3 semanas de datos; pasar a `forecast_archive` (pronósticos reales) y considerar altura estación–comuna.
 - [x] Algoritmo ClimApp v2 (2026-10-01): altura, varias estaciones por cuadrante, τ automático, control de calidad, validación diaria.
-- [ ] Algoritmo ClimApp: revisar la validación diaria (`select fecha, metricas from algoritmo_validacion order by fecha desc`) y recalibrar con 2–3 semanas (el sesgo inicial es dentro de muestra); probar el sesgo con `forecast_archive` a 24–72 h.
+- [ ] Algoritmo ClimApp (recalibrado el 2026-10-26, §11): revisar en ~1 mes la validación diaria (`select fecha, metricas from algoritmo_validacion order by fecha desc`) y recalibrar con 2–3 semanas (el sesgo inicial es dentro de muestra); probar el sesgo con `forecast_archive` a 24–72 h.
 - [ ] Verificar que SINCA responde desde GitHub Actions (job `sinca_obs` en `ingestion_runs`).
 - [ ] **INIA** (evaluada 2026-10-06, ver bitácora): servidores caídos ese día; aportaría estaciones a 119 comunas sin estación propia. Siguiente paso: **solicitud formal a INIA** (acceso a datos/API para un servicio público no comercial, con atribución) y volver a revisar el portal cuando esté en línea.
 - [x] SINCA: catálogo renovado cada semana por el job `sinca_catalogo` (2026-10-03).
@@ -436,16 +444,16 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [ ] Opcional: archivo de pronósticos 1 vez al día → ~283 MB (57 %), si hace falta más margen.
 
 - [ ] **Publicidad** (evaluada 2026-10-02): decidir paso a uso comercial (plan comercial de Open-Meteo, Vercel Pro, términos DMC/SINCA); luego componente de patrocinios con interruptor.
-- [ ] Comparar Yr vs mezcla vs ICON con 2–3 semanas de `forecast_archive` (temperatura, lluvia, viento) y decidir si Yr entra a la mezcla.
+- [x] Comparar Yr vs mezcla vs ICON (2026-10-26, §11): Yr no entra a la mezcla. Opcional: dejar de archivar Yr (~1/3 del archivo) o mantenerlo como referencia.
 - [ ] Revisar periódicamente el tamaño por tabla (detalle del job `mantencion` en `ingestion_runs`) y ajustar `RETENTION` según la capacidad (pedido del usuario).
 - [x] **Localidades** L0, L1 y L2 implementadas (2026-10-03). Pendiente: L3 (memoria del sesgo más corta, según la validación) y que el usuario compare Loncura/Ventanas en terreno.
 - [ ] Localidades: evaluar incluir caseríos (hamlet, 14.578) con gran diferencia de altura con su cabecera (≥ 400 m); requiere la altura de cada uno (~14.600 llamadas a la API de elevación, repartidas en varios días).
 - [ ] Localidades: renovar el catálogo de OSM cada algunos meses (`python scripts/build_localidades.py`; Overpass puede responder 504) y ampliar `localidades_extra.csv` con lugares que pidan los usuarios.
 - [ ] Vigilar la cuota diaria de Open-Meteo (~9.300–9.600 de 10.000 estimadas desde el 2026-10-06, con UKMO/JMA y los puertos; el oleaje pasó a cada 6 h): si aparecen errores 429 en `ingestion_runs`, espaciar `localidades_perfil` o el archivo.
-- [ ] **Validar la lluvia**: la lluvia medida DMC ya se guarda (`observations.precipitacion_1h`, job `dmc_lluvia`, 110 estaciones; SINCA no mide lluvia en Quintero/Puchuncaví/Concón). Falta medir inicio y montos de ICON, ECMWF, la mezcla y Yr (ya archivado en `forecast_archive`).
+- [x] **Validar la lluvia** (2026-10-26, §11; umbral 0,5 mm y probabilidad recalibrada). Original: la lluvia medida DMC ya se guarda (`observations.precipitacion_1h`, job `dmc_lluvia`, 110 estaciones; SINCA no mide lluvia en Quintero/Puchuncaví/Concón). Falta medir inicio y montos de ICON, ECMWF, la mezcla y Yr (ya archivado en `forecast_archive`).
 - [ ] Lluvia medida en "Ahora": tras fusionar a `main`, revisar en `ingestion_runs` el job `dmc_lluvia` (tiempo, estaciones sin pluviómetro) y verificar la página de una comuna con lluvia. Opcional: agregar `dmc_lluvia` a las opciones de `workflow_dispatch` de `ingesta.yml`.
 - [x] Rango de inicio de la lluvia entre modelos (2026-10-06): línea de próxima lluvia en "Ahora".
-- [ ] Lluvia y neblina (§10): repetir la evaluación con 2–3 semanas de `observations.precipitacion_1h` (DMC) y METAR; reajustar `PROB_CALIBRACION` (calibrada el 2026-10-06 con un frente y 15 días de METAR; revisar en invierno y verano) y revisar los umbrales `LLUVIA_MM` (0,2 mm) y `NEBLINA_HR` (93 %) de `snapshot.py`. Vigilar errores 429 de Open-Meteo con UKMO/JMA.
+- [ ] Lluvia y neblina (§10, §11 el 2026-10-26): repetir en verano/invierno la evaluación con 2–3 semanas de `observations.precipitacion_1h` (DMC) y METAR; reajustar `PROB_CALIBRACION` (calibrada el 2026-10-06 con un frente y 15 días de METAR; revisar en invierno y verano) y revisar los umbrales `LLUVIA_MM` (0,2 mm) y `NEBLINA_HR` (93 %) de `snapshot.py`. Vigilar errores 429 de Open-Meteo con UKMO/JMA.
 - [ ] Opcional: Vercel Speed Insights (velocidad real en celulares).
 
 ### Investigación

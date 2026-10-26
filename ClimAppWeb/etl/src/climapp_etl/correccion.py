@@ -7,8 +7,9 @@ Pronóstico base: mezcla de ICON y ECMWF IFS 9 km (promedio). En lo que sigue, "
 1. Registro del error. Cada hora, por estación: r = ICON − medido, con ICON interpolado al instante de
    la lectura en el punto de la estación. Control de calidad (qc): rango, error absurdo, salto brusco,
    sensor pegado y discrepancia con las estaciones vecinas. Solo las horas "ok" se usan.
-2. Sesgo sistemático (lo que ICON suele equivocarse ahí y a esa hora), por estación y franja de 6 h:
-   promedio del error con olvido exponencial (vida media VIDA_MEDIA_DIAS; equivale a un filtro de
+2. Sesgo sistemático (lo que ICON suele equivocarse ahí y a esa hora), por estación y hora local, con
+   los errores de las horas vecinas (±VENTANA_HORAS; recalibrado el 2026-10-26, antes 4 franjas fijas de
+   6 h): promedio del error con olvido exponencial (vida media VIDA_MEDIA_DIAS; equivale a un filtro de
    Kalman de nivel local en régimen), atenuado con pocos datos: sesgo = media · n / (n + K).
    Se rectifica solo con cada hora nueva.
 3. Anomalía del momento (lo que hoy se aparta de lo habitual): a = medido − (ICON − sesgo) en la última
@@ -36,7 +37,9 @@ CHILE = ZoneInfo("America/Santiago")
 MODELOS_BASE = ("icon", "ecmwf")
 
 # Sesgo sistemático
-K = 12.0                 # horas (ponderadas) para que el sesgo pese la mitad
+N_FRANJAS = 24           # el sesgo se calcula para cada hora local ("franja" = hora 0–23)
+VENTANA_HORAS = 2        # cada hora usa los errores de las horas h−2 … h+2
+K = 6.0                  # horas (ponderadas) para que el sesgo pese la mitad
 MAX_SESGO = 5.0          # °C
 VIDA_MEDIA_DIAS = 7.0
 VENTANA_DIAS = 30
@@ -67,7 +70,7 @@ VECINAS_MAX_DIF = 5.0    # °C de diferencia de error con la mediana de las veci
 
 
 def franja(t: datetime) -> int:
-    return t.astimezone(CHILE).hour // 6
+    return t.astimezone(CHILE).hour
 
 
 def km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -112,21 +115,26 @@ def qc_vecinas(filas: list[dict]) -> None:
 # 2. Sesgo sistemático
 
 def sesgos(residuos: list[tuple[datetime, float]], ahora: datetime) -> dict[int, dict]:
-    """Sesgo de ICON en una estación por franja, con olvido exponencial.
-    residuos: [(instante, ICON − medido)] ya filtrados por qc. Devuelve {franja: {sesgo, sesgo_bruto, n, error_antes}}."""
-    acum: dict[int, list[float]] = defaultdict(lambda: [0.0, 0.0, 0.0, 0])   # Σw, Σw·r, Σw·|r|, n
+    """Sesgo de ICON en una estación por hora local, con olvido exponencial y las horas vecinas.
+    residuos: [(instante, ICON − medido)] ya filtrados por qc. Devuelve {hora: {sesgo, sesgo_bruto, n, error_antes}}."""
+    por_hora: dict[int, list[float]] = defaultdict(lambda: [0.0, 0.0, 0.0, 0])   # Σw, Σw·r, Σw·|r|, n
     for t, r in residuos:
         edad_dias = (ahora - t).total_seconds() / 86400
         if edad_dias < 0 or edad_dias > VENTANA_DIAS:
             continue
         w = 0.5 ** (edad_dias / VIDA_MEDIA_DIAS)
-        a = acum[franja(t)]
+        a = por_hora[franja(t)]
         a[0] += w
         a[1] += w * r
         a[2] += w * abs(r)
         a[3] += 1
     out = {}
-    for f, (sw, swr, swa, n) in acum.items():
+    for f in range(N_FRANJAS):
+        ventana = [por_hora[(f + k) % N_FRANJAS] for k in range(-VENTANA_HORAS, VENTANA_HORAS + 1)
+                   if (f + k) % N_FRANJAS in por_hora]
+        sw, swr, swa, n = (sum(a[i] for a in ventana) for i in range(4))
+        if not sw:
+            continue
         bruto = swr / sw
         out[f] = {"sesgo": max(-MAX_SESGO, min(MAX_SESGO, bruto * sw / (sw + K))),
                   "sesgo_bruto": bruto, "n": n, "error_antes": swa / sw}
@@ -179,9 +187,10 @@ def correccion(lat: float, lon: float, altura: float | None, costera: bool, esta
     """Sesgo de ICON interpolado en una ubicación, por franja. estaciones: [{id, nombre, lat, lon, altura,
     costera, sesgos: {franja: sesgo}}]. Devuelve {"franjas": {franja: °C a restar}, "estaciones": [...]}."""
     franjas, usadas = {}, []
-    for f in range(4):
-        r = interpolar(lat, lon, altura, costera,
-                       [e | {"valor": e["sesgos"].get(f)} for e in estaciones], excluir)
+    cerca = [e for e in estaciones if e["costera"] == costera and e["id"] != excluir
+             and km(lat, lon, e["lat"], e["lon"]) <= RADIO_KM]
+    for f in range(N_FRANJAS):
+        r = interpolar(lat, lon, altura, costera, [e | {"valor": e["sesgos"].get(f)} for e in cerca])
         if r:
             franjas[f] = r["valor"]
             if len(r["estaciones"]) > len(usadas):
