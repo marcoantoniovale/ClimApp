@@ -61,7 +61,18 @@ jobs:
 
       # Aunque la ingesta falle (p. ej. Upstash sin servicio): lo que alcanzó a generar queda en GitHub.
       - name: Respaldo de los datos (etiqueta datos)
+        id: respaldo
         if: always()
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: bash scripts/publicar_respaldo.sh "${{ runner.temp }}/respaldo"
+
+      # La web lee los pronósticos por ubicación desde ese commit (clave global `respaldo` en Redis) y se renueva.
+      - name: Publicar la versión del respaldo y renovar la web
+        if: always() && steps.respaldo.outputs.sha != ''
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          CLIMAPP_RESPALDO_SHA: ${{ steps.respaldo.outputs.sha }}
+        run: python -m climapp_etl respaldo_publicado

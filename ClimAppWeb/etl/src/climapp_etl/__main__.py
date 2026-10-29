@@ -48,6 +48,7 @@ COMMANDS = {
     "localidades_perfil": jobs.localities_profiles,
     "residuos_reconstruir": lambda conn: jobs.residuals(conn, reconstruir_dias=5),
     "correccion": jobs.corrections,
+    "respaldo_publicado": lambda conn: print("web renovada" if web.respaldo_publicado() else "la web no respondió"),
     "revalidar": lambda conn: print("web renovada" if web.revalidar() else "la web no respondió"),
     "mantencion": jobs.maintenance,
 }

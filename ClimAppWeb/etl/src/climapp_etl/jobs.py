@@ -6,6 +6,7 @@ import functools
 from concurrent.futures import ThreadPoolExecutor
 import logging
 import math
+import os
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
@@ -1111,7 +1112,9 @@ def auto(conn: psycopg.Connection, with_observations: bool = True) -> None:
         except Exception as exc:  # un conector caído no detiene a los demás
             log.exception("%s falló", name)
             failures.append(f"{name}: {exc}")
-    if publicado:  # la web renueva sus páginas al instante (ver web.py)
+    if publicado and os.environ.get("CLIMAPP_RESPALDO_DIR"):  # la web lee el respaldo: renovar tras subirlo
+        log.info("web: se renueva después de subir el respaldo (respaldo_publicado)")
+    elif publicado:  # la web renueva sus páginas al instante (ver web.py)
         log.info("web: renovación %s", "ok" if web.revalidar() else "no disponible")
     log.info("Upstash: %s comandos, %.2f MB enviados%s", redis.USO["comandos"], redis.USO["bytes"] / 1e6,
              " · SIN CUOTA: la web lee el respaldo de GitHub" if redis.sin_cuota() else "")
