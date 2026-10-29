@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   } catch {
     return json({ error: "Cuerpo inválido" }, CACHE.ninguno, 400);
   }
-  const [guardado] = await getJson<[{ token: string }]>(["revalidar"]);
+  const [guardado] = await getJson<[{ token: string }]>(["revalidar"], { respaldo: false });
   const esperado = guardado?.token ?? "";
   const valido =
     token.length > 0 && token.length === esperado.length && timingSafeEqual(Buffer.from(token), Buffer.from(esperado));

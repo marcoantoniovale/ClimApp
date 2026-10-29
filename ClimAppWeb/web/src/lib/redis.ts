@@ -4,6 +4,10 @@
 // Variables de entorno (servidor): UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_READONLY_TOKEN.
 // La web solo lee: se usa el token de solo lectura de Upstash.
 // Los valores grandes vienen comprimidos ("gz:" + gzip en base64) para no agotar el plan de Upstash.
+//
+// Respaldo: si Upstash falla (p. ej. plan agotado) o no está configurado, las mismas claves se leen de la
+// etiqueta `datos` del repositorio en GitHub (la sube el ETL: etl/scripts/publicar_respaldo.sh), como
+// JSON plano en <clave con ":" → "/">.json. CLIMAPP_RESPALDO_URL permite cambiar el origen.
 
 import { gunzipSync } from "node:zlib";
 
@@ -12,7 +16,13 @@ const PREFIX = "climapp:v1";
 /** Etiqueta de la caché de datos de Next.js; /api/revalidate la expira cuando el ETL publica. */
 export const CACHE_TAG = "climapp";
 
+const RESPALDO_URL = (process.env.CLIMAPP_RESPALDO_URL
+  ?? "https://raw.githubusercontent.com/marcoantoniovale/ClimApp/datos").replace(/\/$/, "");
+
 export class RedisNotConfigured extends Error {}
+
+/** Clave sin prefijo → archivo del respaldo (loc:quintero → loc/quintero.json); igual que el ETL. */
+export const rutaRespaldo = (key: string) => `${key.replaceAll(":", "/")}.json`;
 
 export type ReadOptions = {
   /** Segundos que Next.js guarda la respuesta (páginas ISR). Sin valor: siempre se lee de Redis. */
@@ -32,26 +42,53 @@ export function decodificar(valor: string): unknown {
   return JSON.parse(texto);
 }
 
-/** GET de varias claves (sin prefijo) en una sola petición. Devuelve el JSON de cada una o null. */
-export async function getJson<T extends unknown[]>(
-  keys: string[],
-  options: ReadOptions = {},
-): Promise<{ [K in keyof T]: T[K] | null }> {
+type Resultado<T extends unknown[]> = { [K in keyof T]: T[K] | null };
+
+function cacheDe(options: ReadOptions): RequestInit {
+  return options.revalidate !== undefined
+    ? { cache: "force-cache", next: { revalidate: options.revalidate, tags: [CACHE_TAG] } }
+    : { cache: "no-store" };
+}
+
+async function deRedis<T extends unknown[]>(keys: string[], options: ReadOptions): Promise<Resultado<T>> {
   const { url, token } = config();
-  const caching: RequestInit =
-    options.revalidate !== undefined
-      ? { cache: "force-cache", next: { revalidate: options.revalidate, tags: [CACHE_TAG] } }
-      : { cache: "no-store" };
   const response = await fetch(`${url}/pipeline`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify(keys.map((key) => ["GET", `${PREFIX}:${key}`])),
-    ...caching,
+    ...cacheDe(options),
   });
   if (!response.ok) throw new Error(`Upstash respondió ${response.status}`);
   const results = (await response.json()) as { result?: string | null; error?: string }[];
   return results.map((r) => {
     if (r.error) throw new Error(`Upstash: ${r.error}`);
     return r.result ? decodificar(r.result) : null;
-  }) as { [K in keyof T]: T[K] | null };
+  }) as Resultado<T>;
+}
+
+/** Las mismas claves desde el respaldo en GitHub (null si el archivo no existe). */
+export async function deRespaldo<T extends unknown[]>(keys: string[], options: ReadOptions = {}): Promise<Resultado<T>> {
+  return (await Promise.all(keys.map(async (key) => {
+    const response = await fetch(`${RESPALDO_URL}/${rutaRespaldo(key)}`, cacheDe(options));
+    if (response.status === 404) return null;
+    if (!response.ok) throw new Error(`Respaldo respondió ${response.status} (${key})`);
+    return response.json();
+  }))) as Resultado<T>;
+}
+
+/**
+ * GET de varias claves (sin prefijo) en una sola petición. Devuelve el JSON de cada una o null.
+ * Si Upstash falla, las lee del respaldo en GitHub (salvo `respaldo: false`).
+ */
+export async function getJson<T extends unknown[]>(
+  keys: string[],
+  options: ReadOptions & { respaldo?: boolean } = {},
+): Promise<Resultado<T>> {
+  try {
+    return await deRedis<T>(keys, options);
+  } catch (error) {
+    if (options.respaldo === false) throw error;
+    console.warn(`Redis no disponible (${error instanceof Error ? error.message : error}); se usa el respaldo`);
+    return deRespaldo<T>(keys, options);
+  }
 }
