@@ -64,8 +64,28 @@ def test_cuota_agotada_no_falla_y_deja_de_intentar(tmp_path, monkeypatch):
         raise urllib.error.HTTPError(request.full_url, 403, "Forbidden", {}, io.BytesIO(
             b'{"error":"ERR This database has reached current Fixed plan limits."}'))
     monkeypatch.setattr(redis.urllib.request, "urlopen", rechaza)
-    assert redis.publish({"loc:a": {"x": 1}}) == 1
+    assert redis.publish({"avisos": {"x": 1}}) == 1
     assert redis.sin_cuota()
-    assert redis.publish({"loc:b": {"x": 2}}) == 1 and len(llamadas) == 1
-    assert (tmp_path / "loc" / "b.json").exists()
+    assert redis.publish({"lluvia": {"x": 2}}) == 1 and len(llamadas) == 1
+    assert (tmp_path / "lluvia.json").exists()
     assert not redis.es_cuota_agotada(403, '{"error":"WRONGPASS"}')
+
+
+def test_con_respaldo_las_claves_por_ubicacion_no_van_a_redis(tmp_path, monkeypatch):
+    monkeypatch.setenv("CLIMAPP_RESPALDO_DIR", str(tmp_path))
+    monkeypatch.setattr(redis, "_config", lambda: ("https://x", "t"))
+    monkeypatch.setattr(redis, "_sin_cuota", False)
+    enviados = []
+
+    class Resp:
+        def __enter__(self): return self
+        def __exit__(self, *a): pass
+        def read(self): return b'[{"result":"OK"}]'
+
+    monkeypatch.setattr(redis.urllib.request, "urlopen",
+                        lambda req, timeout: enviados.append(json.loads(req.data)) or Resp())
+    assert redis.publish({"loc:quintero": {"a": 1}, "lugares:quintero": {"b": 2}}) == 2
+    assert enviados == [] and (tmp_path / "lugares" / "quintero.json").exists()
+    redis.publish({"loc:arica": {"a": 1}, "avisos": {"avisos": []}})
+    claves = [k for cmd in enviados for k in cmd[0][1::2]]
+    assert claves == [f"{redis.PREFIX}:avisos"]

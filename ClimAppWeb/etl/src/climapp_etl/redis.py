@@ -24,6 +24,11 @@ lee desde raw.githubusercontent.com (web/src/lib/redis.ts).
 Cuota agotada: si Upstash responde que la base llegó al límite del plan, publish() no falla (el dato ya
 quedó en el respaldo y la web lo lee de ahí); lo registra, deja de intentar Redis en el resto del proceso y
 sin_cuota() pasa a True. USO acumula comandos y bytes enviados (se informan al final de `auto`).
+
+Lectura desde GitHub (2026-10-29): con el respaldo activo, las claves por ubicación (SOLO_RESPALDO: loc:…,
+lugares:…; ~95 % de los bytes) ya no se escriben en Upstash: la web las lee del respaldo en GitHub, en la
+versión exacta (commit) que indica la clave global `respaldo` (web.respaldo_publicado). En Upstash quedan
+solo las claves globales (avisos, algoritmo, lluvia, puertos, pasos, índice, meta, respaldo, revalidar).
 """
 
 from __future__ import annotations
@@ -42,6 +47,8 @@ from .db import ENV_FILE
 PREFIX = "climapp:v1"
 COMPRIMIR_DESDE = 2048          # bytes de JSON
 LOTE_BYTES = 700_000            # por MSET (Upstash limita el tamaño de cada petición)
+
+SOLO_RESPALDO = ("loc:", "lugares:")
 
 log = logging.getLogger(__name__)
 USO = {"comandos": 0, "bytes": 0}
@@ -120,8 +127,10 @@ def publish(items: dict[str, object], ttl_seconds: int | None = None) -> int:
     """
     global _sin_cuota
     respaldadas = 0 if ttl_seconds else respaldar(items)
+    if respaldadas:
+        items = {k: v for k, v in items.items() if not k.startswith(SOLO_RESPALDO)}
     config = _config()
-    if config is None or _sin_cuota:
+    if config is None or _sin_cuota or not items:
         return respaldadas
     url, token = config
     for command in comandos(items, ttl_seconds):   # una petición por comando: cada lote cabe en el límite
@@ -143,4 +152,4 @@ def publish(items: dict[str, object], ttl_seconds: int | None = None) -> int:
         for result in resultados:
             if "error" in result:
                 raise RuntimeError(f"Upstash: {result['error']}")
-    return len(items)
+    return max(len(items), respaldadas)

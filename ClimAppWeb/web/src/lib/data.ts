@@ -3,7 +3,7 @@
 import { lluviaCercana, type LluviaMedida, type LluviaPayload } from "./lluvia";
 import { diasDe, horasDe, type LugaresPayload } from "./lugar";
 import type { ProximaLluvia } from "./proximaLluvia";
-import { getJson, type ReadOptions } from "./redis";
+import { getJson, getPorUbicacion, type ReadOptions } from "./redis";
 
 export type Aviso = {
   id: string;
@@ -178,7 +178,7 @@ async function comunesPasos(options?: ReadOptions) {
 /** Pronóstico de una ubicación con sus avisos vigentes, o null si no existe. */
 export async function getPronostico(slug: string, options?: ReadOptions): Promise<PronosticoConAvisos | null> {
   const [[pronostico, lugares], { avisos, algoritmo, lluvia, puertos }] = await Promise.all([
-    getJson<[Pronostico, LugaresPayload]>([`loc:${slug}`, `lugares:${slug}`], options), comunes(options)]);
+    getPorUbicacion<[Pronostico, LugaresPayload]>([`loc:${slug}`, `lugares:${slug}`], options), comunes(options)]);
   if (!pronostico) return null;
   const ajuste = algoritmo?.comunas?.[slug];
   const ancla = ajuste?.anomalia != null && ajuste.hora
@@ -197,7 +197,7 @@ export async function getPronostico(slug: string, options?: ReadOptions): Promis
  */
 export async function getLugar(comuna: string, slug: string, options?: ReadOptions): Promise<PronosticoConAvisos | null> {
   const [[pronostico, lugares], { avisos, lluvia }] = await Promise.all([
-    getJson<[Pronostico, LugaresPayload]>([`loc:${comuna}`, `lugares:${comuna}`], options), comunes(options)]);
+    getPorUbicacion<[Pronostico, LugaresPayload]>([`loc:${comuna}`, `lugares:${comuna}`], options), comunes(options)]);
   const l = lugares?.lugares?.[slug];
   if (!pronostico || !l) return null;
   return {
@@ -307,7 +307,7 @@ export async function getPasos(options?: ReadOptions) {
 export async function getPaso(ruta: string, options?: ReadOptions) {
   const slug = slugPaso(ruta);
   const [[pronostico], [, dmc]] = await Promise.all([
-    getJson<[Pronostico & { alertas?: AlertaPaso[] }]>([`loc:${slug}`], options), comunesPasos(options)]);
+    getPorUbicacion<[Pronostico & { alertas?: AlertaPaso[] }]>([`loc:${slug}`], options), comunesPasos(options)]);
   if (!pronostico || pronostico.ubicacion.tipo !== "paso") return null;
   return { p: { ...pronostico, avisos: [] as AvisoUbicacion[] }, alertas: pronostico.alertas ?? [], dmc: dmc?.pasos?.[slug] ?? null };
 }

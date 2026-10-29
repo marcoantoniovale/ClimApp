@@ -32,7 +32,8 @@ for intento in 1 2 3 4 5; do
   git --work-tree=arbol add -A
   commit=$(git commit-tree "$(git write-tree)" -m "Datos $(date -u +%Y-%m-%dT%H:%M:%SZ)")
   if git push -q --force-with-lease="$ref:$base" "$repo" "$commit:$ref"; then
-    echo "Respaldo subido: $(find "$dir" -type f -name '*.json' | wc -l) archivos (intento $intento)"
+    echo "Respaldo subido: $(find "$dir" -type f -name '*.json' | wc -l) archivos (intento $intento), commit $commit"
+    [ -n "${GITHUB_OUTPUT:-}" ] && echo "sha=$commit" >> "$GITHUB_OUTPUT"
     exit 0
   fi
   sleep $((5 + RANDOM % 10))

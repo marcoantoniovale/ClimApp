@@ -17,3 +17,12 @@ test("la ruta del respaldo es la misma que escribe el ETL", async () => {
   assert.equal(rutaRespaldo("lugares:puerto-quintero"), "lugares/puerto-quintero.json");
   assert.equal(rutaRespaldo("avisos"), "avisos.json");
 });
+
+test("los pronósticos por ubicación se leen del commit publicado", async () => {
+  const { origenesCommit } = await import("../src/lib/redis.ts");
+  const sha = "a".repeat(40);
+  assert.deepEqual(origenesCommit(sha), [
+    `https://raw.githubusercontent.com/marcoantoniovale/ClimApp/${sha}`,
+    `https://cdn.jsdelivr.net/gh/marcoantoniovale/ClimApp@${sha}`,
+  ]);
+});

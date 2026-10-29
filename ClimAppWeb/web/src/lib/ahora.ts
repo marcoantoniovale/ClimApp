@@ -105,10 +105,10 @@ export function ajustarDias<D extends DiaTemp>(dias: D[], horas: Punto[], ancla:
 }
 
 // ---------------------------------------------------------------------------
-// Reloj de la estimación para componentes cliente: avanza cada PASO_MS (5 min, pedido del usuario el
+// Reloj de la estimación para componentes cliente: avanza cada PASO_MS (15 min, pedido del usuario el 2026-10-29; antes 5 min, pedido el
 // 2026-10-07; antes cada minuto). Sin desajustes de hidratación: en el servidor es null.
 
-export const PASO_MS = 5 * 60_000;
+export const PASO_MS = 15 * 60_000;
 
 const suscriptores = new Set<() => void>();
 let intervalo: ReturnType<typeof setInterval> | null = null;

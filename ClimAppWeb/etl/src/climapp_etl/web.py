@@ -13,10 +13,21 @@ import json
 import os
 import secrets
 import urllib.request
+from datetime import datetime, timezone
 
 from . import redis
 
 WEB_URL = os.environ.get("WEB_URL", "https://climapp-chile.vercel.app")
+
+
+def respaldo_publicado() -> bool:
+    """Tras subir el respaldo a GitHub: guarda en Redis la versión (commit) que debe leer la web
+    (clave `respaldo`; CLIMAPP_RESPALDO_SHA) y la renueva. Lo llama el flujo de la ingesta."""
+    sha = os.environ.get("CLIMAPP_RESPALDO_SHA", "").strip()
+    if len(sha) != 40:
+        raise ValueError("CLIMAPP_RESPALDO_SHA debe ser un commit (40 caracteres)")
+    redis.publish({"respaldo": {"sha": sha, "generado": datetime.now(timezone.utc).isoformat(timespec="seconds")}})
+    return revalidar()
 
 
 def revalidar(timeout: int = 30) -> bool:

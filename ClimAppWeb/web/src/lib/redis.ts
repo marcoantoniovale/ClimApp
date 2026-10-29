@@ -8,6 +8,10 @@
 // Respaldo: si Upstash falla (p. ej. plan agotado) o no está configurado, las mismas claves se leen de la
 // etiqueta `datos` del repositorio en GitHub (la sube el ETL: etl/scripts/publicar_respaldo.sh), como
 // JSON plano en <clave con ":" → "/">.json. CLIMAPP_RESPALDO_URL permite cambiar el origen.
+//
+// Claves por ubicación (loc:…, lugares:…): desde el 2026-10-29 solo están en GitHub (no en Upstash). Se
+// leen con getPorUbicacion() en el commit exacto que indica la clave global `respaldo` (URL inmutable:
+// siempre la versión correcta y en caché indefinida); si raw.githubusercontent.com falla, desde jsDelivr.
 
 import { gunzipSync } from "node:zlib";
 
@@ -16,8 +20,9 @@ const PREFIX = "climapp:v1";
 /** Etiqueta de la caché de datos de Next.js; /api/revalidate la expira cuando el ETL publica. */
 export const CACHE_TAG = "climapp";
 
-const RESPALDO_URL = (process.env.CLIMAPP_RESPALDO_URL
-  ?? "https://raw.githubusercontent.com/marcoantoniovale/ClimApp/datos").replace(/\/$/, "");
+const REPO = "marcoantoniovale/ClimApp";
+const RESPALDO_URL = (process.env.CLIMAPP_RESPALDO_URL ?? `https://raw.githubusercontent.com/${REPO}/datos`).replace(/\/$/, "");
+const COMMIT = /^[0-9a-f]{40}$/;
 
 export class RedisNotConfigured extends Error {}
 
@@ -74,6 +79,38 @@ export async function deRespaldo<T extends unknown[]>(keys: string[], options: R
     if (!response.ok) throw new Error(`Respaldo respondió ${response.status} (${key})`);
     return response.json();
   }))) as Resultado<T>;
+}
+
+/** Origen del respaldo en un commit (inmutable), en orden de preferencia. */
+export const origenesCommit = (sha: string) =>
+  [`https://raw.githubusercontent.com/${REPO}/${sha}`, `https://cdn.jsdelivr.net/gh/${REPO}@${sha}`];
+
+async function leerArchivo(bases: string[], key: string, caching: RequestInit): Promise<unknown> {
+  let ultimo: unknown;
+  for (const base of bases) {
+    try {
+      const response = await fetch(`${base}/${rutaRespaldo(key)}`, caching);
+      if (response.status === 404) return null;
+      if (response.ok) return await response.json();
+      ultimo = new Error(`${base} respondió ${response.status} (${key})`);
+    } catch (error) {
+      ultimo = error;
+    }
+  }
+  throw ultimo;
+}
+
+/**
+ * Claves por ubicación (loc:…, lugares:…) desde GitHub, en el commit que publica el ETL (clave global
+ * `respaldo`). Sin esa clave (p. ej. Upstash caído), desde la etiqueta `datos`.
+ */
+export async function getPorUbicacion<T extends unknown[]>(keys: string[], options: ReadOptions = {}): Promise<Resultado<T>> {
+  const [respaldo] = await getJson<[{ sha?: string }]>(["respaldo"], options).catch(() => [null]);
+  const sha = respaldo?.sha && COMMIT.test(respaldo.sha) ? respaldo.sha : null;
+  // Un commit no cambia: se guarda un día en la caché de datos (una versión nueva es otra URL).
+  const caching: RequestInit = sha ? { cache: "force-cache", next: { revalidate: 86_400 } } : cacheDe(options);
+  const bases = sha ? origenesCommit(sha) : [RESPALDO_URL];
+  return (await Promise.all(keys.map((key) => leerArchivo(bases, key, caching)))) as Resultado<T>;
 }
 
 /**
