@@ -402,6 +402,13 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Pruebas: ETL 108, web 38.
 - Aplicado en producción (autorizado por el usuario): migración 0019, PR #53 fusionado; `correccion`, `residuos`, `precalculo` y `localidades` ejecutados con el código nuevo (`station_bias`: 213 estaciones × 24 horas; Quintero con 24 horas de corrección); web renovada y `/api/health` OK.
 
+### 2026-10-29 — rama `fix/upstash-limite`
+- Reclamo del usuario (captura): el inicio decía "No se pudo cargar el listado de comunas" y el buscador no mostraba localidades. Causa: **Upstash rechaza todo** ("This database has reached current Fixed plan limits"): `/api/locations`, `/api/health` y la API de pronóstico respondían 502; las páginas en caché seguían funcionando. Consumo: cada precálculo escribía ~24 MB (427 JSON) y corrió 374 veces en 30 días (~10 GB/mes), más un SET por clave (~250 mil escrituras de localidades al mes).
+- ETL ([redis.py](ClimAppWeb/etl/src/climapp_etl/redis.py)): valores de ≥ 2 KB comprimidos (`gz:` + gzip en base64) y escritura con MSET en lotes de ≤ 700 KB: precálculo 24 MB → 3,7 MB y 427 → 6 comandos. Web ([lib/redis.ts](ClimAppWeb/web/src/lib/redis.ts)): `decodificar` lee ambos formatos.
+- Respaldo estático del índice: `web/public/comunas.json` ([export_indice.py](ClimAppWeb/etl/scripts/export_indice.py), 346 comunas, 42 KB); `cargarIndice` lo usa si `/api/locations` falla (buscador y "Mi ubicación" siguen funcionando sin Redis).
+- Pruebas: ETL 110, web 39; tipos, lint y build sin errores.
+- **Pendiente del usuario**: restablecer Upstash (pasar la base a Pay as you go con tope de gasto en la consola de Upstash, o esperar el reinicio mensual del plan gratuito); luego ejecutar `precalculo`, `localidades`, `residuos` y `dmc_lluvia` para republicar.
+
 ---
 
 ## 8. Pendientes
@@ -456,6 +463,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [x] Rango de inicio de la lluvia entre modelos (2026-10-06): línea de próxima lluvia en "Ahora".
 - [ ] Lluvia y neblina (§10, §11 el 2026-10-26): repetir en verano/invierno la evaluación con 2–3 semanas de `observations.precipitacion_1h` (DMC) y METAR; reajustar `PROB_CALIBRACION` (calibrada el 2026-10-06 con un frente y 15 días de METAR; revisar en invierno y verano) y revisar los umbrales `LLUVIA_MM` (0,2 mm) y `NEBLINA_HR` (93 %) de `snapshot.py`. Vigilar errores 429 de Open-Meteo con UKMO/JMA.
 - [ ] Opcional: Vercel Speed Insights (velocidad real en celulares).
+- [ ] **Upstash** (2026-10-29): restablecer el servicio (plan Pay as you go con tope, o reinicio mensual) y vigilar en la consola el uso mensual de comandos y transferencia tras la compresión.
 
 ### Investigación
 - [x] Datos de la Armada: observaciones por API JSON; avisos imagen/PDF. Ver [docs/spikes-semana1.md](docs/spikes-semana1.md).

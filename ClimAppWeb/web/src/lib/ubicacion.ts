@@ -61,13 +61,19 @@ export function cargarLocalidades(): Promise<LocalidadIndice[]> {
   return localidades;
 }
 
-/** Catálogo de comunas (con coordenadas), cargado una sola vez. */
+const leerJson = (url: string) =>
+  fetch(url).then((res) => {
+    if (!res.ok) throw new Error(String(res.status));
+    return res.json() as Promise<UbicacionIndice[]>;
+  });
+
+/**
+ * Catálogo de comunas (con coordenadas), cargado una sola vez. Si la API falla (p. ej. Redis sin
+ * servicio), se usa la copia estática /comunas.json (etl/scripts/export_indice.py).
+ */
 export function cargarIndice(): Promise<UbicacionIndice[]> {
-  indice ??= fetch("/api/locations")
-    .then((res) => {
-      if (!res.ok) throw new Error(String(res.status));
-      return res.json() as Promise<UbicacionIndice[]>;
-    })
+  indice ??= leerJson("/api/locations")
+    .catch(() => leerJson("/comunas.json"))
     .catch((e) => {
       indice = null;
       throw e;
