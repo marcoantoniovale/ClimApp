@@ -10,7 +10,7 @@
 set -euo pipefail
 
 dir=$(cd "${1:?directorio}" 2>/dev/null && pwd) || { echo "Sin respaldo que subir"; exit 0; }
-[ -n "$(find "$dir" -type f -name '*.json' | head -1)" ] || { echo "Sin respaldo que subir"; exit 0; }
+[ -n "$(find "$dir" -type f -name '*.json' -print -quit)" ] || { echo "Sin respaldo que subir"; exit 0; }
 repo="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 ref=refs/tags/datos
 

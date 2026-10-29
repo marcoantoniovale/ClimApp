@@ -409,6 +409,13 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Pruebas: ETL 110, web 39; tipos, lint y build sin errores.
 - **Pendiente del usuario**: restablecer Upstash (pasar la base a Pay as you go con tope de gasto en la consola de Upstash, o esperar el reinicio mensual del plan gratuito); luego ejecutar `precalculo`, `localidades`, `residuos` y `dmc_lluvia` para republicar.
 
+### 2026-10-29 — rama `feature/respaldo-datos`
+- Decisión del usuario: seguir con el plan gratuito de Upstash; la web debe mostrar los datos igual. Con Upstash bloqueado, las páginas de comunas, localidades y puertos daban 500 al vencer la caché.
+- **Respaldo en GitHub**: con `CLIMAPP_RESPALDO_DIR`, `redis.publish` escribe además cada clave como JSON (`loc:quintero` → `loc/quintero.json`) **antes** de intentar Redis. Los flujos `ingesta` y `mediciones` suben ese directorio (paso `if: always()`) a la **etiqueta `datos`** con [publicar_respaldo.sh](ClimAppWeb/etl/scripts/publicar_respaldo.sh): commit sin padre (no acumula historial), árbol anterior + archivos nuevos, `--force-with-lease` con reintentos. Etiqueta y no rama: Vercel no despliega y `git fetch` no la descarga.
+- Web ([lib/redis.ts](ClimAppWeb/web/src/lib/redis.ts)): si Upstash falla o no está configurado, `getJson` lee las mismas claves de `raw.githubusercontent.com/marcoantoniovale/ClimApp/datos/…` con la misma caché (`CLIMAPP_RESPALDO_URL` para cambiarlo). `/api/revalidate` no usa el respaldo.
+- Prueba: una corrida `auto` desde la rama subió 770 archivos (427 `loc`, 335 `lugares`, algoritmo, lluvia, avisos, pasos, puertos, índice). `next start` local con Upstash bloqueado: comunas, localidades (Loncura, Horcón), puertos, pasos, avisos y API en 200.
+- `ingesta.yml`: más comandos manuales (`dmc_lluvia`, `residuos`, `localidades`). Pruebas: ETL 112, web 40.
+
 ---
 
 ## 8. Pendientes
@@ -463,7 +470,8 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [x] Rango de inicio de la lluvia entre modelos (2026-10-06): línea de próxima lluvia en "Ahora".
 - [ ] Lluvia y neblina (§10, §11 el 2026-10-26): repetir en verano/invierno la evaluación con 2–3 semanas de `observations.precipitacion_1h` (DMC) y METAR; reajustar `PROB_CALIBRACION` (calibrada el 2026-10-06 con un frente y 15 días de METAR; revisar en invierno y verano) y revisar los umbrales `LLUVIA_MM` (0,2 mm) y `NEBLINA_HR` (93 %) de `snapshot.py`. Vigilar errores 429 de Open-Meteo con UKMO/JMA.
 - [ ] Opcional: Vercel Speed Insights (velocidad real en celulares).
-- [ ] **Upstash** (2026-10-29): restablecer el servicio (plan Pay as you go con tope, o reinicio mensual) y vigilar en la consola el uso mensual de comandos y transferencia tras la compresión.
+- [ ] **Upstash** (2026-10-29): el usuario sigue en el plan gratuito; mientras esté bloqueado la web lee el respaldo de GitHub (etiqueta `datos`) y la ingesta seguirá enviando correos de falla. Tras el reinicio mensual, vigilar en la consola el uso de comandos y transferencia con la compresión.
+- [ ] Respaldo `datos`: revisar de vez en cuando el tamaño del repositorio (los commits sin padre dejan objetos sueltos hasta que GitHub los limpia).
 
 ### Investigación
 - [x] Datos de la Armada: observaciones por API JSON; avisos imagen/PDF. Ver [docs/spikes-semana1.md](docs/spikes-semana1.md).
