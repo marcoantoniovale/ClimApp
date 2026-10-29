@@ -14,6 +14,12 @@ Uso del plan gratuito de Upstash (límites mensuales de comandos y de transferen
 agotaron con ~10 GB/mes de JSON y un SET por clave): los valores de más de COMPRIMIR_DESDE bytes se
 guardan comprimidos ("gz:" + gzip en base64; la web los descomprime en lib/redis.ts) y las claves se
 escriben con MSET en lotes de hasta LOTE_BYTES (un comando por lote).
+
+Respaldo (si Upstash no responde, la web lee lo mismo desde GitHub): con la variable CLIMAPP_RESPALDO_DIR,
+publish() escribe además cada clave como JSON en ese directorio (antes de intentar Redis, para que quede
+aunque Upstash falle). Ruta: la clave con ":" → "/" (loc:quintero → loc/quintero.json). El flujo de GitHub
+Actions sube el directorio a la etiqueta `datos` del repositorio (scripts/publicar_respaldo.sh) y la web la
+lee desde raw.githubusercontent.com (web/src/lib/redis.ts).
 """
 
 from __future__ import annotations
@@ -23,6 +29,7 @@ import gzip
 import json
 import os
 import urllib.request
+from pathlib import Path
 
 from .db import ENV_FILE
 
@@ -70,11 +77,32 @@ def comandos(items: dict[str, object], ttl_seconds: int | None = None) -> list[l
     return lotes
 
 
+def ruta_respaldo(key: str) -> str:
+    """Clave sin prefijo → ruta del archivo de respaldo (loc:quintero → loc/quintero.json)."""
+    return key.replace(":", "/") + ".json"
+
+
+def respaldar(items: dict[str, object]) -> int:
+    """Escribe cada clave en CLIMAPP_RESPALDO_DIR (si está definida). Devuelve cuántas escribió."""
+    base = os.environ.get("CLIMAPP_RESPALDO_DIR")
+    if not base:
+        return 0
+    for key, value in items.items():
+        destino = Path(base) / ruta_respaldo(key)
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(json.dumps(value, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    return len(items)
+
+
 def publish(items: dict[str, object], ttl_seconds: int | None = None) -> int:
-    """Escribe cada clave (sin prefijo) con su valor. Devuelve cuántas claves se escribieron."""
+    """Escribe cada clave (sin prefijo) con su valor. Devuelve cuántas claves se escribieron.
+
+    Las claves sin plazo también van al respaldo (las de un solo uso, como revalidar, no).
+    """
+    respaldadas = 0 if ttl_seconds else respaldar(items)
     config = _config()
     if config is None:
-        return 0
+        return respaldadas
     url, token = config
     for command in comandos(items, ttl_seconds):   # una petición por comando: cada lote cabe en el límite
         body = json.dumps([command]).encode("utf-8")

@@ -23,6 +23,9 @@ on:
         type: boolean
         default: false
 
+permissions:
+  contents: write        # respaldo de los datos en la etiqueta `datos` (scripts/publicar_respaldo.sh)
+
 concurrency:
   group: mediciones
   cancel-in-progress: false
@@ -52,4 +55,12 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          CLIMAPP_RESPALDO_DIR: ${{ runner.temp }}/respaldo
         run: python -m climapp_etl mediciones
+
+      # Aunque la ingesta falle (p. ej. Upstash sin servicio): lo que alcanzó a generar queda en GitHub.
+      - name: Respaldo de los datos (etiqueta datos)
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bash scripts/publicar_respaldo.sh "${{ runner.temp }}/respaldo"

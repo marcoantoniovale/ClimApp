@@ -20,10 +20,13 @@ on:
       comando:
         description: "Comando del ETL"
         type: choice
-        options: [auto, observaciones, pronostico, archivo, avisos, pasos, dmc, dmc_historial, correccion, precalculo, mantencion]
+        options: [auto, observaciones, pronostico, archivo, avisos, pasos, dmc, dmc_historial, dmc_lluvia, correccion, residuos, precalculo, localidades, mantencion]
         default: auto
   push:
     paths: [".github/workflows/ingesta.yml"]   # prueba al modificar este archivo
+
+permissions:
+  contents: write        # respaldo de los datos en la etiqueta `datos` (scripts/publicar_respaldo.sh)
 
 concurrency:
   group: ingesta
@@ -53,4 +56,12 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          CLIMAPP_RESPALDO_DIR: ${{ runner.temp }}/respaldo
         run: python -m climapp_etl ${{ inputs.comando || 'auto' }} ${{ (inputs.comando || 'auto') == 'auto' && '--sin-observaciones' || '' }}
+
+      # Aunque la ingesta falle (p. ej. Upstash sin servicio): lo que alcanzó a generar queda en GitHub.
+      - name: Respaldo de los datos (etiqueta datos)
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bash scripts/publicar_respaldo.sh "${{ runner.temp }}/respaldo"
