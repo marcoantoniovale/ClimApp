@@ -49,3 +49,23 @@ def test_sin_redis_cuenta_las_respaldadas(tmp_path, monkeypatch):
     assert redis.publish({"lluvia": {"a": 1}}) == 1
     assert redis.publish({"revalidar": {"token": "t"}}, ttl_seconds=300) == 0
     assert not (tmp_path / "revalidar.json").exists()
+
+
+def test_cuota_agotada_no_falla_y_deja_de_intentar(tmp_path, monkeypatch):
+    import io
+    import urllib.error
+    monkeypatch.setenv("CLIMAPP_RESPALDO_DIR", str(tmp_path))
+    monkeypatch.setattr(redis, "_config", lambda: ("https://x", "t"))
+    monkeypatch.setattr(redis, "_sin_cuota", False)
+    llamadas = []
+
+    def rechaza(request, timeout):
+        llamadas.append(request)
+        raise urllib.error.HTTPError(request.full_url, 403, "Forbidden", {}, io.BytesIO(
+            b'{"error":"ERR This database has reached current Fixed plan limits."}'))
+    monkeypatch.setattr(redis.urllib.request, "urlopen", rechaza)
+    assert redis.publish({"loc:a": {"x": 1}}) == 1
+    assert redis.sin_cuota()
+    assert redis.publish({"loc:b": {"x": 2}}) == 1 and len(llamadas) == 1
+    assert (tmp_path / "loc" / "b.json").exists()
+    assert not redis.es_cuota_agotada(403, '{"error":"WRONGPASS"}')

@@ -159,11 +159,26 @@ function avisosDe(avisos: AvisosPayload | null, slug: string): AvisoUbicacion[] 
                    url: a.url, documento: a.documento }));
 }
 
+/**
+ * Claves comunes a todas las páginas, leídas siempre en la misma petición: Next.js guarda una sola
+ * respuesta para todo el sitio (no una por página), lo que ahorra comandos y transferencia de Upstash.
+ */
+async function comunes(options?: ReadOptions) {
+  const [avisos, algoritmo, lluvia, puertos] = await getJson<[AvisosPayload, AlgoritmoPayload, LluviaPayload, PuertosPayload]>(
+    ["avisos", "algoritmo", "lluvia", "puertos"], options);
+  return { avisos, algoritmo, lluvia, puertos };
+}
+
+/** Lo mismo para los pasos fronterizos (resumen y pronóstico oficial DMC). */
+async function comunesPasos(options?: ReadOptions) {
+  return getJson<[{ generado: string; pasos: PasoResumen[] }, { generado: string; pasos: Record<string, PasoDmc> }]>(
+    ["pasos", "pasos_dmc"], options);
+}
+
 /** Pronóstico de una ubicación con sus avisos vigentes, o null si no existe. */
 export async function getPronostico(slug: string, options?: ReadOptions): Promise<PronosticoConAvisos | null> {
-  const [pronostico, avisos, algoritmo, lugares, lluvia, puertos] = await getJson<
-    [Pronostico, AvisosPayload, AlgoritmoPayload, LugaresPayload, LluviaPayload, PuertosPayload]>(
-    [`loc:${slug}`, "avisos", "algoritmo", `lugares:${slug}`, "lluvia", "puertos"], options);
+  const [[pronostico, lugares], { avisos, algoritmo, lluvia, puertos }] = await Promise.all([
+    getJson<[Pronostico, LugaresPayload]>([`loc:${slug}`, `lugares:${slug}`], options), comunes(options)]);
   if (!pronostico) return null;
   const ajuste = algoritmo?.comunas?.[slug];
   const ancla = ajuste?.anomalia != null && ajuste.hora
@@ -181,8 +196,8 @@ export async function getPronostico(slug: string, options?: ReadOptions): Promis
  * (lib/lugar.ts). null si la comuna o la localidad no existen.
  */
 export async function getLugar(comuna: string, slug: string, options?: ReadOptions): Promise<PronosticoConAvisos | null> {
-  const [pronostico, avisos, lugares, lluvia] = await getJson<[Pronostico, AvisosPayload, LugaresPayload, LluviaPayload]>(
-    [`loc:${comuna}`, "avisos", `lugares:${comuna}`, "lluvia"], options);
+  const [[pronostico, lugares], { avisos, lluvia }] = await Promise.all([
+    getJson<[Pronostico, LugaresPayload]>([`loc:${comuna}`, `lugares:${comuna}`], options), comunes(options)]);
   const l = lugares?.lugares?.[slug];
   if (!pronostico || !l) return null;
   return {
@@ -211,8 +226,7 @@ function masReciente(a: Observacion | null, b: Observacion | undefined): Observa
 
 /** Todos los avisos vigentes, con las ubicaciones que cubre cada uno. */
 export async function getAvisos(options?: ReadOptions) {
-  const [avisos] = await getJson<[AvisosPayload]>(["avisos"], options);
-  return avisos;
+  return (await comunes(options)).avisos;
 }
 
 /** Avisos vigentes que cubren una ubicación. */
@@ -254,7 +268,7 @@ export const rutaPuerto = (slug: string) => slug.replace(/^puerto-/, "");
 
 /** Resumen de todos los puertos (página /puertos) con los avisos vigentes de su comuna. */
 export async function getPuertos(options?: ReadOptions) {
-  const [puertos, avisos] = await getJson<[PuertosPayload, AvisosPayload]>(["puertos", "avisos"], options);
+  const { puertos, avisos } = await comunes(options);
   return (puertos?.puertos ?? []).map((p) => ({ ...p, avisos: p.comuna ? avisosDe(avisos, p.comuna.slug).length : 0 }));
 }
 
@@ -285,16 +299,15 @@ export const slugPaso = (ruta: string) => `paso-${ruta}`;
 export const rutaPaso = (slug: string) => slug.replace(/^paso-/, "");
 
 export async function getPasos(options?: ReadOptions) {
-  const [pasos, dmc] = await getJson<[{ generado: string; pasos: PasoResumen[] }, { generado: string; pasos: Record<string, PasoDmc> }]>(
-    ["pasos", "pasos_dmc"], options);
+  const [pasos, dmc] = await comunesPasos(options);
   return { pasos: pasos?.pasos ?? [], dmc: dmc?.pasos ?? {} };
 }
 
 /** Pronóstico ICON del paso (con sus alertas) y pronóstico oficial de la DMC. */
 export async function getPaso(ruta: string, options?: ReadOptions) {
   const slug = slugPaso(ruta);
-  const [pronostico, dmc] = await getJson<[Pronostico & { alertas?: AlertaPaso[] }, { pasos: Record<string, PasoDmc> }]>(
-    [`loc:${slug}`, "pasos_dmc"], options);
+  const [[pronostico], [, dmc]] = await Promise.all([
+    getJson<[Pronostico & { alertas?: AlertaPaso[] }]>([`loc:${slug}`], options), comunesPasos(options)]);
   if (!pronostico || pronostico.ubicacion.tipo !== "paso") return null;
-  return { p: { ...pronostico, avisos: [] as AvisoUbicacion[] }, alertas: pronostico.alertas ?? [], dmc: dmc?.pasos[slug] ?? null };
+  return { p: { ...pronostico, avisos: [] as AvisoUbicacion[] }, alertas: pronostico.alertas ?? [], dmc: dmc?.pasos?.[slug] ?? null };
 }

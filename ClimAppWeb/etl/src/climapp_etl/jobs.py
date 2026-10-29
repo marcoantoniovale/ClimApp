@@ -1113,6 +1113,8 @@ def auto(conn: psycopg.Connection, with_observations: bool = True) -> None:
             failures.append(f"{name}: {exc}")
     if publicado:  # la web renueva sus páginas al instante (ver web.py)
         log.info("web: renovación %s", "ok" if web.revalidar() else "no disponible")
+    log.info("Upstash: %s comandos, %.2f MB enviados%s", redis.USO["comandos"], redis.USO["bytes"] / 1e6,
+             " · SIN CUOTA: la web lee el respaldo de GitHub" if redis.sin_cuota() else "")
     if failures:
         raise RuntimeError("; ".join(failures))
 
