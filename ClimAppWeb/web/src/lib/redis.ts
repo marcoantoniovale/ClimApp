@@ -3,6 +3,9 @@
 //
 // Variables de entorno (servidor): UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_READONLY_TOKEN.
 // La web solo lee: se usa el token de solo lectura de Upstash.
+// Los valores grandes vienen comprimidos ("gz:" + gzip en base64) para no agotar el plan de Upstash.
+
+import { gunzipSync } from "node:zlib";
 
 const PREFIX = "climapp:v1";
 
@@ -21,6 +24,12 @@ function config() {
   const token = process.env.UPSTASH_REDIS_REST_READONLY_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) throw new RedisNotConfigured("Faltan UPSTASH_REDIS_REST_URL / token");
   return { url: url.replace(/\/$/, ""), token };
+}
+
+/** Valor guardado por el ETL → JSON (descomprime los que empiezan con "gz:"). */
+export function decodificar(valor: string): unknown {
+  const texto = valor.startsWith("gz:") ? gunzipSync(Buffer.from(valor.slice(3), "base64")).toString("utf8") : valor;
+  return JSON.parse(texto);
 }
 
 /** GET de varias claves (sin prefijo) en una sola petición. Devuelve el JSON de cada una o null. */
@@ -43,6 +52,6 @@ export async function getJson<T extends unknown[]>(
   const results = (await response.json()) as { result?: string | null; error?: string }[];
   return results.map((r) => {
     if (r.error) throw new Error(`Upstash: ${r.error}`);
-    return r.result ? JSON.parse(r.result) : null;
+    return r.result ? decodificar(r.result) : null;
   }) as { [K in keyof T]: T[K] | null };
 }
