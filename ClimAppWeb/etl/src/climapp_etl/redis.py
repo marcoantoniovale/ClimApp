@@ -20,6 +20,10 @@ publish() escribe además cada clave como JSON en ese directorio (antes de inten
 aunque Upstash falle). Ruta: la clave con ":" → "/" (loc:quintero → loc/quintero.json). El flujo de GitHub
 Actions sube el directorio a la etiqueta `datos` del repositorio (scripts/publicar_respaldo.sh) y la web la
 lee desde raw.githubusercontent.com (web/src/lib/redis.ts).
+
+Cuota agotada: si Upstash responde que la base llegó al límite del plan, publish() no falla (el dato ya
+quedó en el respaldo y la web lo lee de ahí); lo registra, deja de intentar Redis en el resto del proceso y
+sin_cuota() pasa a True. USO acumula comandos y bytes enviados (se informan al final de `auto`).
 """
 
 from __future__ import annotations
@@ -28,6 +32,8 @@ import base64
 import gzip
 import json
 import os
+import logging
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -36,6 +42,19 @@ from .db import ENV_FILE
 PREFIX = "climapp:v1"
 COMPRIMIR_DESDE = 2048          # bytes de JSON
 LOTE_BYTES = 700_000            # por MSET (Upstash limita el tamaño de cada petición)
+
+log = logging.getLogger(__name__)
+USO = {"comandos": 0, "bytes": 0}
+_sin_cuota = False
+
+
+def sin_cuota() -> bool:
+    """True si en este proceso Upstash respondió que se agotó la cuota del plan."""
+    return _sin_cuota
+
+
+def es_cuota_agotada(codigo: int, cuerpo: str) -> bool:
+    return codigo in (400, 403, 429) and ("limit" in cuerpo.lower() or "quota" in cuerpo.lower())
 
 
 def _config() -> tuple[str, str] | None:
@@ -99,17 +118,29 @@ def publish(items: dict[str, object], ttl_seconds: int | None = None) -> int:
 
     Las claves sin plazo también van al respaldo (las de un solo uso, como revalidar, no).
     """
+    global _sin_cuota
     respaldadas = 0 if ttl_seconds else respaldar(items)
     config = _config()
-    if config is None:
+    if config is None or _sin_cuota:
         return respaldadas
     url, token = config
     for command in comandos(items, ttl_seconds):   # una petición por comando: cada lote cabe en el límite
         body = json.dumps([command]).encode("utf-8")
         request = urllib.request.Request(f"{url}/pipeline", data=body, method="POST", headers={
             "Authorization": f"Bearer {token}", "Content-Type": "application/json"})
-        with urllib.request.urlopen(request, timeout=60) as response:
-            for result in json.loads(response.read()):
-                if "error" in result:
-                    raise RuntimeError(f"Upstash: {result['error']}")
+        try:
+            with urllib.request.urlopen(request, timeout=60) as response:
+                resultados = json.loads(response.read())
+        except urllib.error.HTTPError as exc:
+            cuerpo = exc.read().decode("utf-8", "replace")
+            if es_cuota_agotada(exc.code, cuerpo):
+                _sin_cuota = True
+                log.warning("Upstash sin cuota (%s): solo respaldo en GitHub. %s", exc.code, cuerpo[:200])
+                return respaldadas
+            raise RuntimeError(f"Upstash {exc.code}: {cuerpo[:200]}") from exc
+        USO["comandos"] += 1
+        USO["bytes"] += len(body)
+        for result in resultados:
+            if "error" in result:
+                raise RuntimeError(f"Upstash: {result['error']}")
     return len(items)

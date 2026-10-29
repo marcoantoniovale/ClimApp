@@ -50,7 +50,7 @@ function cacheDe(options: ReadOptions): RequestInit {
     : { cache: "no-store" };
 }
 
-async function deRedis<T extends unknown[]>(keys: string[], options: ReadOptions): Promise<Resultado<T>> {
+export async function deRedis<T extends unknown[]>(keys: string[], options: ReadOptions): Promise<Resultado<T>> {
   const { url, token } = config();
   const response = await fetch(`${url}/pipeline`, {
     method: "POST",

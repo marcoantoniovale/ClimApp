@@ -21,7 +21,7 @@ WEB_URL = os.environ.get("WEB_URL", "https://climapp-chile.vercel.app")
 
 def revalidar(timeout: int = 30) -> bool:
     """Pide a la web renovar sus páginas. Devuelve True si respondió OK; nunca lanza excepción."""
-    if not redis.configured():
+    if not redis.configured() or redis.sin_cuota():
         return False
     try:
         token = secrets.token_urlsafe(32)

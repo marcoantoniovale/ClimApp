@@ -416,6 +416,13 @@ Costo objetivo MVP: ~1,5–10 USD/mes.
 - Prueba: una corrida `auto` desde la rama subió 770 archivos (427 `loc`, 335 `lugares`, algoritmo, lluvia, avisos, pasos, puertos, índice). `next start` local con Upstash bloqueado: comunas, localidades (Loncura, Horcón), puertos, pasos, avisos y API en 200.
 - `ingesta.yml`: más comandos manuales (`dmc_lluvia`, `residuos`, `localidades`). Pruebas: ETL 112, web 40.
 
+### 2026-10-29 — rama `feature/cuota-upstash`
+- Pedido del usuario: con la cuota agotada la app debe seguir con los pronósticos registrados, y evaluar si bajar la frecuencia de actualización evita pasar la cuota. Plan gratuito de Upstash: **500 mil comandos y 10 GB de transferencia al mes**.
+- **Escrituras del ETL** (`ingestion_runs`, 28 días, escalado a 30): antes ~11 GB y ~440 mil comandos al mes (precálculo 401 corridas × 23 MB y un SET por clave; localidades 763 × 2,2 MB y 335 SET) → **ambos límites agotados solo con escrituras**. Con la compresión y MSET (PR #55): **~2,2 GB y ~9 mil comandos al mes** (precálculo 3,6 MB y 6 comandos; localidades 0,74 MB y 2 comandos). Bajar la frecuencia ahorraría poco: localidades cada 3 h en vez de cada hora ahorraría ~0,4 GB.
+- **Lecturas de la web**: lo que queda en duda (depende de las visitas y de los robots). Antes, cada página sin caché leía 6 claves (~32 KB, incluido `algoritmo` completo). Ahora [data.ts](ClimAppWeb/web/src/lib/data.ts) lee solo `loc` + `lugares` por página (2 comandos, ~11 KB) y las claves comunes (`avisos`, `algoritmo`, `lluvia`, `puertos`; `pasos`, `pasos_dmc`) en una petición idéntica en todo el sitio, que Next.js guarda una vez. Margen estimado: ~7.700 páginas sin caché al día antes de agotar los comandos.
+- **Cuota agotada**: `redis.publish` reconoce la respuesta de Upstash ("reached current Fixed plan limits", 403) → no falla (el dato ya está en el respaldo), deja de intentar Redis en ese proceso y `auto` informa "SIN CUOTA"; ya no llegan correos de falla por esto. `auto` registra los comandos y MB enviados a Upstash en cada corrida. `/api/health` informa `fuente` (`redis` o `respaldo`); con respaldo y datos al día responde 200, y `vigilancia.yml` lo muestra como advertencia.
+- Pruebas: ETL 113, web 40; tipos, lint y build sin errores. Probado con `next start` y Upstash bloqueado.
+
 ---
 
 ## 8. Pendientes
@@ -470,7 +477,7 @@ Propuestas en [docs/fase1-mapeo-requisitos.md §6](docs/fase1-mapeo-requisitos.m
 - [x] Rango de inicio de la lluvia entre modelos (2026-10-06): línea de próxima lluvia en "Ahora".
 - [ ] Lluvia y neblina (§10, §11 el 2026-10-26): repetir en verano/invierno la evaluación con 2–3 semanas de `observations.precipitacion_1h` (DMC) y METAR; reajustar `PROB_CALIBRACION` (calibrada el 2026-10-06 con un frente y 15 días de METAR; revisar en invierno y verano) y revisar los umbrales `LLUVIA_MM` (0,2 mm) y `NEBLINA_HR` (93 %) de `snapshot.py`. Vigilar errores 429 de Open-Meteo con UKMO/JMA.
 - [ ] Opcional: Vercel Speed Insights (velocidad real en celulares).
-- [ ] **Upstash** (2026-10-29): el usuario sigue en el plan gratuito; mientras esté bloqueado la web lee el respaldo de GitHub (etiqueta `datos`) y la ingesta seguirá enviando correos de falla. Tras el reinicio mensual, vigilar en la consola el uso de comandos y transferencia con la compresión.
+- [ ] **Upstash** (2026-10-29): el usuario sigue en el plan gratuito; mientras esté bloqueado la web lee el respaldo de GitHub (etiqueta `datos`). Tras el reinicio mensual, revisar en la consola de Upstash el uso diario (comandos y transferencia); esperado ~300 comandos y ~75 MB al día de escrituras más las lecturas de la web. Si las lecturas se acercan al límite: subir el `revalidate` de las páginas (hoy 10 min) o leer `loc` del respaldo.
 - [ ] Respaldo `datos`: revisar de vez en cuando el tamaño del repositorio (los commits sin padre dejan objetos sueltos hasta que GitHub los limpia).
 
 ### Investigación

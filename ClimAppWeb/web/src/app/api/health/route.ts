@@ -1,5 +1,5 @@
 import { CACHE, json, serverError } from "@/lib/api";
-import { getJson } from "@/lib/redis";
+import { deRedis, deRespaldo } from "@/lib/redis";
 
 // Vigilancia (flujo .github/workflows/vigilancia.yml, cada hora): cada dato publicado por el ETL tiene su
 // propio plazo. Si alguno se atrasa, responde 503 y el flujo falla (GitHub avisa por correo).
@@ -10,11 +10,24 @@ const PLAZOS_H: Record<string, number> = {
   avisos: 3,      // avisos de la Armada (cada hora)
 };
 
-/** GET /api/health — estado de cada dato publicado: cuándo se generó y si está al día. */
+/**
+ * GET /api/health — estado de cada dato publicado: cuándo se generó y si está al día, y de dónde se lee
+ * (`fuente`: "redis", o "respaldo" si Upstash no responde, p. ej. por agotar la cuota mensual). Leer del
+ * respaldo no es una falla: la web sigue al día; la vigilancia lo informa como advertencia.
+ */
 export async function GET() {
   try {
     const claves = Object.keys(PLAZOS_H);
-    const datos = await getJson<{ generado?: string }[]>(claves);
+    let fuente = "redis";
+    let redis: string | null = null;
+    let datos: ({ generado?: string } | null)[];
+    try {
+      datos = await deRedis<{ generado?: string }[]>(claves, {});
+    } catch (error) {
+      fuente = "respaldo";
+      redis = error instanceof Error ? error.message : String(error);
+      datos = await deRespaldo<{ generado?: string }[]>(claves);
+    }
     const ahora = Date.now();
     const componentes = Object.fromEntries(claves.map((clave, i) => {
       const generado = datos[i]?.generado ?? null;
@@ -23,7 +36,7 @@ export async function GET() {
     }));
     const atrasados = claves.filter((c) => !componentes[c].ok);
     const estado = atrasados.length === 0 ? "ok" : "desactualizado";
-    return json({ estado, atrasados, componentes }, CACHE.ninguno, estado === "ok" ? 200 : 503);
+    return json({ estado, fuente, redis, atrasados, componentes }, CACHE.ninguno, estado === "ok" ? 200 : 503);
   } catch (error) {
     return serverError(error);
   }

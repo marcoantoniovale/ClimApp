@@ -25,3 +25,6 @@ jobs:
             echo "::error::ClimApp con datos atrasados o sin respuesta (HTTP $codigo): $(cat salud.json)"
             exit 1
           fi
+          if grep -q '"fuente":"respaldo"' salud.json; then
+            echo "::warning::Upstash no responde (¿cuota mensual agotada?): la web lee el respaldo de GitHub."
+          fi
